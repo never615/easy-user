@@ -20,18 +20,11 @@ $attributes = [
 
 Route::group($attributes, function ($router) {
 
-    Route::any('/test1', 'TestController@index');
-
-//    Route::post("subject_id","SubjectController@subjectIdByWechatAppId");
 
     /**
      * 需要经过验证
      */
     Route::group(['middleware' => ['requestCheck']], function () {
-
-        //测试
-        Route::any('/test', 'TestController@index');
-        Route::any('/test_token', 'TestController@testToken');
 
         //公共接口
         //短信验证码

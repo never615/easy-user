@@ -21,8 +21,6 @@ $attributes = [
 
 Route::group($attributes, function ($router) {
 
-    Route::get('/test', 'TestController@index');
-
 //----------------------------------------  管理端开始  -----------------------------------------------
     Route::group(['prefix' => config('admin.prefix'), "middleware" => ["admin"]], function ($router) {
         //需要授权的
