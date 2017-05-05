@@ -93,7 +93,7 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             ]);
 
             //填充微信信息
-            $user->userAuths()->create([
+            $user->userProfile()->create([
                 "wechat_nickname"=>$wechatUserInfo->nickname,
                 "wechat_avatar"=>$wechatUserInfo->avatar,
                 "wechat_province"=>$wechatUserInfo->province,
