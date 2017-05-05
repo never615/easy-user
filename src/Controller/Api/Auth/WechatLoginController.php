@@ -1,7 +1,6 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
-use App\Exceptions\InternalHttpException;
 use App\Exceptions\PermissionDeniedException;
 use App\Exceptions\ResourceException;
 use Encore\Admin\AppUtils;
@@ -76,6 +75,7 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             $wechatUserInfo = WechatUserInfo::where("openid", $openId)->first();
             if (!$wechatUserInfo) {
                 Log::error("无法获取微信信息");
+
                 return new PermissionDeniedException("无法获取微信信息,请在微信内打开");
 //                return new  InternalHttpException("系统错误");
             }
@@ -91,6 +91,19 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                 "identifier"    => $openId,
                 "subject_id"    => $subject->id,
             ]);
+
+            //填充微信信息
+            $user->userAuths()->create([
+                "wechat_nickname"=>$wechatUserInfo->nickname,
+                "wechat_avatar"=>$wechatUserInfo->avatar,
+                "wechat_province"=>$wechatUserInfo->province,
+                "wechat_city"=>$wechatUserInfo->city,
+                "wechat_country"=>$wechatUserInfo->country,
+                "wechat_sex"=>$wechatUserInfo->sex,
+                "wechat_language"=>$wechatUserInfo->language,
+                "wechat_privilege"=>$wechatUserInfo->privilege,
+            ]);
+
         } else {
             $user = $userAuth->user;
         }
