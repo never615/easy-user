@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Log;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
+use Mallto\User\Data\WechatAuthInfo;
 use Mallto\User\Data\WechatUserInfo;
 
 /**
@@ -62,6 +63,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
         $subject = AppUtils::getSubject();
 
+        $uuid=AppUtils::getUUID();
+
         //先判断该openId有没有对应的用户
 
         //根据openId,查询微信用户信息
@@ -72,7 +75,15 @@ class WechatLoginController extends \Illuminate\Routing\Controller
         if (!$userAuth) {
             //用户不存在
             //查询微信用户信息
-            $wechatUserInfo = WechatUserInfo::where("openid", $openId)->first();
+            $wechatAuthInfo=WechatAuthInfo::where("uuid",$uuid)->first();
+            if(!$wechatAuthInfo){
+                throw new PermissionDeniedException("公众号未授权");
+            }
+
+            $wechatUserInfo = WechatUserInfo::where("openid", $openId)
+                ->where("app_id",$wechatAuthInfo->authorizer_appid)
+                ->first();
+            
             if (!$wechatUserInfo) {
                 Log::error("无法获取微信信息");
 
