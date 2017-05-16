@@ -53,9 +53,6 @@ class WechatLoginController extends \Illuminate\Routing\Controller
     private function wechatLoginInter($type = null)
     {
         $openId = Input::get("open_id");
-
-        Log::info($openId);
-
         try {
             $openId = decrypt($openId);
         } catch (DecryptException $e) {
