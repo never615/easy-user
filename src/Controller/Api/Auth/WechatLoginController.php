@@ -57,6 +57,7 @@ class WechatLoginController extends \Illuminate\Routing\Controller
         try {
             $openId = decrypt($openId);
         } catch (DecryptException $e) {
+            Log::warning($openId);
             Log::error("openid解密失败");
             throw new ResourceException("openid无效");
         }
@@ -83,7 +84,7 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             $wechatUserInfo = WechatUserInfo::where("openid", $openId)
                 ->where("app_id",$wechatAuthInfo->authorizer_appid)
                 ->first();
-            
+
             if (!$wechatUserInfo) {
                 Log::error("无法获取微信信息");
 
