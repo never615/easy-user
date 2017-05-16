@@ -54,6 +54,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
     {
         $openId = Input::get("open_id");
 
+        Log::info($openId);
+
         try {
             $openId = decrypt($openId);
         } catch (DecryptException $e) {
