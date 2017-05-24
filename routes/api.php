@@ -35,6 +35,9 @@ Route::group($attributes, function ($router) {
 
         //使用openid登录
         Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
+        //使用userid登录,企业号使用
+        Route::post("login_by_corp", 'Auth\WechatLoginController@loginByCorp');
+
 
         // Authentication Routes...
 //        Route::post('login', 'Auth\LoginController@login');
@@ -60,11 +63,11 @@ Route::group($attributes, function ($router) {
 //        Route::group(['middleware' => ['jwt.auth', 'jwt.refresh']], function () {
         Route::group(['middleware' => ['auth:api']], function () {
 
-            Route::group(["middleware"=>["scopes:all-token"]],function(){
+            Route::group(["middleware" => ["scopes:all-token"]], function () {
 
             });
 
-            Route::group(["middleware"=>["scope:all-token,wechat-token"]],function(){
+            Route::group(["middleware" => ["scope:all-token,wechat-token"]], function () {
 
             });
 
@@ -77,7 +80,6 @@ Route::group($attributes, function ($router) {
 //
 //            //更新用户信息
 ////            Route::patch('user', "UserController@update");
-
 
 
         });

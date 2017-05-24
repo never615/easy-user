@@ -12,6 +12,8 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\WechatAuthInfo;
 use Mallto\User\Data\WechatUserInfo;
+use Overtrue\LaravelWechat\Model\WechatCorpAuth;
+use Overtrue\LaravelWechat\Model\WechatCorpUserInfo;
 
 /**
  * Created by PhpStorm.
@@ -29,6 +31,75 @@ class WechatLoginController extends \Illuminate\Routing\Controller
     public function loginByOpenid()
     {
         return $this->wechatLoginInter();
+    }
+
+    /**
+     * 微信企业号使用,根据userid登录
+     */
+    public function loginByCorp()
+    {
+        $openId = Input::get("open_id");
+        try {
+            $openId = decrypt($openId);
+        } catch (DecryptException $e) {
+            Log::warning($openId);
+            Log::error("openid解密失败");
+            throw new ResourceException("openid无效");
+        }
+
+        $subject = AppUtils::getSubject();
+
+        $uuid = AppUtils::getUUID();
+
+        //先判断该openId有没有对应的用户
+
+        //根据openId,查询微信用户信息
+        $userAuth = UserAuth::where("identity_type", "wechat")
+            ->where("identifier", $openId)
+            ->where("subject_id", $subject->id)
+            ->first();
+        if (!$userAuth) {
+            //用户不存在
+            //查询微信用户信息
+            $wechatAuthInfo = WechatCorpAuth::where("corp_id", $uuid)->first();
+            if (!$wechatAuthInfo) {
+                throw new PermissionDeniedException("企业号未授权");
+            }
+
+            $wechatUserInfo = WechatCorpUserInfo::where("user_id", $openId)
+                ->where("corp_id", $wechatAuthInfo->corp_id)
+                ->first();
+
+            if (!$wechatUserInfo) {
+                Log::error("无法获取微信用户信息");
+
+                return new PermissionDeniedException("无法获取微信用户信息,请在微信内打开");
+            }
+            //创建微信用户
+            $user = User::create([
+                "subject_id" => $subject->id,
+                "nickname"   => $wechatUserInfo->name,
+                "avatar"     => $wechatUserInfo->avatar,
+            ]);
+
+            $user->userAuths()->create([
+                "identity_type" => "wechat",
+                "identifier"    => $openId,
+                "subject_id"    => $subject->id,
+            ]);
+
+            //填充微信信息
+
+        } else {
+            $user = $userAuth->user;
+        }
+
+        $user = User::find($user->id);
+        $token = $user->createToken("qy", ["wechat-token"])->accessToken;
+
+        return response()->json([
+            "token" => $token,
+        ]);
     }
 
 
@@ -63,7 +134,7 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
         $subject = AppUtils::getSubject();
 
-        $uuid=AppUtils::getUUID();
+        $uuid = AppUtils::getUUID();
 
         //先判断该openId有没有对应的用户
 
@@ -75,13 +146,13 @@ class WechatLoginController extends \Illuminate\Routing\Controller
         if (!$userAuth) {
             //用户不存在
             //查询微信用户信息
-            $wechatAuthInfo=WechatAuthInfo::where("uuid",$uuid)->first();
-            if(!$wechatAuthInfo){
+            $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
+            if (!$wechatAuthInfo) {
                 throw new PermissionDeniedException("公众号未授权");
             }
 
             $wechatUserInfo = WechatUserInfo::where("openid", $openId)
-                ->where("app_id",$wechatAuthInfo->authorizer_appid)
+                ->where("app_id", $wechatAuthInfo->authorizer_appid)
                 ->first();
 
             if (!$wechatUserInfo) {
@@ -105,14 +176,14 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
             //填充微信信息
             $user->userProfile()->create([
-                "wechat_nickname"=>$wechatUserInfo->nickname,
-                "wechat_avatar"=>$wechatUserInfo->avatar,
-                "wechat_province"=>$wechatUserInfo->province,
-                "wechat_city"=>$wechatUserInfo->city,
-                "wechat_country"=>$wechatUserInfo->country,
-                "wechat_sex"=>$wechatUserInfo->sex,
-                "wechat_language"=>$wechatUserInfo->language,
-                "wechat_privilege"=>$wechatUserInfo->privilege,
+                "wechat_nickname"  => $wechatUserInfo->nickname,
+                "wechat_avatar"    => $wechatUserInfo->avatar,
+                "wechat_province"  => $wechatUserInfo->province,
+                "wechat_city"      => $wechatUserInfo->city,
+                "wechat_country"   => $wechatUserInfo->country,
+                "wechat_sex"       => $wechatUserInfo->sex,
+                "wechat_language"  => $wechatUserInfo->language,
+                "wechat_privilege" => $wechatUserInfo->privilege,
             ]);
 
         } else {
