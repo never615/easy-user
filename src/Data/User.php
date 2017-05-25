@@ -7,6 +7,9 @@ use Encore\Admin\Auth\Database\Traits\DynamicData;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Mallto\Activity\Data\QaAnswer;
+use Mallto\Activity\Data\QaComment;
+use Mallto\Activity\Data\QaQuestion;
 use Mallto\Activity\Data\UserCoupon;
 use Mallto\Activity\Data\UserSeckill;
 
@@ -73,6 +76,21 @@ class User extends Authenticatable
     public function userSeckills()
     {
         return $this->hasMany(UserSeckill::class);
+    }
+
+    public function userQuestions()
+    {
+        return $this->hasMany(QaQuestion::class);
+    }
+
+    public function userAnswers()
+    {
+        return $this->hasMany(QaAnswer::class);
+    }
+
+    public function userComments()
+    {
+        return $this->hasMany(QaComment::class);
     }
 
 
