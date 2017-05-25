@@ -31,7 +31,7 @@ class Reset extends Mailable
     public function build()
     {
         return $this->view('email.reset')
-            ->subject("墨兔科技重置密码");
+            ->subject("深圳墨兔重置密码");
     }
 
 }
