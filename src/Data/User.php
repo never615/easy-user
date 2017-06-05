@@ -42,8 +42,7 @@ class User extends Authenticatable
         'easemob_id',
         'easemob_password',
         'easemob_username',
-        'remember_token',
-        'updated_at',
+        'remember_token'
     ];
 
     /**
