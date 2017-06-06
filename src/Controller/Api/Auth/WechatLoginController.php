@@ -24,7 +24,6 @@ use Overtrue\LaravelWechat\Model\WechatCorpUserInfo;
 class WechatLoginController extends \Illuminate\Routing\Controller
 {
 
-
     /**
      * 根据openId登录
      */
@@ -33,93 +32,19 @@ class WechatLoginController extends \Illuminate\Routing\Controller
         return $this->wechatLoginInter();
     }
 
-    /**
-     * 微信企业号使用,根据userid登录
-     */
-    public function loginByCorp()
-    {
-        $openId = Input::get("open_id");
-        try {
-            $openId = decrypt($openId);
-        } catch (DecryptException $e) {
-            Log::warning($openId);
-            Log::error("openid解密失败");
-            throw new ResourceException("openid无效");
-        }
-
-        $subject = AppUtils::getSubject();
-
-        $uuid = AppUtils::getUUID();
-
-        //先判断该openId有没有对应的用户
-
-        //根据openId,查询微信用户信息
-        $userAuth = UserAuth::where("identity_type", "wechat")
-            ->where("identifier", $openId)
-            ->where("subject_id", $subject->id)
-            ->first();
-        if (!$userAuth) {
-            //用户不存在
-            //查询微信用户信息
-            $wechatAuthInfo = WechatCorpAuth::where("corp_id", $uuid)->first();
-            if (!$wechatAuthInfo) {
-                throw new PermissionDeniedException("企业号未授权");
-            }
-
-            $wechatUserInfo = WechatCorpUserInfo::where("user_id", $openId)
-                ->where("corp_id", $wechatAuthInfo->corp_id)
-                ->first();
-
-            if (!$wechatUserInfo) {
-                Log::error("无法获取微信用户信息");
-
-                return new PermissionDeniedException("无法获取微信用户信息,请在微信内打开");
-            }
-            //创建微信用户
-            $user = User::create([
-                "subject_id" => $subject->id,
-                "nickname"   => $wechatUserInfo->name,
-                "avatar"     => $wechatUserInfo->avatar,
-            ]);
-
-            $user->userAuths()->create([
-                "identity_type" => "wechat",
-                "identifier"    => $openId,
-                "subject_id"    => $subject->id,
-            ]);
-
-            //填充微信信息
-
-        } else {
-            $user = $userAuth->user;
-        }
-
-        $user = User::find($user->id);
-        $token = $user->createToken("qy", ["wechat-token"])->accessToken;
-
-        return response()->json([
-            "token" => $token,
-        ]);
-    }
-
 
     /**
-     * 微信登录接口,用户必须绑定手机
+     * 微信登录接口,用户需要绑定了type字段代码的东西,
+     * 比如:type 为mobile,用户表中则需要有mobile的内容,还可以是email等
+     *
+     * @param $type
+     * @return AuthenticationException
      */
-    public function wechatLoginWithMobile()
+    public function wechatLoginWithType($type)
     {
-        return $this->wechatLoginInter("mobile");
+        return $this->wechatLoginInter($type);
+
     }
-
-
-    /**
-     * 微信登录接口,用户必须绑定邮箱
-     */
-    public function wechatLoginWithEmail()
-    {
-        return $this->wechatLoginInter("email");
-    }
-
 
     private function wechatLoginInter($type = null)
     {
@@ -199,7 +124,82 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             }
         }
         $user = User::find($user->id);
-        $token = $user->createToken("easy", ["wechat-token"])->accessToken;
+
+        if ($type) {
+            $token = $user->createToken("easy", ["mobile-token"])->accessToken;
+        } else {
+            $token = $user->createToken("easy", ["wechat-token"])->accessToken;
+        }
+
+        return response()->json([
+            "token" => $token,
+        ]);
+    }
+
+
+    /**
+     * 微信企业号使用,根据userid登录
+     */
+    public function loginByCorp()
+    {
+        $openId = Input::get("open_id");
+        try {
+            $openId = decrypt($openId);
+        } catch (DecryptException $e) {
+            Log::warning($openId);
+            Log::error("openid解密失败");
+            throw new ResourceException("openid无效");
+        }
+
+        $subject = AppUtils::getSubject();
+
+        $uuid = AppUtils::getUUID();
+
+        //先判断该openId有没有对应的用户
+
+        //根据openId,查询微信用户信息
+        $userAuth = UserAuth::where("identity_type", "wechat")
+            ->where("identifier", $openId)
+            ->where("subject_id", $subject->id)
+            ->first();
+        if (!$userAuth) {
+            //用户不存在
+            //查询微信用户信息
+            $wechatAuthInfo = WechatCorpAuth::where("corp_id", $uuid)->first();
+            if (!$wechatAuthInfo) {
+                throw new PermissionDeniedException("企业号未授权");
+            }
+
+            $wechatUserInfo = WechatCorpUserInfo::where("user_id", $openId)
+                ->where("corp_id", $wechatAuthInfo->corp_id)
+                ->first();
+
+            if (!$wechatUserInfo) {
+                Log::error("无法获取微信用户信息");
+
+                return new PermissionDeniedException("无法获取微信用户信息,请在微信内打开");
+            }
+            //创建微信用户
+            $user = User::create([
+                "subject_id" => $subject->id,
+                "nickname"   => $wechatUserInfo->name,
+                "avatar"     => $wechatUserInfo->avatar,
+            ]);
+
+            $user->userAuths()->create([
+                "identity_type" => "wechat",
+                "identifier"    => $openId,
+                "subject_id"    => $subject->id,
+            ]);
+
+            //填充微信信息
+
+        } else {
+            $user = $userAuth->user;
+        }
+
+        $user = User::find($user->id);
+        $token = $user->createToken("qy", ["wechat-token"])->accessToken;
 
         return response()->json([
             "token" => $token,

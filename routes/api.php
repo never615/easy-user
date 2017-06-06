@@ -33,13 +33,19 @@ Route::group($attributes, function ($router) {
         //邮箱验证码
 //        Route::get('mail_code', 'PublicController@getMailMessageCode');
 
-        //使用openid登录
+        //微信登录:只要是微信用户就行 (使用openid登录)
         Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
-        //使用userid登录,企业号使用
+        //微信登录:登录账户需要绑定type,type可以是mobile或者email
+        Route::post("login_by_openid/{type}", 'Auth\WechatLoginController@wechatLoginWithType');
+
+        //微信登录:企业号,使用userid登录,企业号使用
         Route::post("login_by_corp", 'Auth\WechatLoginController@loginByCorp');
 
+//        Route::post('register', 'Auth\RegisterController@register');
+//        Route::post('bind', 'Auth\RegisterController@bind');
 
-        // Authentication Routes...
+
+        //todo 登录登出 app使用
 //        Route::post('login', 'Auth\LoginController@login');
 //        Route::post('logout', 'Auth\LoginController@logout');
 //
@@ -63,11 +69,11 @@ Route::group($attributes, function ($router) {
 //        Route::group(['middleware' => ['jwt.auth', 'jwt.refresh']], function () {
         Route::group(['middleware' => ['auth:api']], function () {
 
-            Route::group(["middleware" => ["scopes:all-token"]], function () {
+            Route::group(["middleware" => ["scopes:mobile-token"]], function () {
 
             });
 
-            Route::group(["middleware" => ["scope:all-token,wechat-token"]], function () {
+            Route::group(["middleware" => ["scope:mobile-token,wechat-token"]], function () {
 
             });
 
