@@ -1,6 +1,7 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
+use App\Exceptions\NotFoundException;
 use App\Exceptions\PermissionDeniedException;
 use App\Exceptions\ResourceException;
 use Encore\Admin\AppUtils;
@@ -16,6 +17,8 @@ use Overtrue\LaravelWechat\Model\WechatCorpAuth;
 use Overtrue\LaravelWechat\Model\WechatCorpUserInfo;
 
 /**
+ *
+ * todo 改造
  * Created by PhpStorm.
  * User: never615
  * Date: 19/04/2017
@@ -26,6 +29,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
     /**
      * 根据openId登录
+     *
+     * @deprecated
      */
     public function loginByOpenid()
     {
@@ -36,6 +41,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
     /**
      * 微信登录接口,用户需要绑定了type字段代码的东西,
      * 比如:type 为mobile,用户表中则需要有mobile的内容,还可以是email等
+     *
+     * @deprecated
      *
      * @param $type
      * @return AuthenticationException
@@ -118,9 +125,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
         if ($type) {
             if (is_null($user->$type)) {
                 //用户不存在
-                Log::error("用户不存在");
-
-                return new  AuthenticationException();
+                Log::warning("用户不存在");
+                throw new  NotFoundException("用户不存在");
             }
         }
         $user = User::find($user->id);
@@ -139,6 +145,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
     /**
      * 微信企业号使用,根据userid登录
+     *
+     * @deprecated
      */
     public function loginByCorp()
     {

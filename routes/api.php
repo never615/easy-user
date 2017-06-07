@@ -35,13 +35,20 @@ Route::group($attributes, function ($router) {
 
         //微信登录:只要是微信用户就行 (使用openid登录)
         Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
-        //微信登录:登录账户需要绑定type,type可以是mobile或者email
-        Route::post("login_by_openid/{type}", 'Auth\WechatLoginController@wechatLoginWithType');
-
         //微信登录:企业号,使用userid登录,企业号使用
         Route::post("login_by_corp", 'Auth\WechatLoginController@loginByCorp');
 
-//        Route::post('register', 'Auth\RegisterController@register');
+
+        //微信登录:登录账户需要绑定type,type可以是mobile或者email
+//        Route::post("login/{type}", 'Auth\WechatLoginController@wechatLoginWithType');
+
+
+        //(新) 登录接口
+        Route::post("login/{type?}", 'Auth\LoginController@login');
+        //注册:通用注册,包含微信和app
+        Route::post('register/{type?}', 'Auth\RegisterController@register');
+        
+
 //        Route::post('bind', 'Auth\RegisterController@bind');
 
 

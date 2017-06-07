@@ -1,6 +1,8 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
+use Illuminate\Http\Request;
+
 
 /**
  * Created by PhpStorm.
@@ -11,8 +13,12 @@ namespace Mallto\User\Controller\Api\Auth;
 class LoginController extends \Illuminate\Routing\Controller
 {
     //todo 登录
-    
-    
+    public function login(Request $request)
+    {
+
+    }
+
+
     //todo 登出
 
 }

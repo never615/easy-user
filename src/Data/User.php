@@ -12,6 +12,7 @@ use Mallto\Activity\Data\QaComment;
 use Mallto\Activity\Data\QaQuestion;
 use Mallto\Activity\Data\UserCoupon;
 use Mallto\Activity\Data\UserSeckill;
+use Mallto\Mall\Data\Member;
 
 class User extends Authenticatable
 {
@@ -42,10 +43,12 @@ class User extends Authenticatable
         'easemob_id',
         'easemob_password',
         'easemob_username',
-        'remember_token'
+        'remember_token',
     ];
 
     /**
+     * todo 这个方法是在干嘛?
+     *
      * 获取用户信息接口需要返回的字段
      *
      * @return array
@@ -53,6 +56,12 @@ class User extends Authenticatable
     public function getInfo()
     {
         return $this->info;
+    }
+
+
+    public function member()
+    {
+        return $this->hasOne(Member::class);
     }
 
 
