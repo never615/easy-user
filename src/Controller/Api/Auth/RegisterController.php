@@ -6,7 +6,6 @@ use App\Exceptions\ResourceException;
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Illuminate\Http\Request;
-use Mallto\User\Data\User;
 use Mallto\User\Domain\UserUsecase;
 
 
@@ -35,7 +34,7 @@ class RegisterController extends Controller
 
 
     /**
-     * 注册
+     * 注册,支持微信/app;支持必须绑定手机用户 或者绑定邮箱用户等
      *
      * @param Request $request
      * @param null    $type
@@ -95,16 +94,7 @@ class RegisterController extends Controller
                         }
                         //3. 创建用户
                         $user = $this->userUsecase->createUser($type, $memberInfo);
-
-                        $user = User::with(["member"])->findOrFail($user->id);
-                        if ($type) {
-                            //todo 目前type只有mobile
-                            $token = $user->createToken("easy", ["mobile-token"])->accessToken;
-                        } else {
-                            $token = $user->createToken("easy", ["wechat-token"])->accessToken;
-                        }
-
-                        $user->token = $token;
+                        return $this->userUsecase->getUserInfo($user->id, $type);
                     } else {
                         throw new ResourceException("手机号不能为空");
                     }

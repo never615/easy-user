@@ -53,9 +53,21 @@ class PublicController extends Controller
             Cache::put('code'.$subjectId.$mobile, $code, 5);
         }
 
+        $subject = AppUtils::getSubject();
+        $name = $subject->name;
+        //模板id
+        $tplValue = urlencode("#code#=$code&#app#=$name");
+
         $client = new Client();
         $response = $client->request('GET',
-            "http://v.juhe.cn/sms/send?mobile=$mobile&tpl_id=24387&tpl_value=%23code%23%3D$code&key=c5f32ac02366e464f51a566bb9073af0");
+            "http://v.juhe.cn/sms/send", [
+                "query" => [
+                    "mobile"    => $mobile,
+                    "tpl_id"    => "36548",
+                    "tpl_value" => $tplValue,
+                    "key"       => "c5f32ac02366e464f51a566bb9073af0",
+                ],
+            ]);
 
         $res = json_decode($response->getBody(), true);
         if ($res['error_code'] != 0) {
