@@ -16,7 +16,12 @@ class MenuTablesSeeder extends Seeder
     public function run()
     {
         $order = 3000;
-
+        
+        $menu=Menu::where("title","用户管理")->get();
+        if($menu){
+            return;
+        }
+        
         /**
          * --------------------------------  会员管理   -----------------------------------
          */
