@@ -45,5 +45,7 @@ class UserController extends AdminCommonController
         $form->display("avatar")->with(function ($value) {
             return "<img src='$value' style='height: 80px'/>";
         });
+        $form->display("mobile");
+        $form->display("email");
     }
 }
