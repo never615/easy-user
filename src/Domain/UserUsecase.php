@@ -175,26 +175,31 @@ class UserUsecase
      * 获取用户信息
      *
      * @param $userId
-     * @param $type
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
-    public function getUserInfo($userId, $type)
+    public function getUserInfo($userId)
     {
         $user = User::with(["member"])->findOrFail($userId);
-
-        //更新用户拥有的权限不同,生成不同的token
-        if (!empty($type)) {
-            switch ($type) {
-                case "mobile":
-                    $token = $user->createToken("easy", ["mobile-token"])->accessToken;
-                    break;
-                default:
-                    throw new InvalidParamException("不支持的type");
-                    break;
-            }
-        } else {
+        
+        if ($user->mobile){
+            $token = $user->createToken("easy", ["mobile-token"])->accessToken;
+        }else{
             $token = $user->createToken("easy", ["wechat-token"])->accessToken;
         }
+
+//        //更新用户拥有的权限不同,生成不同的token
+//        if (!empty($type)) {
+//            switch ($type) {
+//                case "mobile":
+//                    $token = $user->createToken("easy", ["mobile-token"])->accessToken;
+//                    break;
+//                default:
+//                    throw new InvalidParamException("不支持的type");
+//                    break;
+//            }
+//        } else {
+//            $token = $user->createToken("easy", ["wechat-token"])->accessToken;
+//        }
 
         $user->token = $token;
 

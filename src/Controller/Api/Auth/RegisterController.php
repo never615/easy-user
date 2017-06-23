@@ -94,7 +94,7 @@ class RegisterController extends Controller
                         }
                         //3. 创建用户
                         $user = $this->userUsecase->createUser($type, $memberInfo);
-                        return $this->userUsecase->getUserInfo($user->id, $type);
+                        return $this->userUsecase->getUserInfo($user->id);
                     } else {
                         throw new ResourceException("手机号不能为空");
                     }
@@ -111,8 +111,6 @@ class RegisterController extends Controller
             //todo 无会员系统的注册逻辑 或者是纯微信用户注册
             throw new PermissionDeniedException("无效的会员系统");
         }
-
-        return $user;
     }
 
     /**

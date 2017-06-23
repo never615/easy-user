@@ -88,13 +88,12 @@ Route::group($attributes, function ($router) {
 //            //用户
 //            //重置密码
 //            Route::post('password/reset', 'Auth\ResetPasswordController@resetByEmail');
-//
-//            //获取用户信息
-//            Route::get('user', 'UserController@show');
-//
-//            //更新用户信息
-////            Route::patch('user', "UserController@update");
 
+
+            //获取用户信息
+            Route::get('user', 'Auth\UserController@show');
+            //更新用户信息
+//            Route::patch('user', 'Auth\UserController@update');
 
         });
     });

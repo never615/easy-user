@@ -64,7 +64,7 @@ class LoginController extends Controller
             $user = $this->userUsecase->existUser($type, false);
         }
 
-        return $this->userUsecase->getUserInfo($user->id, $type);
+        return $this->userUsecase->getUserInfo($user->id);
     }
 
 
