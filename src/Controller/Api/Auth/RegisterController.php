@@ -6,6 +6,7 @@ use App\Exceptions\ResourceException;
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Illuminate\Http\Request;
+use Mallto\Mall\Domain\Member\MemberOperate;
 use Mallto\User\Domain\UserUsecase;
 
 
@@ -21,15 +22,21 @@ class RegisterController extends Controller
      * @var UserUsecase
      */
     private $userUsecase;
+    /**
+     * @var MemberOperate
+     */
+    private $memberOperate;
 
     /**
      * RegisterController constructor.
      *
-     * @param UserUsecase $userUsecase
+     * @param UserUsecase   $userUsecase
+     * @param MemberOperate $memberOperate
      */
-    public function __construct(UserUsecase $userUsecase)
+    public function __construct(UserUsecase $userUsecase,MemberOperate $memberOperate)
     {
         $this->userUsecase = $userUsecase;
+        $this->memberOperate = $memberOperate;
     }
 
 
@@ -38,10 +45,9 @@ class RegisterController extends Controller
      *
      * @param Request $request
      * @param null    $type
-     * @param null    $info ,来自第三方系统的用户信息
      * @return PermissionDeniedException|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
-    public function register(Request $request, $type = null, $info = null)
+    public function register(Request $request, $type = null)
     {
         $requestType = $request->header("REQUEST-TYPE");
 
@@ -77,23 +83,39 @@ class RegisterController extends Controller
             throw new ResourceException("用户已经存在");
         }
 
-
         $subject = AppUtils::getSubject();
         $memberSystem = $subject->member_system;
         if ($memberSystem) {
             switch ($memberSystem) {
                 case "kemai":
                     if ($request->mobile) {
-                        $member = app("member");
+                        $this->memberOperate = app("member");
                         //1.检查会员是否存在
                         try {
-                            $memberInfo = $member->getInfo($request->mobile, $subject->id);
+                            $memberInfo = $this->memberOperate->getInfo($request->mobile, $subject->id);
+                            if ($memberInfo) {
+                                //存在,更新会员信息
+                                try {
+                                    $memberInfo = $this->memberOperate->updateInfo([
+                                        "mobile"     => $request->mobile,
+                                        "subject_id" => $subject->id,
+                                        "sex"        => $request->gender,
+                                        "birthday"   => $request->birthday,
+                                    ]);
+                                } catch (\Exception $e) {
+                                    //todo 更新会员信息失败的处理
+                                }
+                            } else {
+                                //2.不存在注册
+                                $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
+                            }
                         } catch (\Exception $e) {
                             //2.不存在注册
-                            $memberInfo = $member->register($request->all(), $subject->id);
+                            $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
                         }
                         //3. 创建用户
                         $user = $this->userUsecase->createUser($type, $memberInfo);
+
                         return $this->userUsecase->getUserInfo($user->id);
                     } else {
                         throw new ResourceException("手机号不能为空");

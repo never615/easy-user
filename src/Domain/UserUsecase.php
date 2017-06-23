@@ -1,7 +1,6 @@
 <?php
 namespace Mallto\User\Domain;
 
-use App\Exceptions\InvalidParamException;
 use App\Exceptions\PermissionDeniedException;
 use App\Exceptions\ResourceException;
 use Encore\Admin\AppUtils;
@@ -99,15 +98,11 @@ class UserUsecase
                 if (!$wechatUserInfo) {
                     \Log::error("无法获取微信信息");
 
-                    return new PermissionDeniedException("openid未找到,请在微信内打开");
+                    throw new PermissionDeniedException("openid未找到,请在微信内打开");
                 }
 
-                //处理用户数据
-                if ($memberInfo) {
-                    $nickname = $memberInfo["real_name"];
-                } else {
-                    $nickname = $wechatUserInfo->nickname;
-                }
+
+                $nickname = $wechatUserInfo->nickname;
 
                 $data = [
                     "subject_id" => $subject->id,
@@ -151,7 +146,6 @@ class UserUsecase
                     "wechat_privilege" => $wechatUserInfo->privilege,
                 ]);
 
-                \Log::info($memberInfo);
                 if ($memberInfo) {
                     //存在会员 关联用户id和到会员表
                     $member = Member::where("id", $memberInfo["id"])->firstOrFail();
@@ -180,10 +174,10 @@ class UserUsecase
     public function getUserInfo($userId)
     {
         $user = User::with(["member"])->findOrFail($userId);
-        
-        if ($user->mobile){
+
+        if ($user->mobile) {
             $token = $user->createToken("easy", ["mobile-token"])->accessToken;
-        }else{
+        } else {
             $token = $user->createToken("easy", ["wechat-token"])->accessToken;
         }
 
