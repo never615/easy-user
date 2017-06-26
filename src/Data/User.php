@@ -13,6 +13,7 @@ use Mallto\Activity\Data\QaQuestion;
 use Mallto\Activity\Data\UserCoupon;
 use Mallto\Activity\Data\UserSeckill;
 use Mallto\Mall\Data\Member;
+use Mallto\Mall\Data\PointHistory;
 
 class User extends Authenticatable
 {
@@ -99,6 +100,12 @@ class User extends Authenticatable
     public function userComments()
     {
         return $this->hasMany(QaComment::class);
+    }
+
+
+    public function pointHistories()
+    {
+        return $this->hasMany(PointHistory::class);
     }
 
 

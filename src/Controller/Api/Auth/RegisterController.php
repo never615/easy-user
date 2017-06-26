@@ -30,13 +30,11 @@ class RegisterController extends Controller
     /**
      * RegisterController constructor.
      *
-     * @param UserUsecase   $userUsecase
-     * @param MemberOperate $memberOperate
+     * @param UserUsecase $userUsecase
      */
-    public function __construct(UserUsecase $userUsecase,MemberOperate $memberOperate)
+    public function __construct(UserUsecase $userUsecase)
     {
         $this->userUsecase = $userUsecase;
-        $this->memberOperate = $memberOperate;
     }
 
 
@@ -49,6 +47,9 @@ class RegisterController extends Controller
      */
     public function register(Request $request, $type = null)
     {
+        $this->memberOperate = app("member");
+
+
         $requestType = $request->header("REQUEST-TYPE");
 
         $rules = [];
@@ -104,6 +105,7 @@ class RegisterController extends Controller
                                     ]);
                                 } catch (\Exception $e) {
                                     //todo 更新会员信息失败的处理
+                                    \Log::warning("科脉会员过期,无法更新用户信息".$memberInfo->mobile);
                                 }
                             } else {
                                 //2.不存在注册
