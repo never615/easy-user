@@ -10,7 +10,7 @@ use Laravel\Passport\HasApiTokens;
 use Mallto\Activity\Data\QaAnswer;
 use Mallto\Activity\Data\QaComment;
 use Mallto\Activity\Data\QaQuestion;
-use Mallto\Activity\Data\UserCoupon;
+use Mallto\Mall\Data\UserCoupon;
 use Mallto\Activity\Data\UserSeckill;
 use Mallto\Mall\Data\Member;
 use Mallto\Mall\Data\PointHistory;
