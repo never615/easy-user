@@ -21,7 +21,7 @@ class PermissionTablesSeeder extends Seeder
     public function run()
     {
 
-        $permission=Permission::where("name","用户管理")->get();
+        $permission=Permission::where("name","用户管理")->first();
         if($permission){
             return;
         }

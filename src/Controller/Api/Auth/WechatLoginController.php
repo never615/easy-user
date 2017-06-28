@@ -18,7 +18,7 @@ use Overtrue\LaravelWechat\Model\WechatCorpUserInfo;
 
 /**
  *
- * todo 改造,废弃
+ * todo 改造,废弃 写了微信通用的注册/登录接口
  * Created by PhpStorm.
  * User: never615
  * Date: 19/04/2017

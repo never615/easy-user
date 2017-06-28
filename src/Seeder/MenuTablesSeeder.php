@@ -17,7 +17,7 @@ class MenuTablesSeeder extends Seeder
     {
         $order = 3000;
         
-        $menu=Menu::where("title","用户管理")->orWhere("title","会员管理")->get();
+        $menu=Menu::where("title","用户管理")->orWhere("title","会员管理")->first();
         if($menu){
             return;
         }

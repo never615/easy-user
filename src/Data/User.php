@@ -10,10 +10,11 @@ use Laravel\Passport\HasApiTokens;
 use Mallto\Activity\Data\QaAnswer;
 use Mallto\Activity\Data\QaComment;
 use Mallto\Activity\Data\QaQuestion;
-use Mallto\Mall\Data\UserCoupon;
 use Mallto\Activity\Data\UserSeckill;
 use Mallto\Mall\Data\Member;
 use Mallto\Mall\Data\PointHistory;
+use Mallto\Mall\Data\Ticket;
+use Mallto\Mall\Data\UserCoupon;
 
 class User extends Authenticatable
 {
@@ -48,7 +49,6 @@ class User extends Authenticatable
     ];
 
     /**
-     * todo 这个方法是在干嘛?
      *
      * 获取用户信息接口需要返回的字段
      *
@@ -106,6 +106,11 @@ class User extends Authenticatable
     public function pointHistories()
     {
         return $this->hasMany(PointHistory::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
     }
 
 
