@@ -48,7 +48,7 @@ class CreateUsersTable extends Migration
 
 
             //停车相关信息
-            $table->char('parking_no')->nullable()->comment('用户车牌');
+            $table->string('parking_no')->nullable()->comment('用户车牌');
             $table->timestamp('bind_car_at')->nullable()->comment('车牌绑定时间');
             $table->integer('free_park_time')->default(0)->comment('免费停车时间(已使用)');
             $table->timestamp('last_park_time')->nullable()->comment('上一次停车时间');

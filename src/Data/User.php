@@ -12,6 +12,7 @@ use Mallto\Activity\Data\QaComment;
 use Mallto\Activity\Data\QaQuestion;
 use Mallto\Activity\Data\UserSeckill;
 use Mallto\Mall\Data\Member;
+use Mallto\Mall\Data\ParkingRecord;
 use Mallto\Mall\Data\PointHistory;
 use Mallto\Mall\Data\Ticket;
 use Mallto\Mall\Data\UserCoupon;
@@ -113,5 +114,8 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class);
     }
 
+    public function parkingRecords(){
+        return $this->hasMany(ParkingRecord::class);
+    }
 
 }

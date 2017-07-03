@@ -42,13 +42,13 @@ class RegisterController extends Controller
      * 注册,支持微信/app;支持必须绑定手机用户 或者绑定邮箱用户等
      *
      * @param Request $request
-     * @param null    $type
      * @return PermissionDeniedException|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
-    public function register(Request $request, $type = null)
+    public function register(Request $request)
     {
         $this->memberOperate = app("member");
 
+        $type = $request->get("type", null);
 
         $requestType = $request->header("REQUEST-TYPE");
 
@@ -63,7 +63,7 @@ class RegisterController extends Controller
             switch ($type) {
                 case "mobile":
                     $rules = array_merge($rules, [
-                        'mobile' => 'required|size:11',
+                        'identifier' => 'required|size:11',
                     ]);
                     break;
                 default:
@@ -89,23 +89,23 @@ class RegisterController extends Controller
         if ($memberSystem) {
             switch ($memberSystem) {
                 case "kemai":
-                    if ($request->mobile) {
+                    if ($request->identifier) {
                         $this->memberOperate = app("member");
                         //1.检查会员是否存在
                         try {
-                            $memberInfo = $this->memberOperate->getInfo($request->mobile, $subject->id);
+                            $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
                             if ($memberInfo) {
                                 //存在,更新会员信息
                                 try {
                                     $memberInfo = $this->memberOperate->updateInfo([
-                                        "mobile"     => $request->mobile,
+                                        "mobile"     => $request->identifier,
                                         "subject_id" => $subject->id,
                                         "sex"        => $request->gender,
                                         "birthday"   => $request->birthday,
                                     ]);
                                 } catch (\Exception $e) {
                                     //todo 更新会员信息失败的处理
-                                    \Log::warning("科脉会员过期,无法更新用户信息".$memberInfo->mobile);
+                                    \Log::warning("科脉会员过期,无法更新用户信息".$memberInfo->identifier);
                                 }
                             } else {
                                 //2.不存在注册

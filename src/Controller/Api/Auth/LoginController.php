@@ -35,12 +35,12 @@ class LoginController extends Controller
      * 登录,支持微信和app;支持纯微信登录/或者必须绑定手机号或者邮箱等
      *
      * @param Request $request
-     * @param null    $type
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
-    public function login(Request $request, $type = null)
+    public function login(Request $request)
     {
         $requestType = $request->header("REQUEST-TYPE");
+        $type = $request->get("type", null);
         $rules = [];
         if ($requestType == "WECHAT") {
             $rules = array_merge($rules, [
