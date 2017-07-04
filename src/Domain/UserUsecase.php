@@ -14,6 +14,8 @@ use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\WechatAuthInfo;
 use Mallto\User\Data\WechatUserInfo;
 
+//todo 修改成动态注入,不能模块引用情况下,注入不同的实现
+
 /**
  * Created by PhpStorm.
  * User: never615
@@ -173,27 +175,13 @@ class UserUsecase
      */
     public function getUserInfo($userId)
     {
-        $user = User::with(["member"])->findOrFail($userId);
+        $user = User::with(["member","member.memberLevel"])->findOrFail($userId);
 
         if ($user->mobile) {
             $token = $user->createToken("easy", ["mobile-token"])->accessToken;
         } else {
             $token = $user->createToken("easy", ["wechat-token"])->accessToken;
         }
-
-//        //更新用户拥有的权限不同,生成不同的token
-//        if (!empty($type)) {
-//            switch ($type) {
-//                case "mobile":
-//                    $token = $user->createToken("easy", ["mobile-token"])->accessToken;
-//                    break;
-//                default:
-//                    throw new InvalidParamException("不支持的type");
-//                    break;
-//            }
-//        } else {
-//            $token = $user->createToken("easy", ["wechat-token"])->accessToken;
-//        }
 
         $user->token = $token;
 
