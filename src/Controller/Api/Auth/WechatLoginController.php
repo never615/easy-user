@@ -1,9 +1,9 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
-use Mallto\Tool\Domain\Exception\NotFoundException;
-use Mallto\Tool\Domain\Exception\PermissionDeniedException;
-use Mallto\Tool\Domain\Exception\ResourceException;
+use Mallto\Tool\Exception\NotFoundException;
+use Mallto\Tool\Exception\PermissionDeniedException;
+use Mallto\Tool\Exception\ResourceException;
 use Encore\Admin\AppUtils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;

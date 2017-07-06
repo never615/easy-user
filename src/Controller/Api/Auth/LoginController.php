@@ -1,8 +1,8 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
-use Mallto\Tool\Domain\Exception\NotFoundException;
-use Mallto\Tool\Domain\Exception\PermissionDeniedException;
+use Mallto\Tool\Exception\NotFoundException;
+use Mallto\Tool\Exception\PermissionDeniedException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Mallto\User\Domain\UserUsecase;

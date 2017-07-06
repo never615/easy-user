@@ -2,8 +2,8 @@
 namespace Mallto\User\Controller\Api;
 
 
-use Mallto\Tool\Domain\Exception\ThirdPartException;
-use Mallto\Tool\Domain\Exception\ValidationHttpException;
+use Mallto\Tool\Exception\ThirdPartException;
+use Mallto\Tool\Exception\ValidationHttpException;
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Faker\Factory as Faker;

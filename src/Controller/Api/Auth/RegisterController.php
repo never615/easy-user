@@ -1,8 +1,8 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
-use Mallto\Tool\Domain\Exception\PermissionDeniedException;
-use Mallto\Tool\Domain\Exception\ResourceException;
+use Mallto\Tool\Exception\PermissionDeniedException;
+use Mallto\Tool\Exception\ResourceException;
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Illuminate\Http\Request;
