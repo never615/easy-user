@@ -1,3 +1,5 @@
+
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -50,9 +52,12 @@ class CreateUsersTable extends Migration
             //停车相关信息
             $table->string('parking_no')->nullable()->comment('用户车牌');
             $table->timestamp('bind_car_at')->nullable()->comment('车牌绑定时间');
-            $table->integer('free_park_time')->default(0)->comment('免费停车时间(已使用)');
             $table->timestamp('last_park_time')->nullable()->comment('上一次停车时间');
+            
             $table->integer('preferential_parking_times')->default(0)->comment('可使用优惠停车次数/每天(已使用)');
+            
+            $table->integer('free_park_time')->default(0)->comment('免费停车时间(已使用)');
+            
             $table->double('integral_parking_money')->default(0)->comment('使用积分抵扣的停车金额/每周(已使用)');
             $table->double('member_parking_money')->default(0)->comment('直接抵扣的停车金额/每周(已使用)');
 

@@ -1,14 +1,14 @@
 <?php
 namespace Mallto\User\Domain;
 
-use App\Exceptions\PermissionDeniedException;
-use App\Exceptions\ResourceException;
 use Encore\Admin\AppUtils;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Request;
 use Mallto\Mall\Data\Member;
+use Mallto\Tool\Domain\Exception\PermissionDeniedException;
+use Mallto\Tool\Domain\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\WechatAuthInfo;
@@ -175,7 +175,9 @@ class UserUsecase
      */
     public function getUserInfo($userId)
     {
-        $user = User::with(["member","member.memberLevel"])->findOrFail($userId);
+        $subjectId = AppUtils::getSubjectId();
+        $user = User::with(["member", "member.memberLevel"])
+            ->where("subject_id", $subjectId)->findOrFail($userId);
 
         if ($user->mobile) {
             $token = $user->createToken("easy", ["mobile-token"])->accessToken;
