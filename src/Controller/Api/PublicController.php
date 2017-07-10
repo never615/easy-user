@@ -50,7 +50,7 @@ class PublicController extends Controller
             $code = Cache::get('code'.$subjectId.$mobile);
 //            throw new RateLimitExceededException();
         } else {
-            Cache::put('code'.$subjectId.$mobile, $code, 5);
+            Cache::put('code'.$subjectId.$mobile, $code, 10);
         }
 
         $subject = AppUtils::getSubject();

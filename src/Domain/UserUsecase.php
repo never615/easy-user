@@ -177,7 +177,8 @@ class UserUsecase
     {
         $subjectId = AppUtils::getSubjectId();
         $user = User::with(["member", "member.memberLevel"])
-            ->where("subject_id", $subjectId)->findOrFail($userId);
+            ->where("subject_id", $subjectId)
+            ->findOrFail($userId);
 
         if ($user->mobile) {
             $token = $user->createToken("easy", ["mobile-token"])->accessToken;
