@@ -48,6 +48,7 @@ class PublicController extends Controller
         if (Cache::has('code'.$subjectId.$mobile)) {
             //如果验证码还没过期,用户再次请求则重复发送一次验证码
             $code = Cache::get('code'.$subjectId.$mobile);
+            Cache::put('code'.$subjectId.$mobile, $code, 10);
 //            throw new RateLimitExceededException();
         } else {
             Cache::put('code'.$subjectId.$mobile, $code, 10);
