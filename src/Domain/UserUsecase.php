@@ -51,7 +51,7 @@ class UserUsecase
                     $query = $userAuth->user()
                         ->where("subject_id", $subject->id);
                     if ($register) {
-                        $query = $query->where($type, Input::get($type));
+                        $query = $query->where($type, Input::get('identifier'));
                     } else {
                         $query = $query->whereNotNull($type);
                     }
@@ -113,7 +113,7 @@ class UserUsecase
                 ];
 
                 if (!empty($type)) {
-                    $data = array_merge($data, [$type => Input::get($type)]);
+                    $data = array_merge($data, [$type => Input::get('identifier')]);
                 }
 
                 DB::beginTransaction();
