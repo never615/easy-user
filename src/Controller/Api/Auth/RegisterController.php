@@ -4,10 +4,10 @@ namespace Mallto\User\Controller\Api\Auth;
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Mallto\Mall\Domain\Member\MemberOperate;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
+use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -20,6 +20,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class RegisterController extends Controller
 {
+    use VerifyCodeTrait;
+
     /**
      * @var UserUsecase
      */
@@ -82,7 +84,7 @@ class RegisterController extends Controller
 
         $this->validate($request, $rules);
 
-        $this->checkVerifyCode($request->identifier, $request->code,$type);
+        $this->checkVerifyCode($request->identifier, $request->code, $type);
 
 
         if ($this->userUsecase->existUser($type)) {
@@ -213,6 +215,7 @@ class RegisterController extends Controller
                         }
                         //3. 创建用户
                         $user = $this->userUsecase->createUser($type, $memberInfo);
+
                         return $this->userUsecase->getUserInfo($user->id);
                     } else {
                         throw new ResourceException("手机号不能为空");
@@ -231,45 +234,6 @@ class RegisterController extends Controller
             throw new PermissionDeniedException("无效的会员系统");
         }
 
-    }
-
-
-    /**
-     * 解绑手机,绑定新手机号
-     */
-    public function unbind()
-    {
-        //todo 解绑会员
-    }
-
-
-    /**
-     * 检查验证码
-     *
-     * @param $mobile
-     * @param $code
-     * @param $type
-     * @return bool
-     */
-    private function checkVerifyCode($mobile, $code, $type)
-    {
-        if (!empty($type)) {
-            switch ($type) {
-                case "mobile":
-                    $tempCode = Cache::get('code'.AppUtils::getSubjectId().$mobile);
-                    if ($tempCode !== $code) {
-                        if (config("app.env") !== 'production' && $code == "000000") {
-
-                        } else {
-                            throw  new ResourceException("验证码错误");
-                        }
-                    }
-                    break;
-                default:
-                    throw new PermissionDeniedException("不支持该类型注册:".$type);
-                    break;
-            }
-        }
     }
 
 

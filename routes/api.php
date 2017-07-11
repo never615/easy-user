@@ -78,22 +78,26 @@ Route::group($attributes, function ($router) {
         Route::group(['middleware' => ['auth:api']], function () {
 
             Route::group(["middleware" => ["scopes:mobile-token"]], function () {
-
             });
 
-            Route::group(["middleware" => ["scope:mobile-token,wechat-token"]], function () {
+            Route::group(["middleware" => ["scopes:account-token"]], function () {
+                //更新(重新绑定)手机/邮箱
+                Route::post("user/identifier", 'Auth\UserController@updateIdentifier');
+            });
 
+            Route::group(["middleware" => ["scope:mobile-token,wechat-token,account-token"]], function () {
+                //获取用户信息
+                Route::get('user', 'Auth\UserController@show');
+                //更新用户信息
+                //Route::patch('user', 'Auth\UserController@update');
+                //验证旧的的手机/邮箱
+                Route::post("user/verify_old_identifier", 'Auth\UserController@verifyOldIdentifier');
             });
 
 //            //用户
 //            //重置密码
 //            Route::post('password/reset', 'Auth\ResetPasswordController@resetByEmail');
 
-
-            //获取用户信息
-            Route::get('user', 'Auth\UserController@show');
-            //更新用户信息
-//            Route::patch('user', 'Auth\UserController@update');
 
         });
     });

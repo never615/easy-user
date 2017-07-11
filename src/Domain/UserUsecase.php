@@ -156,8 +156,6 @@ class UserUsecase
                 }
 
                 DB::commit();
-
-
                 return $user;
             } else {
                 throw new ResourceException("用户已经存在");
