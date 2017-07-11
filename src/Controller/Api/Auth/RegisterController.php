@@ -187,9 +187,9 @@ class RegisterController extends Controller
 
         //我们的用户系统是否存在
         if ($this->userUsecase->existUser($type)) {
-            $user = $this->userUsecase->existUser($type);
-
-            return $this->userUsecase->getUserInfo($user->id);
+//            $user = $this->userUsecase->existUser($type);
+//            return $this->userUsecase->getUserInfo($user->id);
+            throw new PermissionDeniedException("非法调用");
         }
 
         //检查会员系统是否存在该用户
@@ -213,7 +213,6 @@ class RegisterController extends Controller
                         }
                         //3. 创建用户
                         $user = $this->userUsecase->createUser($type, $memberInfo);
-
                         return $this->userUsecase->getUserInfo($user->id);
                     } else {
                         throw new ResourceException("手机号不能为空");

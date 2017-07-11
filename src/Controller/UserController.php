@@ -39,11 +39,10 @@ class UserController extends AdminCommonController
         $grid->mobile();
         $grid->avatar()->image("", 50, 50);
 
-        $grid->filter(function(Grid\Filter $filter){
+        $grid->filter(function (Grid\Filter $filter) {
             $filter->ilike("nickname");
             $filter->ilike("mobile");
         });
-
     }
 
     protected function formOption(Form $form)
