@@ -13,6 +13,7 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\WechatAuthInfo;
 use Mallto\User\Data\WechatUserInfo;
+use Mallto\User\Exceptions\UserExistException;
 
 //todo 修改成动态注入,不能模块引用情况下,注入不同的实现
 
@@ -27,18 +28,18 @@ class UserUsecase
     /**
      * 判断用户是否存在
      *
-     * @param      $type
-     * @param bool $register ,注册或者登陆模式,
-     *                       当type是mobile的情况下:注册模式下判断用户是否存在使用提交参数手机号查询,登陆模式下判断用户是否存在判断mobile字段是不是空
+     * @param        $type
+     * @param bool   $register ,注册或者登陆模式,
+     *                         当type是mobile的情况下:注册模式下判断用户是否存在使用提交参数手机号查询,登陆模式下判断用户是否存在判断mobile字段是不是空
+     * @param string $requestType
      * @return bool|User
      */
-    public function existUser($type = null, $register = true)
+    public function existUser($type = null, $register = true, $requestType = "")
     {
-        $requestType = Request::header("REQUEST-TYPE");
-
+        $requestType = $requestType ?: Request::header("REQUEST-TYPE");
         $subject = AppUtils::getSubject();
 
-        if ($requestType == "WECHAT") {
+        if ($requestType == "WECHAT" || $requestType == 'bridge') {
             $openid = $this->getOpenid();
             //根据openId,查询微信用户信息
             $query = UserAuth::where("identity_type", "wechat")
@@ -74,18 +75,19 @@ class UserUsecase
      *
      * @param string $type ,mobile or email ..
      * @param Member $memberInfo
+     * @param string $requestType
      * @return PermissionDeniedException
      */
-    public function createUser($type = null, $memberInfo = null)
+    public function createUser($type = null, $memberInfo = null, $requestType = "")
     {
-        $requestType = Request::header("REQUEST-TYPE");
+        $requestType = $requestType ?: Request::header("REQUEST-TYPE");
 
-        if ($requestType == "WECHAT") {
+        if ($requestType == "WECHAT" || $requestType == 'bridge') {
             $openid = $this->getOpenid();
             $subject = AppUtils::getSubject();
             $uuid = $subject->uuid;
 
-            if (!$this->existUser($type)) {
+            if (!$this->existUser($type, true, $requestType)) {
                 //用户不存在
                 //查询微信用户信息
                 $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
@@ -119,7 +121,7 @@ class UserUsecase
                 DB::beginTransaction();
 
                 //先判断有没有存在纯微信用户
-                if ($this->existUser()) {
+                if ($this->existUser(null, true, $requestType)) {
                     //已经存在纯微信用户信息了,更新
                     $user = $this->existUser();
                     $user->update($data);
@@ -156,9 +158,10 @@ class UserUsecase
                 }
 
                 DB::commit();
+
                 return $user;
             } else {
-                throw new ResourceException("用户已经存在");
+                throw new UserExistException();
             }
         } else {
             throw new PermissionDeniedException("暂不支持来自非微信的注册");

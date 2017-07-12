@@ -20,11 +20,14 @@ $attributes = [
 
 Route::group($attributes, function ($router) {
 
-
+    //
+    //https://integration-easy.mall-to.com/api/bridge
+    Route::get('bridge', 'Auth\RegisterController@bridge');
     /**
      * 需要经过验证
      */
     Route::group(['middleware' => ['requestCheck']], function () {
+
 
         //公共接口
         //短信验证码
@@ -42,7 +45,7 @@ Route::group($attributes, function ($router) {
 
 
         //验证手机号在会员系统中是否存在
-        Route::post("member/exist", 'Auth\RegisterController@existMember');
+        Route::get("member/exist", 'Auth\RegisterController@existMember');
 
         //(新) 登录接口
         Route::post("login", 'Auth\LoginController@login');
