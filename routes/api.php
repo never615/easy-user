@@ -47,6 +47,12 @@ Route::group($attributes, function ($router) {
         //验证手机号在会员系统中是否存在
         Route::post("member/exist", 'Auth\RegisterController@existMember');
 
+        Route::group(["middleware" => ["scopes:account-token"]], function () {
+            //(新) 登录接口
+            Route::post("", 'Auth\LoginController@login');
+        });
+        
+        
         //(新) 登录接口
         Route::post("login", 'Auth\LoginController@login');
         //注册:通用注册,包含微信和app

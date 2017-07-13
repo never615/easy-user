@@ -2,8 +2,6 @@
 namespace Mallto\User\Controller\Api;
 
 
-use Mallto\Tool\Exception\ThirdPartException;
-use Mallto\Tool\Exception\ValidationHttpException;
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Faker\Factory as Faker;
@@ -12,6 +10,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Mallto\Tool\Exception\ThirdPartException;
+use Mallto\Tool\Exception\ValidationHttpException;
 use Mallto\User\Domain\Mail\Register;
 
 /**
@@ -59,6 +59,7 @@ class PublicController extends Controller
         //模板id
         $tplValue = urlencode("#code#=$code&#app#=$name");
 
+
         $client = new Client();
         $response = $client->request('GET',
             "http://v.juhe.cn/sms/send", [
@@ -74,6 +75,9 @@ class PublicController extends Controller
         if ($res['error_code'] != 0) {
             throw new ThirdPartException($res['reason']);
         } else {
+            //增加主体消费的短信数量
+            $subject->increment('sms_count');
+
             return response()->nocontent();
         }
     }

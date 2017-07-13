@@ -11,7 +11,6 @@ use Mallto\Tool\Utils\ResponseUtils;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 use Mallto\User\Exceptions\UserExistException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 
 /**
@@ -61,11 +60,11 @@ class RegisterController extends Controller
         $rules = [];
 
         if (!empty($type)) {
-            $rules = array_merge($rules, [
-                'name'     => 'required',
-                'birthday' => 'required|date',
-                'gender'   => 'required|integer',
-            ]);
+//            $rules = array_merge($rules, [
+//                'name'     => 'required',
+//                'birthday' => 'required|date',
+//                'gender'   => 'required|integer',
+//            ]);
             switch ($type) {
                 case "mobile":
                     $rules = array_merge($rules, [
@@ -103,7 +102,7 @@ class RegisterController extends Controller
                         //1.检查会员是否存在
                         try {
                             $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
-                            if ($memberInfo) {
+                            if ($memberInfo && $request->name) {
                                 //存在,更新会员信息
                                 try {
                                     $memberInfo = $this->memberOperate->updateInfo([
@@ -117,6 +116,13 @@ class RegisterController extends Controller
                                     \Log::warning("科脉会员过期,无法更新用户信息".$memberInfo->identifier);
                                 }
                             } else {
+
+                                $rules = array_merge($rules, [
+                                    'name'     => 'required',
+                                    'birthday' => 'required|date',
+                                    'gender'   => 'required|integer',
+                                ]);
+                                $this->validate($request, $rules);
                                 //2.不存在注册
                                 $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
                             }
@@ -209,16 +215,26 @@ class RegisterController extends Controller
                             $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
                             if (!$memberInfo) {
                                 //2.不存在注册
-                                throw new NotFoundHttpException("会员不存在");
+                                return response()->json([
+                                    'is_member' => 0,
+                                ]);
+//                                throw new NotFoundHttpException("会员不存在");
                             }
                         } catch (\Exception $e) {
                             //2.不存在注册
-                            throw new NotFoundHttpException("会员不存在");
+                            return response()->json([
+                                'is_member' => 0,
+                            ]);
+//                            throw new NotFoundHttpException("会员不存在");
                         }
-                        //3. 创建用户
-                        $user = $this->userUsecase->createUser($type, $memberInfo);
 
-                        return $this->userUsecase->getUserInfo($user->id);
+                        return response()->json([
+                            'is_member' => 1,
+                        ]);
+//                        //3. 创建用户
+//                        $user = $this->userUsecase->createUser($type, $memberInfo);
+//
+//                        return $this->userUsecase->getUserInfo($user->id);
                     } else {
                         throw new ResourceException("手机号不能为空");
                     }
