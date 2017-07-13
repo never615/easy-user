@@ -45,7 +45,7 @@ Route::group($attributes, function ($router) {
 
 
         //验证手机号在会员系统中是否存在
-        Route::get("member/exist", 'Auth\RegisterController@existMember');
+        Route::post("member/exist", 'Auth\RegisterController@existMember');
 
         //(新) 登录接口
         Route::post("login", 'Auth\LoginController@login');
