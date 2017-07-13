@@ -8,6 +8,7 @@ use Mallto\Mall\Domain\Member\MemberOperate;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\ResponseUtils;
+use Mallto\User\Domain\PublicUsecase;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 use Mallto\User\Exceptions\UserExistException;
@@ -31,15 +32,21 @@ class RegisterController extends Controller
      * @var MemberOperate
      */
     private $memberOperate;
+    /**
+     * @var PublicUsecase
+     */
+    private $publicUsecase;
 
     /**
      * RegisterController constructor.
      *
-     * @param UserUsecase $userUsecase
+     * @param UserUsecase   $userUsecase
+     * @param PublicUsecase $publicUsecase
      */
-    public function __construct(UserUsecase $userUsecase)
+    public function __construct(UserUsecase $userUsecase, PublicUsecase $publicUsecase)
     {
         $this->userUsecase = $userUsecase;
+        $this->publicUsecase = $publicUsecase;
     }
 
 
@@ -176,7 +183,6 @@ class RegisterController extends Controller
                 case "mobile":
                     $rules = array_merge($rules, [
                         'identifier' => 'required|size:11',
-                        'code'       => 'required',
                     ]);
                     break;
                 default:
@@ -187,21 +193,12 @@ class RegisterController extends Controller
 
         if ($requestType == "WECHAT") {
             $rules = array_merge($rules, [
-                "openid" => "required",
             ]);
         }
 
         $this->validate($request, $rules);
 
-        $this->checkVerifyCode($request->identifier, $request->code, $type);
-
-        //我们的用户系统是否存在
-        if ($this->userUsecase->existUser($type)) {
-//            $user = $this->userUsecase->existUser($type);
-//            return $this->userUsecase->getUserInfo($user->id);
-            throw new PermissionDeniedException("非法调用");
-        }
-
+        $isMember = 0;
         //检查会员系统是否存在该用户
         $subject = AppUtils::getSubject();
         $memberSystem = $subject->member_system;
@@ -215,26 +212,14 @@ class RegisterController extends Controller
                             $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
                             if (!$memberInfo) {
                                 //2.不存在注册
-                                return response()->json([
-                                    'is_member' => 0,
-                                ]);
-//                                throw new NotFoundHttpException("会员不存在");
+                                $isMember = 0;
+                            } else {
+                                $isMember = 1;
                             }
                         } catch (\Exception $e) {
                             //2.不存在注册
-                            return response()->json([
-                                'is_member' => 0,
-                            ]);
-//                            throw new NotFoundHttpException("会员不存在");
+                            $isMember = 0;
                         }
-
-                        return response()->json([
-                            'is_member' => 1,
-                        ]);
-//                        //3. 创建用户
-//                        $user = $this->userUsecase->createUser($type, $memberInfo);
-//
-//                        return $this->userUsecase->getUserInfo($user->id);
                     } else {
                         throw new ResourceException("手机号不能为空");
                     }
@@ -251,6 +236,13 @@ class RegisterController extends Controller
             //todo 无会员系统的注册逻辑 或者是纯微信用户注册
             throw new PermissionDeniedException("无效的会员系统");
         }
+
+
+        $this->publicUsecase->sendSms($request->identifier, $subject->id);
+
+        return response()->json([
+            'is_member' => $isMember,
+        ]);
     }
 
     /**
