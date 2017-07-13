@@ -123,7 +123,7 @@ class UserUsecase
                 //先判断有没有存在纯微信用户
                 if ($this->existUser(null, true, $requestType)) {
                     //已经存在纯微信用户信息了,更新
-                    $user = $this->existUser();
+                    $user = $this->existUser(null, true, $requestType);
                     $user->update($data);
                 } else {
                     //不存在纯微信用户,直接创建

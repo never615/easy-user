@@ -4,6 +4,7 @@ namespace Mallto\User\Controller\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
@@ -63,6 +64,8 @@ class UserController extends Controller
      */
     public function verifyOldIdentifier(Request $request)
     {
+        throw new PermissionDeniedException();
+
         $type = $request->get("type");
         $identifier = $request->get('identifier');
         $code = $request->get('code');
@@ -90,6 +93,9 @@ class UserController extends Controller
      */
     public function updateIdentifier(Request $request)
     {
+        throw new PermissionDeniedException();
+
+
         $user = Auth::guard('api')->user();
 
         $code = $request->get("code");
@@ -100,6 +106,12 @@ class UserController extends Controller
 
         $user->$type = $identifier;
         $user->save();
+
+        //处理会员相关逻辑,因为重新绑定的手机号不一定在会员系统中是会员
+
+
+        //todo 更换手机号需要更新会员系统,暂不可用
+
 
         return response()->nocontent();
     }

@@ -261,7 +261,7 @@ class RegisterController extends Controller
                             $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
                             if (!$memberInfo) {
                                 //2.不存在注册
-                                return $this->redirectRegisterPage();
+                                return redirect($url);
                             }
                         } catch (\Exception $e) {
                             //2.不存在注册
@@ -270,10 +270,11 @@ class RegisterController extends Controller
                         //3. 创建用户
                         try {
                             $user = $this->userUsecase->createUser('mobile', $memberInfo, "bridge");
+
+                            return redirect($url);
                         } catch (UserExistException $e) {
                             return redirect($url);
                         }
-
                     } else {
                         \Log::info("手机号码为空");
 
