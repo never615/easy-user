@@ -51,16 +51,8 @@ class UserUsecase
                 if (!empty($type)) {
                     $query = $userAuth->user()
                         ->where("subject_id", $subject->id);
-                    if ($register) {
-                        $tempUser = $query->whereNotNull($type)->first();
-                        if ($tempUser) {
-                            return $tempUser;
-                        } else {
-                            return $query->where($type, Input::get('identifier'))->first();
-                        }
-                    } else {
-                        return $query->whereNotNull($type)->first();
-                    }
+                    
+                    return $query->whereNotNull($type)->first();
                 } else {
                     return $userAuth->user;
                 }
