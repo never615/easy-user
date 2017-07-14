@@ -4,6 +4,7 @@ namespace Mallto\User\Controller\Api\Auth;
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Illuminate\Http\Request;
+use Mallto\Mall\Controller\SubjectController;
 use Mallto\Mall\Domain\Member\MemberOperate;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
@@ -101,7 +102,7 @@ class RegisterController extends Controller
 
         $subject = AppUtils::getSubject();
         $memberSystem = $subject->member_system;
-        if ($memberSystem) {
+        if ($memberSystem && $type == "mobile") {
             switch ($memberSystem) {
                 case "kemai":
                     if ($request->identifier) {
@@ -120,7 +121,7 @@ class RegisterController extends Controller
                                     ]);
                                 } catch (\Exception $e) {
                                     //todo 更新会员信息失败的处理
-                                    \Log::warning("科脉会员过期,无法更新用户信息".$memberInfo->identifier);
+                                    \Log::warning("科脉会员过期,无法更新用户信息".$request->identifier);
                                 }
                             } else {
 
@@ -146,7 +147,7 @@ class RegisterController extends Controller
                     }
                     break;
                 case "mallto_seaworld":
-                    throw new PermissionDeniedException("暂不支持该会员系统:mallto_seaworld");
+                    throw new PermissionDeniedException("暂不支持该会员系统注册:".SubjectController::MEMBER_REALIZE['mallto_seaworld']);
                     break;
                 default:
                     throw new PermissionDeniedException("无效的会员系统:".$memberSystem);
@@ -154,8 +155,10 @@ class RegisterController extends Controller
             }
 
         } else {
-            //todo 无会员系统的注册逻辑 或者是纯微信用户注册
-            throw new PermissionDeniedException("无效的会员系统");
+            // 创建用户
+            $user = $this->userUsecase->createUser($type);
+
+            return $this->userUsecase->getUserInfo($user->id);
         }
     }
 
@@ -225,7 +228,7 @@ class RegisterController extends Controller
                     }
                     break;
                 case "mallto_seaworld":
-                    throw new PermissionDeniedException("暂不支持该会员系统:mallto_seaworld");
+                    throw new PermissionDeniedException("暂不支持该会员系统注册:".SubjectController::MEMBER_REALIZE['mallto_seaworld']);
                     break;
                 default:
                     throw new PermissionDeniedException("无效的会员系统:".$memberSystem);
@@ -290,7 +293,7 @@ class RegisterController extends Controller
                     }
                     break;
                 case "mallto_seaworld":
-                    throw new PermissionDeniedException("暂不支持该会员系统:mallto_seaworld");
+                    throw new PermissionDeniedException("暂不支持该会员系统注册:".SubjectController::MEMBER_REALIZE['mallto_seaworld']);
                     break;
                 default:
                     throw new PermissionDeniedException("无效的会员系统:".$memberSystem);

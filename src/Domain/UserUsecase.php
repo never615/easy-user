@@ -29,8 +29,8 @@ class UserUsecase
      * 判断用户是否存在
      *
      * @param        $type
-     * @param bool   $register ,注册或者登陆模式,
-     *                         当type是mobile的情况下:注册模式下判断用户是否存在使用提交参数手机号查询,登陆模式下判断用户是否存在判断mobile字段是不是空
+     * @param bool   $register ,注册或者登录模式,
+     *                         当type是mobile的情况下:注册模式下判断用户是否存在使用提交参数手机号查询,登录模式下判断用户是否存在判断mobile字段是不是空
      * @param string $requestType
      * @return bool|User
      */
@@ -52,21 +52,24 @@ class UserUsecase
                     $query = $userAuth->user()
                         ->where("subject_id", $subject->id);
                     if ($register) {
-                        $query = $query->where($type, Input::get('identifier'));
+                        $tempUser = $query->whereNotNull($type)->first();
+                        if ($tempUser) {
+                            return $tempUser;
+                        } else {
+                            return $query->where($type, Input::get('identifier'))->first();
+                        }
                     } else {
-                        $query = $query->whereNotNull($type);
+                        return $query->whereNotNull($type)->first();
                     }
-                    $user = $query->first();
                 } else {
-                    $user = $userAuth->user;
+                    return $userAuth->user;
                 }
-                if ($user) {
-                    return $user;
-                }
+            } else {
+                return false;
             }
+        } else {
+            throw new PermissionDeniedException("暂不支持出微信以外场景");
         }
-
-        return false;
     }
 
 
@@ -209,5 +212,6 @@ class UserUsecase
             throw new ResourceException("openid无效");
         }
     }
+
 
 }
