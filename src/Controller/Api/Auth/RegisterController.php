@@ -8,6 +8,7 @@ use Mallto\Mall\Controller\SubjectController;
 use Mallto\Mall\Domain\Member\MemberOperate;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
+use Mallto\Tool\Exception\ThirdPartException;
 use Mallto\Tool\Utils\ResponseUtils;
 use Mallto\User\Domain\PublicUsecase;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
@@ -110,8 +111,8 @@ class RegisterController extends Controller
                         //1.检查会员是否存在
                         try {
                             $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
+                            //存在,更新会员信息
                             if ($memberInfo && $request->name) {
-                                //存在,更新会员信息
                                 try {
                                     $memberInfo = $this->memberOperate->updateInfo([
                                         "mobile"     => $request->identifier,
@@ -119,21 +120,12 @@ class RegisterController extends Controller
                                         "sex"        => $request->gender,
                                         "birthday"   => $request->birthday,
                                     ]);
-                                } catch (\Exception $e) {
+                                } catch (ThirdPartException $e) {
                                     //todo 更新会员信息失败的处理
                                     \Log::warning("科脉会员过期,无法更新用户信息".$request->identifier);
                                 }
-                            } else {
-                                $rules = array_merge($rules, [
-                                    'name'     => 'required',
-                                    'birthday' => 'required|date',
-                                    'gender'   => 'required|integer',
-                                ]);
-                                $this->validate($request, $rules);
-                                //2.不存在注册
-                                $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
                             }
-                        } catch (\Exception $e) {
+                        } catch (ThirdPartException $e) {
                             $rules = array_merge($rules, [
                                 'name'     => 'required',
                                 'birthday' => 'required|date',
@@ -143,6 +135,18 @@ class RegisterController extends Controller
                             //2.不存在注册
                             $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
                         }
+
+                        if (!$memberInfo) {
+                            $rules = array_merge($rules, [
+                                'name'     => 'required',
+                                'birthday' => 'required|date',
+                                'gender'   => 'required|integer',
+                            ]);
+                            $this->validate($request, $rules);
+                            //2.不存在注册
+                            $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
+                        }
+
                         //3. 创建用户
                         $user = $this->userUsecase->createUser($type, $memberInfo);
 
