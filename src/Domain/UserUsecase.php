@@ -51,7 +51,7 @@ class UserUsecase
                 if (!empty($type)) {
                     $query = $userAuth->user()
                         ->where("subject_id", $subject->id);
-                    
+
                     return $query->whereNotNull($type)->first();
                 } else {
                     return $userAuth->user;

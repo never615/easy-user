@@ -124,7 +124,6 @@ class RegisterController extends Controller
                                     \Log::warning("科脉会员过期,无法更新用户信息".$request->identifier);
                                 }
                             } else {
-
                                 $rules = array_merge($rules, [
                                     'name'     => 'required',
                                     'birthday' => 'required|date',
@@ -135,6 +134,12 @@ class RegisterController extends Controller
                                 $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
                             }
                         } catch (\Exception $e) {
+                            $rules = array_merge($rules, [
+                                'name'     => 'required',
+                                'birthday' => 'required|date',
+                                'gender'   => 'required|integer',
+                            ]);
+                            $this->validate($request, $rules);
                             //2.不存在注册
                             $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
                         }
