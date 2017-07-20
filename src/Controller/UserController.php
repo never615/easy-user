@@ -43,6 +43,8 @@ class UserController extends AdminCommonController
             $filter->ilike("nickname");
             $filter->ilike("mobile");
         });
+
+        $grid->disableCreation();
     }
 
     protected function formOption(Form $form)

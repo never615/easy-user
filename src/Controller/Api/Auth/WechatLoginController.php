@@ -1,14 +1,14 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
-use Mallto\Tool\Exception\NotFoundException;
-use Mallto\Tool\Exception\PermissionDeniedException;
-use Mallto\Tool\Exception\ResourceException;
 use Encore\Admin\AppUtils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Log;
+use Mallto\Tool\Exception\NotFoundException;
+use Mallto\Tool\Exception\PermissionDeniedException;
+use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\WechatAuthInfo;
@@ -75,24 +75,27 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             ->where("identifier", $openId)
             ->where("subject_id", $subject->id)
             ->first();
+
+        //查询微信用户信息
+        $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
+        if (!$wechatAuthInfo) {
+            throw new PermissionDeniedException("公众号未授权");
+        }
+
+        $wechatUserInfo = WechatUserInfo::where("openid", $openId)
+            ->where("app_id", $wechatAuthInfo->authorizer_appid)
+            ->first();
+
+        if (!$wechatUserInfo) {
+            Log::error("无法获取微信信息");
+
+            return new PermissionDeniedException("无法获取微信信息,请在微信内打开");
+//                return new  InternalHttpException("系统错误");
+        }
+
         if (!$userAuth) {
             //用户不存在
-            //查询微信用户信息
-            $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
-            if (!$wechatAuthInfo) {
-                throw new PermissionDeniedException("公众号未授权");
-            }
 
-            $wechatUserInfo = WechatUserInfo::where("openid", $openId)
-                ->where("app_id", $wechatAuthInfo->authorizer_appid)
-                ->first();
-
-            if (!$wechatUserInfo) {
-                Log::error("无法获取微信信息");
-
-                return new PermissionDeniedException("无法获取微信信息,请在微信内打开");
-//                return new  InternalHttpException("系统错误");
-            }
             //创建微信用户
             $user = User::create([
                 "subject_id" => $subject->id,
@@ -105,8 +108,30 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                 "identifier"    => $openId,
                 "subject_id"    => $subject->id,
             ]);
+        } else {
+            $user = $userAuth->user;
+            $user->update([
+                "nickname" => $wechatUserInfo->nickname,
+                "avatar"   => $wechatUserInfo->avatar,
+            ]);
 
-            //填充微信信息
+        }
+
+        //填充/更新微信信息
+        if ($user->userProfile) {
+            //填充/更新微信信息
+            $user->userProfile->update([
+                "wechat_nickname"  => $wechatUserInfo->nickname,
+                "wechat_avatar"    => $wechatUserInfo->avatar,
+                "wechat_province"  => $wechatUserInfo->province,
+                "wechat_city"      => $wechatUserInfo->city,
+                "wechat_country"   => $wechatUserInfo->country,
+                "wechat_sex"       => $wechatUserInfo->sex,
+                "wechat_language"  => $wechatUserInfo->language,
+                "wechat_privilege" => $wechatUserInfo->privilege,
+            ]);
+        } else {
+            //填充/更新微信信息
             $user->userProfile()->create([
                 "wechat_nickname"  => $wechatUserInfo->nickname,
                 "wechat_avatar"    => $wechatUserInfo->avatar,
@@ -117,10 +142,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                 "wechat_language"  => $wechatUserInfo->language,
                 "wechat_privilege" => $wechatUserInfo->privilege,
             ]);
-
-        } else {
-            $user = $userAuth->user;
         }
+
 
         if ($type) {
             if (is_null($user->$type)) {
@@ -170,28 +193,32 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             ->where("identifier", $openId)
             ->where("subject_id", $subject->id)
             ->first();
+
+        //查询微信用户信息
+        $wechatAuthInfo = WechatCorpAuth::where("corp_id", $uuid)->first();
+        if (!$wechatAuthInfo) {
+            throw new PermissionDeniedException("企业号未授权");
+        }
+
+        $wechatUserInfo = WechatCorpUserInfo::where("user_id", $openId)
+            ->where("corp_id", $wechatAuthInfo->corp_id)
+            ->first();
+
+        if (!$wechatUserInfo) {
+            Log::error("无法获取微信用户信息");
+
+            return new PermissionDeniedException("无法获取微信用户信息,请在微信内打开");
+        }
+
         if (!$userAuth) {
             //用户不存在
-            //查询微信用户信息
-            $wechatAuthInfo = WechatCorpAuth::where("corp_id", $uuid)->first();
-            if (!$wechatAuthInfo) {
-                throw new PermissionDeniedException("企业号未授权");
-            }
-
-            $wechatUserInfo = WechatCorpUserInfo::where("user_id", $openId)
-                ->where("corp_id", $wechatAuthInfo->corp_id)
-                ->first();
-
-            if (!$wechatUserInfo) {
-                Log::error("无法获取微信用户信息");
-
-                return new PermissionDeniedException("无法获取微信用户信息,请在微信内打开");
-            }
             //创建微信用户
             $user = User::create([
                 "subject_id" => $subject->id,
                 "nickname"   => $wechatUserInfo->name,
                 "avatar"     => $wechatUserInfo->avatar,
+                "email"      => $wechatUserInfo->email,
+                "mobile"     => $wechatUserInfo->mobile,
             ]);
 
             $user->userAuths()->create([
@@ -199,12 +226,35 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                 "identifier"    => $openId,
                 "subject_id"    => $subject->id,
             ]);
-
-            //填充微信信息
-
         } else {
             $user = $userAuth->user;
+            $user->update([
+                "nickname" => $wechatUserInfo->name,
+                "avatar"   => $wechatUserInfo->avatar,
+                "email"    => $wechatUserInfo->email,
+                "mobile"   => $wechatUserInfo->mobile,
+            ]);
         }
+
+        //填充/更新微信信息
+        if ($user->userProfile) {
+            $user->userProfile->update([
+                'extra' => [
+                    'gender'     => $wechatUserInfo->gender,
+                    'department' => $wechatUserInfo->department,
+                    'position'   => $wechatUserInfo->position,
+                ],
+            ]);
+        } else {
+            $user->userProfile()->create([
+                "extra" => [
+                    'gender'     => $wechatUserInfo->gender,
+                    'department' => $wechatUserInfo->department,
+                    'position'   => $wechatUserInfo->position,
+                ],
+            ]);
+        }
+
 
         $user = User::find($user->id);
         $token = $user->createToken("qy", ["wechat-token"])->accessToken;

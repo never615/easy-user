@@ -40,11 +40,6 @@ class CreateUserProfilesTable extends Migration
 //            $table->date('birthday')->nullable()->comment('用户生日');
 //            $table->timestamp('registed_at')->nullable()->comment('注册时间');
 
-
-
-        
-
-
             //微信信息
             $table->string('wechat_nickname')->nullable()->comment('微信昵称');
             $table->string('wechat_avatar')->nullable()->comment('微信头像');
@@ -57,7 +52,7 @@ class CreateUserProfilesTable extends Migration
             $table->string('wechat_unionid')->nullable()->comment('只有将公众号绑定到开放平台才会出现此字段');
 
 
-            $table->timestamps(); 
+            $table->timestamps();
             $table->softDeletes();
 
 

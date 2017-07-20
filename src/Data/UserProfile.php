@@ -13,23 +13,30 @@ use Illuminate\Database\Eloquent\Model;
 class UserProfile extends Model
 {
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'user_id',
-        'wechat_nickname',
-        'wechat_avatar',
-        'wechat_province',
-        'wechat_city',
-        'wechat_country',
-        'wechat_sex',
-        'wechat_language',
-        'wechat_privilege',
-        'wechat_unionid',
+//    /**
+//     * The attributes that are mass assignable.
+//     *
+//     * @var array
+//     */
+//    protected $fillable = [
+//        'user_id',
+//        'wechat_nickname',
+//        'wechat_avatar',
+//        'wechat_province',
+//        'wechat_city',
+//        'wechat_country',
+//        'wechat_sex',
+//        'wechat_language',
+//        'wechat_privilege',
+//        'wechat_unionid',
+//    ];
+
+    protected $casts = [
+        'extra' => 'array',
     ];
+
+
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for arrays.
