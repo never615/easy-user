@@ -217,8 +217,6 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                 "subject_id" => $subject->id,
                 "nickname"   => $wechatUserInfo->name,
                 "avatar"     => $wechatUserInfo->avatar,
-                "email"      => $wechatUserInfo->email,
-                "mobile"     => $wechatUserInfo->mobile,
             ]);
 
             $user->userAuths()->create([
@@ -228,11 +226,10 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             ]);
         } else {
             $user = $userAuth->user;
+
             $user->update([
                 "nickname" => $wechatUserInfo->name,
                 "avatar"   => $wechatUserInfo->avatar,
-                "email"    => $wechatUserInfo->email,
-                "mobile"   => $wechatUserInfo->mobile,
             ]);
         }
 
@@ -243,6 +240,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                     'gender'     => $wechatUserInfo->gender,
                     'department' => $wechatUserInfo->department,
                     'position'   => $wechatUserInfo->position,
+                    "email"    => $wechatUserInfo->email,
+                    "mobile"   => $wechatUserInfo->mobile,
                 ],
             ]);
         } else {
@@ -251,6 +250,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                     'gender'     => $wechatUserInfo->gender,
                     'department' => $wechatUserInfo->department,
                     'position'   => $wechatUserInfo->position,
+                    "email"    => $wechatUserInfo->email,
+                    "mobile"   => $wechatUserInfo->mobile,
                 ],
             ]);
         }
