@@ -52,14 +52,31 @@ class UserUsecase
                     $query = $userAuth->user()
                         ->where("subject_id", $subject->id);
 
-                    return $query->whereNotNull($type)->first();
+                    $user = $query->whereNotNull($type)->first();
                 } else {
-                    return $userAuth->user;
+                    $user = $userAuth->user;
                 }
+
+                //用户存在处理用户微信信息更新
+                $wechatUserInfo = $this->getWechatUserInfo($subject->uuid, $openid);
+                //填充微信信息
+                $user->userProfile->update([
+                    "wechat_nickname"  => $wechatUserInfo->nickname,
+                    "wechat_avatar"    => $wechatUserInfo->avatar,
+                    "wechat_province"  => $wechatUserInfo->province,
+                    "wechat_city"      => $wechatUserInfo->city,
+                    "wechat_country"   => $wechatUserInfo->country,
+                    "wechat_sex"       => $wechatUserInfo->sex,
+                    "wechat_language"  => $wechatUserInfo->language,
+                    "wechat_privilege" => $wechatUserInfo->privilege,
+                ]);
+
+                return $user;
             } else {
                 return false;
             }
         } else {
+            //todo 兼容企业号
             throw new PermissionDeniedException("暂不支持出微信以外场景");
         }
     }
@@ -84,22 +101,8 @@ class UserUsecase
 
             if (!$this->existUser($type, true, $requestType)) {
                 //用户不存在
-                //查询微信用户信息
-                $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
-                if (!$wechatAuthInfo) {
-                    throw new PermissionDeniedException("公众号未授权");
-                }
 
-                $wechatUserInfo = WechatUserInfo::where("openid", $openid)
-                    ->where("app_id", $wechatAuthInfo->authorizer_appid)
-                    ->first();
-
-                if (!$wechatUserInfo) {
-                    \Log::error("无法获取微信信息");
-
-                    throw new PermissionDeniedException("openid未找到,请在微信内打开");
-                }
-
+                $wechatUserInfo = $this->getWechatUserInfo($uuid, $openid);
 
                 $nickname = $wechatUserInfo->nickname;
 
@@ -123,7 +126,6 @@ class UserUsecase
                 } else {
                     //不存在纯微信用户,直接创建
                     //创建用户
-
                     $user = User::create($data);
 
                     $user->userAuths()->create([
@@ -131,19 +133,20 @@ class UserUsecase
                         "identifier"    => $openid,
                         "subject_id"    => $subject->id,
                     ]);
+
+                    //填充微信信息
+                    $user->userProfile()->create([
+                        "wechat_nickname"  => $wechatUserInfo->nickname,
+                        "wechat_avatar"    => $wechatUserInfo->avatar,
+                        "wechat_province"  => $wechatUserInfo->province,
+                        "wechat_city"      => $wechatUserInfo->city,
+                        "wechat_country"   => $wechatUserInfo->country,
+                        "wechat_sex"       => $wechatUserInfo->sex,
+                        "wechat_language"  => $wechatUserInfo->language,
+                        "wechat_privilege" => $wechatUserInfo->privilege,
+                    ]);
                 }
 
-                //填充微信信息
-                $user->userProfile()->updateOrCreate([
-                    "wechat_nickname"  => $wechatUserInfo->nickname,
-                    "wechat_avatar"    => $wechatUserInfo->avatar,
-                    "wechat_province"  => $wechatUserInfo->province,
-                    "wechat_city"      => $wechatUserInfo->city,
-                    "wechat_country"   => $wechatUserInfo->country,
-                    "wechat_sex"       => $wechatUserInfo->sex,
-                    "wechat_language"  => $wechatUserInfo->language,
-                    "wechat_privilege" => $wechatUserInfo->privilege,
-                ]);
 
                 if ($memberInfo) {
                     //存在会员 关联用户id和到会员表
@@ -203,6 +206,32 @@ class UserUsecase
             \Log::error("openid解密失败");
             throw new ResourceException("openid无效");
         }
+    }
+
+    /**
+     * @param $uuid
+     * @param $openid
+     * @return mixed
+     */
+    private function getWechatUserInfo($uuid, $openid)
+    {
+        //查询微信用户信息
+        $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
+        if (!$wechatAuthInfo) {
+            throw new PermissionDeniedException("公众号未授权");
+        }
+
+        $wechatUserInfo = WechatUserInfo::where("openid", $openid)
+            ->where("app_id", $wechatAuthInfo->authorizer_appid)
+            ->first();
+
+        if (!$wechatUserInfo) {
+            \Log::error("无法获取微信信息");
+
+            throw new PermissionDeniedException("openid未找到,请在微信内打开");
+        }
+
+        return $wechatUserInfo;
     }
 
 

@@ -14,6 +14,7 @@ use Mallto\User\Domain\PublicUsecase;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 use Mallto\User\Exceptions\UserExistException;
+use Symfony\Component\Console\Input\Input;
 
 
 /**
@@ -136,6 +137,7 @@ class RegisterController extends Controller
                             $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
                         }
 
+                        //按理说下面这段是不会执行的
                         if (!$memberInfo) {
                             $rules = array_merge($rules, [
                                 'name'     => 'required',
@@ -290,6 +292,10 @@ class RegisterController extends Controller
                         //3. 创建用户
                         try {
                             $user = $this->userUsecase->createUser('mobile', $memberInfo, "bridge");
+
+                            //todo 迁移用户卡券记录,即积分商城领取的卡券的记录
+
+
 
                             return redirect($url);
                         } catch (UserExistException $e) {

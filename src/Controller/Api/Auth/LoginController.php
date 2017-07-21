@@ -1,10 +1,10 @@
 <?php
 namespace Mallto\User\Controller\Api\Auth;
 
-use Mallto\Tool\Exception\NotFoundException;
-use Mallto\Tool\Exception\PermissionDeniedException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Mallto\Tool\Exception\NotFoundException;
+use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\User\Domain\UserUsecase;
 
 
@@ -52,7 +52,8 @@ class LoginController extends Controller
 
         $this->validate($request, $rules);
 
-        if (!$this->userUsecase->existUser($type, false)) {
+        $user = $this->userUsecase->existUser($type, false);
+        if (!$user) {
             //用户不存在,如果是纯微信登录模式下,即type is null,则自动创建用户
             if (empty($type)) {
                 //创建用户
@@ -60,8 +61,6 @@ class LoginController extends Controller
             } else {
                 throw new NotFoundException("用户不存在");
             }
-        } else {
-            $user = $this->userUsecase->existUser($type, false);
         }
 
         return $this->userUsecase->getUserInfo($user->id);
