@@ -20,9 +20,6 @@ $attributes = [
 
 Route::group($attributes, function ($router) {
 
-    //
-    //https://integration-easy.mall-to.com/api/bridge
-    Route::get('bridge', 'Auth\RegisterController@bridge');
     /**
      * 需要经过验证
      */

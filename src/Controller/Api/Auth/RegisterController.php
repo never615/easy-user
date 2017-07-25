@@ -14,7 +14,6 @@ use Mallto\User\Domain\PublicUsecase;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 use Mallto\User\Exceptions\UserExistException;
-use Symfony\Component\Console\Input\Input;
 
 
 /**
@@ -31,10 +30,6 @@ class RegisterController extends Controller
      * @var UserUsecase
      */
     private $userUsecase;
-    /**
-     * @var MemberOperate
-     */
-    private $memberOperate;
     /**
      * @var PublicUsecase
      */
@@ -61,8 +56,6 @@ class RegisterController extends Controller
      */
     public function register(Request $request)
     {
-        $this->memberOperate = app("member");
-
         $type = $request->get("type", null);
 
         $requestType = $request->header("REQUEST-TYPE");
@@ -108,14 +101,14 @@ class RegisterController extends Controller
             switch ($memberSystem) {
                 case "kemai":
                     if ($request->identifier) {
-                        $this->memberOperate = app("member");
+                        $memberOperate = app("member");
                         //1.检查会员是否存在
                         try {
-                            $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
+                            $memberInfo = $memberOperate->getInfo($request->identifier, $subject->id);
                             //存在,更新会员信息
                             if ($memberInfo && $request->name) {
                                 try {
-                                    $memberInfo = $this->memberOperate->updateInfo([
+                                    $memberInfo = $memberOperate->updateInfo([
                                         "mobile"     => $request->identifier,
                                         "subject_id" => $subject->id,
                                         "sex"        => $request->gender,
@@ -134,7 +127,7 @@ class RegisterController extends Controller
                             ]);
                             $this->validate($request, $rules);
                             //2.不存在注册
-                            $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
+                            $memberInfo = $memberOperate->register($request->all(), $subject->id);
                         }
 
                         //按理说下面这段是不会执行的
@@ -146,7 +139,7 @@ class RegisterController extends Controller
                             ]);
                             $this->validate($request, $rules);
                             //2.不存在注册
-                            $memberInfo = $this->memberOperate->register($request->all(), $subject->id);
+                            $memberInfo = $memberOperate->register($request->all(), $subject->id);
                         }
 
                         //3. 创建用户
@@ -181,7 +174,7 @@ class RegisterController extends Controller
      */
     public function existMember(Request $request)
     {
-        $this->memberOperate = app("member");
+        $memberOperate = app("member");
 
         $type = $request->get("type", null);
 
@@ -220,10 +213,10 @@ class RegisterController extends Controller
             switch ($memberSystem) {
                 case "kemai":
                     if ($request->identifier) {
-                        $this->memberOperate = app("member");
+                        $memberOperate = app("member");
                         //1.检查会员是否存在
                         try {
-                            $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
+                            $memberInfo = $memberOperate->getInfo($request->identifier, $subject->id);
                             if (!$memberInfo) {
                                 //2.不存在注册
                                 $isMember = 0;
@@ -259,66 +252,5 @@ class RegisterController extends Controller
         ]);
     }
 
-    /**
-     * 为了迁移旧项目数据做的桥
-     *
-     * @param Request $request
-     * @return
-     */
-    public function bridge(Request $request)
-    {
-        //检查会员系统是否存在该用户
-        $subject = AppUtils::getSubject();
-
-        $url = $request->url;
-
-        $memberSystem = $subject->member_system;
-        if ($memberSystem) {
-            switch ($memberSystem) {
-                case "kemai":
-                    if ($request->identifier) {
-                        $this->memberOperate = app("member");
-                        //1.检查会员是否存在
-                        try {
-                            $memberInfo = $this->memberOperate->getInfo($request->identifier, $subject->id);
-                            if (!$memberInfo) {
-                                //2.不存在注册
-                                return redirect($url);
-                            }
-                        } catch (\Exception $e) {
-                            //2.不存在注册
-                            return redirect($url);
-                        }
-                        //3. 创建用户
-                        try {
-                            $user = $this->userUsecase->createUser('mobile', $memberInfo, "bridge");
-
-                            //todo 迁移用户卡券记录,即积分商城领取的卡券的记录
-
-
-
-                            return redirect($url);
-                        } catch (UserExistException $e) {
-                            return redirect($url);
-                        }
-                    } else {
-                        \Log::info("手机号码为空");
-
-                        return redirect($url);
-                    }
-                    break;
-                case "mallto_seaworld":
-                    throw new PermissionDeniedException("暂不支持该会员系统注册:".SubjectController::MEMBER_REALIZE['mallto_seaworld']);
-                    break;
-                default:
-                    throw new PermissionDeniedException("无效的会员系统:".$memberSystem);
-                    break;
-            }
-        } else {
-            //todo 无会员系统的注册逻辑 或者是纯微信用户注册
-            throw new PermissionDeniedException("无效的会员系统");
-        }
-    }
-
-
+   
 }
