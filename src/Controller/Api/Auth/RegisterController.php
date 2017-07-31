@@ -11,7 +11,7 @@ use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ThirdPartException;
 use Mallto\User\Domain\PublicUsecase;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
-use Mallto\User\Domain\UserUsecaseInterface;
+use Mallto\User\Domain\UserUsecase;
 use Mallto\User\Exceptions\UserExistException;
 
 
@@ -83,7 +83,7 @@ class RegisterController extends Controller
 
         $this->checkVerifyCode($request->identifier, $request->code, $type);
 
-        $userUsecase = app(UserUsecaseInterface::class);
+        $userUsecase = app(UserUsecase::class);
 
         if ($userUsecase->existUser($type)) {
             throw new UserExistException();

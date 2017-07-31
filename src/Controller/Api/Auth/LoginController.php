@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\PermissionDeniedException;
-use Mallto\User\Domain\UserUsecaseInterface;
+use Mallto\User\Domain\UserUsecase;
 
 
 /**
@@ -39,7 +39,7 @@ class LoginController extends Controller
 
         $this->validate($request, $rules);
 
-        $userUsecase = app(UserUsecaseInterface::class);
+        $userUsecase = app(UserUsecase::class);
 
 
         $user = $userUsecase->existUser($type, false);

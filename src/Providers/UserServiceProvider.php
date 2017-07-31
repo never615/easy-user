@@ -3,8 +3,8 @@
 namespace Mallto\User\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Mallto\User\Domain\UserUsecaseImpl;
 use Mallto\User\Domain\UserUsecase;
-use Mallto\User\Domain\UserUsecaseInterface;
 
 class UserServiceProvider extends ServiceProvider
 {
@@ -56,8 +56,8 @@ class UserServiceProvider extends ServiceProvider
         $this->commands($this->commands);
 
         $this->app->bind(
-            UserUsecaseInterface::class,
-            UserUsecase::class
+            UserUsecase::class,
+            UserUsecaseImpl::class
         );
     }
 

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
-use Mallto\User\Domain\UserUsecaseInterface;
+use Mallto\User\Domain\UserUsecase;
 
 
 /**
@@ -29,7 +29,7 @@ class UserController extends Controller
      */
     public function show()
     {
-        $userUsecase = app(UserUsecaseInterface::class);
+        $userUsecase = app(UserUsecase::class);
 
         $user = Auth::guard("api")->user();
 
