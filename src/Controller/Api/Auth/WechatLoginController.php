@@ -23,6 +23,7 @@ use Overtrue\LaravelWechat\Model\WechatCorpUserInfo;
  * User: never615
  * Date: 19/04/2017
  * Time: 7:01 PM
+ * @deprecated
  */
 class WechatLoginController extends \Illuminate\Routing\Controller
 {

@@ -93,7 +93,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param string $type ,mobile or email ..
      * @param        $info
      * @param string $requestType
-     * @return
+     * @return $this|bool|\Illuminate\Database\Eloquent\Model|User
      */
     public function createUser($type = null, $info = null, $requestType = "")
     {

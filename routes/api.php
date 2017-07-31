@@ -41,8 +41,7 @@ Route::group($attributes, function ($router) {
         Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
 
 
-        //验证手机号在会员系统中是否存在
-        Route::post("member/exist", 'Auth\RegisterController@existMember');
+
 
         Route::group(["middleware" => ["scopes:account-token"]], function () {
             //(新) 登录接口
