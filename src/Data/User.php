@@ -11,6 +11,12 @@ use Mallto\Activity\Data\QaAnswer;
 use Mallto\Activity\Data\QaComment;
 use Mallto\Activity\Data\QaQuestion;
 use Mallto\Activity\Data\UserSeckill;
+use Mallto\Dangjian\Data\UserCourse;
+use Mallto\Dangjian\Data\UserCourseRecord;
+use Mallto\Dangjian\Data\UserExam;
+use Mallto\Dangjian\Data\UserExamRecord;
+use Mallto\Dangjian\Data\UserOnlineStudy;
+use Mallto\Dangjian\Data\UserOnlineStudyRecord;
 use Mallto\Mall\Data\Member;
 use Mallto\Mall\Data\ParkingRecord;
 use Mallto\Mall\Data\PointHistory;
@@ -114,8 +120,39 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class);
     }
 
-    public function parkingRecords(){
+    public function parkingRecords()
+    {
         return $this->hasMany(ParkingRecord::class);
+    }
+
+    public function userCourses()
+    {
+        return $this->hasMany(UserCourse::class);
+    }
+
+    public function userCourseRecords()
+    {
+        return $this->hasMany(UserCourseRecord::class);
+    }
+
+    public function userExams()
+    {
+        return $this->hasMany(UserExam::class);
+    }
+
+    public function userExamRecords()
+    {
+        return $this->hasMany(UserExamRecord::class);
+    }
+
+    public function userOnlineStudies()
+    {
+        return $this->hasMany(UserOnlineStudy::class);
+    }
+
+    public function userOnlineStudyRecords()
+    {
+        return $this->hasMany(UserOnlineStudyRecord::class);
     }
 
 }

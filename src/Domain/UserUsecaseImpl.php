@@ -57,24 +57,28 @@ class UserUsecaseImpl implements UserUsecase
                     $query = $userAuth->user()
                         ->where("subject_id", $subject->id);
 
-                    $user = $query->whereNotNull($type)->first();
+                    $user = $query->whereNotNull($type)
+                        ->where($type, "!=", "")
+                        ->first();
                 } else {
                     $user = $userAuth->user;
                 }
 
-                //用户存在处理用户微信信息更新
-                $wechatUserInfo = $this->getWechatUserInfo($subject->uuid, $openid);
-                //填充微信信息
-                $user->userProfile->update([
-                    "wechat_nickname"  => $wechatUserInfo->nickname,
-                    "wechat_avatar"    => $wechatUserInfo->avatar,
-                    "wechat_province"  => $wechatUserInfo->province,
-                    "wechat_city"      => $wechatUserInfo->city,
-                    "wechat_country"   => $wechatUserInfo->country,
-                    "wechat_sex"       => $wechatUserInfo->sex,
-                    "wechat_language"  => $wechatUserInfo->language,
-                    "wechat_privilege" => $wechatUserInfo->privilege,
-                ]);
+                if ($user) {
+                    //用户存在处理用户微信信息更新
+                    $wechatUserInfo = $this->getWechatUserInfo($subject->uuid, $openid);
+                    //填充微信信息
+                    $user->userProfile->update([
+                        "wechat_nickname"  => $wechatUserInfo->nickname,
+                        "wechat_avatar"    => $wechatUserInfo->avatar,
+                        "wechat_province"  => $wechatUserInfo->province,
+                        "wechat_city"      => $wechatUserInfo->city,
+                        "wechat_country"   => $wechatUserInfo->country,
+                        "wechat_sex"       => $wechatUserInfo->sex,
+                        "wechat_language"  => $wechatUserInfo->language,
+                        "wechat_privilege" => $wechatUserInfo->privilege,
+                    ]);
+                }
 
                 return $user;
             } else {
