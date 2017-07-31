@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\PermissionDeniedException;
-use Mallto\User\Domain\UserUsecase;
+use Mallto\User\Domain\UserUsecaseInterface;
 
 
 /**
@@ -17,16 +17,16 @@ use Mallto\User\Domain\UserUsecase;
 class LoginController extends Controller
 {
     /**
-     * @var UserUsecase
+     * @var UserUsecaseInterface
      */
     private $userUsecase;
 
     /**
      * RegisterController constructor.
      *
-     * @param UserUsecase $userUsecase
+     * @param UserUsecaseInterface $userUsecase
      */
-    public function __construct(UserUsecase $userUsecase)
+    public function __construct(UserUsecaseInterface $userUsecase)
     {
         $this->userUsecase = $userUsecase;
     }

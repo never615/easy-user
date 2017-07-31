@@ -1,4 +1,5 @@
 <?php
+
 namespace Mallto\User\Domain;
 
 use Encore\Admin\AppUtils;
@@ -6,7 +7,6 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Request;
-use Mallto\Mall\Data\Member;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
@@ -15,15 +15,17 @@ use Mallto\User\Data\WechatAuthInfo;
 use Mallto\User\Data\WechatUserInfo;
 use Mallto\User\Exceptions\UserExistException;
 
-//todo 修改成动态注入,不能模块引用情况下,注入不同的实现
-
 /**
+ * 默认版的用户处理
+ *
+ * 适合微信开放平台关联的
+ *
  * Created by PhpStorm.
  * User: never615
  * Date: 06/06/2017
  * Time: 7:57 PM
  */
-class UserUsecase
+class UserUsecase implements UserUsecaseInterface
 {
     /**
      * 判断用户是否存在
@@ -86,11 +88,11 @@ class UserUsecase
      * 创建用户
      *
      * @param string $type ,mobile or email ..
-     * @param Member $memberInfo
+     * @param        $info
      * @param string $requestType
-     * @return PermissionDeniedException
+     * @return
      */
-    public function createUser($type = null, $memberInfo = null, $requestType = "")
+    public function createUser($type = null, $info = null, $requestType = "")
     {
         $requestType = $requestType ?: Request::header("REQUEST-TYPE");
 
@@ -147,14 +149,6 @@ class UserUsecase
                     ]);
                 }
 
-
-                if ($memberInfo) {
-                    //存在会员 关联用户id和到会员表
-                    $member = Member::where("id", $memberInfo["id"])->firstOrFail();
-                    $member->user_id = $user->id;
-                    $member->save();
-                }
-
                 DB::commit();
 
                 return $user;
@@ -175,8 +169,7 @@ class UserUsecase
     public function getUserInfo($userId)
     {
         $subjectId = AppUtils::getSubjectId();
-        $user = User::with(["member", "member.memberLevel"])
-            ->where("subject_id", $subjectId)
+        $user = User::where("subject_id", $subjectId)
             ->findOrFail($userId);
 
         if ($user->mobile) {
@@ -195,7 +188,7 @@ class UserUsecase
      *
      * @return mixed
      */
-    private function getOpenid()
+    public function getOpenid()
     {
         try {
             $openid = decrypt(Input::get("openid"));
@@ -213,7 +206,7 @@ class UserUsecase
      * @param $openid
      * @return mixed
      */
-    private function getWechatUserInfo($uuid, $openid)
+    public function getWechatUserInfo($uuid, $openid)
     {
         //查询微信用户信息
         $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();

@@ -1,4 +1,5 @@
 <?php
+
 namespace Mallto\User\Controller\Api\Auth;
 
 use App\Http\Controllers\Controller;
@@ -7,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
-use Mallto\User\Domain\UserUsecase;
+use Mallto\User\Domain\UserUsecaseInterface;
 
 
 /**
@@ -22,19 +23,9 @@ class UserController extends Controller
     use VerifyCodeTrait;
 
     /**
-     * @var UserUsecase
+     * @var UserUsecaseInterface
      */
     private $userUsecase;
-
-    /**
-     * RegisterController constructor.
-     *
-     * @param UserUsecase $userUsecase
-     */
-    public function __construct(UserUsecase $userUsecase)
-    {
-        $this->userUsecase = $userUsecase;
-    }
 
     /**
      * 请求用户信息
@@ -43,6 +34,8 @@ class UserController extends Controller
      */
     public function show()
     {
+        $this->userUsecase = app(UserUsecaseInterface::class);
+
         $user = Auth::guard("api")->user();
 
         return $this->userUsecase->getUserInfo($user->id);

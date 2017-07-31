@@ -1,18 +1,17 @@
 <?php
+
 namespace Mallto\User\Controller\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use Encore\Admin\AppUtils;
 use Illuminate\Http\Request;
 use Mallto\Mall\Controller\SubjectController;
-use Mallto\Mall\Domain\Member\MemberOperate;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ThirdPartException;
-use Mallto\Tool\Utils\ResponseUtils;
 use Mallto\User\Domain\PublicUsecase;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
-use Mallto\User\Domain\UserUsecase;
+use Mallto\User\Domain\UserUsecaseInterface;
 use Mallto\User\Exceptions\UserExistException;
 
 
@@ -27,7 +26,7 @@ class RegisterController extends Controller
     use VerifyCodeTrait;
 
     /**
-     * @var UserUsecase
+     * @var UserUsecaseInterface
      */
     private $userUsecase;
     /**
@@ -38,10 +37,10 @@ class RegisterController extends Controller
     /**
      * RegisterController constructor.
      *
-     * @param UserUsecase   $userUsecase
-     * @param PublicUsecase $publicUsecase
+     * @param UserUsecaseInterface $userUsecase
+     * @param PublicUsecase        $publicUsecase
      */
-    public function __construct(UserUsecase $userUsecase, PublicUsecase $publicUsecase)
+    public function __construct(UserUsecaseInterface $userUsecase, PublicUsecase $publicUsecase)
     {
         $this->userUsecase = $userUsecase;
         $this->publicUsecase = $publicUsecase;
@@ -252,5 +251,5 @@ class RegisterController extends Controller
         ]);
     }
 
-   
+
 }
