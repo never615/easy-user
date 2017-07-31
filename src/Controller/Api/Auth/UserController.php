@@ -23,22 +23,17 @@ class UserController extends Controller
     use VerifyCodeTrait;
 
     /**
-     * @var UserUsecaseInterface
-     */
-    private $userUsecase;
-
-    /**
      * 请求用户信息
      *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
     public function show()
     {
-        $this->userUsecase = app(UserUsecaseInterface::class);
+        $userUsecase = app(UserUsecaseInterface::class);
 
         $user = Auth::guard("api")->user();
 
-        return $this->userUsecase->getUserInfo($user->id);
+        return $userUsecase->getUserInfo($user->id);
     }
 
 //    /**

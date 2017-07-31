@@ -16,20 +16,7 @@ use Mallto\User\Domain\UserUsecaseInterface;
  */
 class LoginController extends Controller
 {
-    /**
-     * @var UserUsecaseInterface
-     */
-    private $userUsecase;
 
-    /**
-     * RegisterController constructor.
-     *
-     * @param UserUsecaseInterface $userUsecase
-     */
-    public function __construct(UserUsecaseInterface $userUsecase)
-    {
-        $this->userUsecase = $userUsecase;
-    }
 
     /**
      * 登录,支持微信和app;支持纯微信登录/或者必须绑定手机号或者邮箱等
@@ -52,18 +39,21 @@ class LoginController extends Controller
 
         $this->validate($request, $rules);
 
-        $user = $this->userUsecase->existUser($type, false);
+        $userUsecase = app(UserUsecaseInterface::class);
+
+
+        $user = $userUsecase->existUser($type, false);
         if (!$user) {
             //用户不存在,如果是纯微信登录模式下,即type is null,则自动创建用户
             if (empty($type)) {
                 //创建用户
-                $user = $this->userUsecase->createUser($type);
+                $user = $userUsecase->createUser($type);
             } else {
                 throw new NotFoundException("用户不存在");
             }
         }
 
-        return $this->userUsecase->getUserInfo($user->id);
+        return $userUsecase->getUserInfo($user->id);
     }
 
 

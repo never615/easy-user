@@ -26,10 +26,6 @@ class RegisterController extends Controller
     use VerifyCodeTrait;
 
     /**
-     * @var UserUsecaseInterface
-     */
-    private $userUsecase;
-    /**
      * @var PublicUsecase
      */
     private $publicUsecase;
@@ -37,12 +33,10 @@ class RegisterController extends Controller
     /**
      * RegisterController constructor.
      *
-     * @param UserUsecaseInterface $userUsecase
      * @param PublicUsecase        $publicUsecase
      */
-    public function __construct(UserUsecaseInterface $userUsecase, PublicUsecase $publicUsecase)
+    public function __construct( PublicUsecase $publicUsecase)
     {
-        $this->userUsecase = $userUsecase;
         $this->publicUsecase = $publicUsecase;
     }
 
@@ -89,8 +83,9 @@ class RegisterController extends Controller
 
         $this->checkVerifyCode($request->identifier, $request->code, $type);
 
+        $userUsecase = app(UserUsecaseInterface::class);
 
-        if ($this->userUsecase->existUser($type)) {
+        if ($userUsecase->existUser($type)) {
             throw new UserExistException();
         }
 
@@ -142,9 +137,9 @@ class RegisterController extends Controller
                         }
 
                         //3. 创建用户
-                        $user = $this->userUsecase->createUser($type, $memberInfo);
+                        $user = $userUsecase->createUser($type, $memberInfo);
 
-                        return $this->userUsecase->getUserInfo($user->id);
+                        return $userUsecase->getUserInfo($user->id);
                     } else {
                         throw new ResourceException("手机号不能为空");
                     }
@@ -159,9 +154,9 @@ class RegisterController extends Controller
 
         } else {
             // 创建用户
-            $user = $this->userUsecase->createUser($type);
+            $user = $userUsecase->createUser($type);
 
-            return $this->userUsecase->getUserInfo($user->id);
+            return $userUsecase->getUserInfo($user->id);
         }
     }
 
