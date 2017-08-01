@@ -11,6 +11,8 @@ use Mallto\Activity\Data\QaAnswer;
 use Mallto\Activity\Data\QaComment;
 use Mallto\Activity\Data\QaQuestion;
 use Mallto\Activity\Data\UserSeckill;
+use Mallto\Dangjian\Data\Course;
+use Mallto\Dangjian\Data\PartyTag;
 use Mallto\Dangjian\Data\UserCourse;
 use Mallto\Dangjian\Data\UserCourseRecord;
 use Mallto\Dangjian\Data\UserExam;
@@ -153,6 +155,17 @@ class User extends Authenticatable
     public function userOnlineStudyRecords()
     {
         return $this->hasMany(UserOnlineStudyRecord::class);
+    }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, "user_courses");
+    }
+
+
+    public function partyTags()
+    {
+        return $this->belongsToMany(PartyTag::class);
     }
 
 }
