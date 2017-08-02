@@ -165,7 +165,7 @@ class User extends Authenticatable
 
     public function partyTags()
     {
-        return $this->belongsToMany(PartyTag::class);
+        return $this->belongsToMany(PartyTag::class,"party_tag_users");
     }
 
 }
