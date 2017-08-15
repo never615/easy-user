@@ -207,6 +207,20 @@ class User extends Authenticatable
             ->first();
     }
 
+    /**
+     * 查询用户今年的这次学习
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function onlineStudyThisYear($id)
+    {
+        return $this->userOnlineStudies()
+            ->where("online_study_id", $id)
+            ->whereYear("created_at", Carbon::now()->year)
+            ->first();
+    }
+
 
     //------------------- 党建结束 ---------------------
 
