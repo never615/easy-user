@@ -144,16 +144,29 @@ class UserUsecaseImpl implements UserUsecase
                     ]);
 
                     //填充微信信息
-                    $user->userProfile()->create([
-                        "wechat_nickname"  => $wechatUserInfo->nickname,
-                        "wechat_avatar"    => $wechatUserInfo->avatar,
-                        "wechat_province"  => $wechatUserInfo->province,
-                        "wechat_city"      => $wechatUserInfo->city,
-                        "wechat_country"   => $wechatUserInfo->country,
-                        "wechat_sex"       => $wechatUserInfo->sex,
-                        "wechat_language"  => $wechatUserInfo->language,
-                        "wechat_privilege" => $wechatUserInfo->privilege,
-                    ]);
+                    if ($user->userProfile) {
+                        $user->userProfile->update([
+                            "wechat_nickname"  => $wechatUserInfo->nickname,
+                            "wechat_avatar"    => $wechatUserInfo->avatar,
+                            "wechat_province"  => $wechatUserInfo->province,
+                            "wechat_city"      => $wechatUserInfo->city,
+                            "wechat_country"   => $wechatUserInfo->country,
+                            "wechat_sex"       => $wechatUserInfo->sex,
+                            "wechat_language"  => $wechatUserInfo->language,
+                            "wechat_privilege" => $wechatUserInfo->privilege,
+                        ]);
+                    } else {
+                        $user->userProfile()->create([
+                            "wechat_nickname"  => $wechatUserInfo->nickname,
+                            "wechat_avatar"    => $wechatUserInfo->avatar,
+                            "wechat_province"  => $wechatUserInfo->province,
+                            "wechat_city"      => $wechatUserInfo->city,
+                            "wechat_country"   => $wechatUserInfo->country,
+                            "wechat_sex"       => $wechatUserInfo->sex,
+                            "wechat_language"  => $wechatUserInfo->language,
+                            "wechat_privilege" => $wechatUserInfo->privilege,
+                        ]);
+                    }
                 }
 
                 DB::commit();
