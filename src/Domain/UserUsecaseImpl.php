@@ -199,7 +199,7 @@ class UserUsecaseImpl implements UserUsecase
     {
         try {
             $openid = decrypt(Input::get("openid"));
-
+            $openid=urldecode($openid);
             return $openid;
         } catch (DecryptException $e) {
             \Log::warning(Input::get("openid"));
