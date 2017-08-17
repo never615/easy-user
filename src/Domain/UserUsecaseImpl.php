@@ -198,8 +198,10 @@ class UserUsecaseImpl implements UserUsecase
     public function getOpenid()
     {
         try {
-            $openid = decrypt(Input::get("openid"));
-            $openid=urldecode($openid);
+            $openid = Input::get("openid");
+            $openid = urldecode($openid);
+            $openid = decrypt($openid);
+
             return $openid;
         } catch (DecryptException $e) {
             \Log::warning(Input::get("openid"));
