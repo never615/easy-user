@@ -3,7 +3,9 @@
 namespace Mallto\User\Data;
 
 
+use Carbon\Carbon;
 use Encore\Admin\Auth\Database\Traits\DynamicData;
+use Encore\Admin\Auth\Database\Traits\SelectSource;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
@@ -11,9 +13,13 @@ use Mallto\Activity\Data\QaAnswer;
 use Mallto\Activity\Data\QaComment;
 use Mallto\Activity\Data\QaQuestion;
 use Mallto\Activity\Data\UserSeckill;
+use Mallto\Dangjian\Data\Company;
+use Mallto\Dangjian\Data\Course;
+use Mallto\Dangjian\Data\PartyTag;
 use Mallto\Dangjian\Data\UserCourse;
 use Mallto\Dangjian\Data\UserCourseRecord;
 use Mallto\Dangjian\Data\UserExam;
+use Mallto\Dangjian\Data\UserExamAnswer;
 use Mallto\Dangjian\Data\UserExamRecord;
 use Mallto\Dangjian\Data\UserOnlineStudy;
 use Mallto\Dangjian\Data\UserOnlineStudyRecord;
@@ -25,7 +31,7 @@ use Mallto\Mall\Data\UserCoupon;
 
 class User extends Authenticatable
 {
-    use Notifiable, DynamicData, HasApiTokens;
+    use Notifiable, DynamicData, HasApiTokens,SelectSource;
 
     /**
      * 用户信息接口需要展示的字段
@@ -41,6 +47,10 @@ class User extends Authenticatable
     protected $guarded = [
 
     ];
+
+    public static function selectSourceDate(){
+        return static::dynamicData()->pluck("nickname","id");
+    }
 
     /**
      * The attributes that should be hidden for arrays.
@@ -94,6 +104,8 @@ class User extends Authenticatable
         return $this->hasMany(UserSeckill::class);
     }
 
+    //------------- 问答开始 -------------------------------
+
     public function userQuestions()
     {
         return $this->hasMany(QaQuestion::class);
@@ -109,6 +121,7 @@ class User extends Authenticatable
         return $this->hasMany(QaComment::class);
     }
 
+    //------------- 问答结束 -------------------------------
 
     public function pointHistories()
     {
@@ -124,6 +137,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(ParkingRecord::class);
     }
+
+    //------------------- 党建开始 ---------------------
 
     public function userCourses()
     {
@@ -145,6 +160,12 @@ class User extends Authenticatable
         return $this->hasMany(UserExamRecord::class);
     }
 
+    public function userExamAnswers()
+    {
+        return $this->hasMany(UserExamAnswer::class);
+    }
+
+
     public function userOnlineStudies()
     {
         return $this->hasMany(UserOnlineStudy::class);
@@ -154,5 +175,54 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserOnlineStudyRecord::class);
     }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, "user_courses");
+    }
+
+
+    public function partyTags()
+    {
+        return $this->belongsToMany(PartyTag::class, "party_tag_users");
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+
+    /**
+     * 查询用户今年的这次考试
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function examThisYear($id)
+    {
+        return $this->userExams()
+            ->where("exam_id", $id)
+            ->whereYear("created_at", Carbon::now()->year)
+            ->first();
+    }
+
+    /**
+     * 查询用户今年的这次学习
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function onlineStudyThisYear($id)
+    {
+        return $this->userOnlineStudies()
+            ->where("online_study_id", $id)
+            ->whereYear("created_at", Carbon::now()->year)
+            ->first();
+    }
+
+
+    //------------------- 党建结束 ---------------------
+
 
 }
