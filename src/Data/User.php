@@ -4,6 +4,7 @@ namespace Mallto\User\Data;
 
 
 use Carbon\Carbon;
+use Encore\Admin\Auth\Database\Subject;
 use Encore\Admin\Auth\Database\Traits\DynamicData;
 use Encore\Admin\Auth\Database\Traits\SelectSource;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -192,6 +193,10 @@ class User extends Authenticatable
         return $this->belongsTo(Company::class);
     }
 
+
+    public function topSubject(){
+        return $this->belongsTo(Subject::class,"top_subject_id");
+    }
 
     /**
      * 查询用户今年的这次考试
