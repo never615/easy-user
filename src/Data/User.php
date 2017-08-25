@@ -32,7 +32,7 @@ use Mallto\Mall\Data\UserCoupon;
 
 class User extends Authenticatable
 {
-    use Notifiable, DynamicData, HasApiTokens,SelectSource;
+    use Notifiable, DynamicData, HasApiTokens, SelectSource;
 
     /**
      * 用户信息接口需要展示的字段
@@ -49,8 +49,17 @@ class User extends Authenticatable
 
     ];
 
-    public static function selectSourceDate(){
-        return static::dynamicData()->pluck("nickname","id");
+    public static function selectSourceDate()
+    {
+        return static::dynamicData()->pluck("nickname", "id");
+    }
+
+
+    public static function djSelectSourceDate()
+    {
+        return static::dynamicData()
+            ->whereHas('partyTags', function () {
+            })->pluck("nickname", "id");
     }
 
     /**
@@ -194,8 +203,9 @@ class User extends Authenticatable
     }
 
 
-    public function topSubject(){
-        return $this->belongsTo(Subject::class,"top_subject_id");
+    public function topSubject()
+    {
+        return $this->belongsTo(Subject::class, "top_subject_id");
     }
 
     /**

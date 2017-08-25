@@ -119,6 +119,7 @@ class UserUsecaseImpl implements UserUsecase
                     "subject_id" => $subject->id,
                     "nickname"   => $nickname,
                     "avatar"     => $wechatUserInfo->avatar,
+                    "top_subject_id" => $subject->id,
                 ];
 
                 if (!empty($type)) {
@@ -141,6 +142,7 @@ class UserUsecaseImpl implements UserUsecase
                         "identity_type" => "wechat",
                         "identifier"    => $openid,
                         "subject_id"    => $subject->id,
+
                     ]);
 
                     //填充微信信息
