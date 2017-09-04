@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Class CreateUsersTable
  */
-class AddAdminUserId extends Migration
+class AddAdminUserIdUser extends Migration
 {
     /**
      * Run the migrations.
