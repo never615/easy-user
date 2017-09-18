@@ -49,6 +49,14 @@ class User extends Authenticatable
 
     ];
 
+
+    protected $casts = [
+        'online_time'        => "double",
+        'total_online_time'  => "double",
+        'offline_time'       => "double",
+        'total_offline_time' => "double",
+    ];
+
     public static function selectSourceDate()
     {
         return static::dynamicData()->pluck("nickname", "id");
