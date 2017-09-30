@@ -71,11 +71,6 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
         //先判断该openId有没有对应的用户
 
-        //根据openId,查询微信用户信息
-        $userAuth = UserAuth::where("identity_type", "wechat")
-            ->where("identifier", $openId)
-            ->where("subject_id", $subject->id)
-            ->first();
 
         //查询微信用户信息
         $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
@@ -93,6 +88,14 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             return new PermissionDeniedException("无法获取微信信息,请在微信内打开");
 //                return new  InternalHttpException("系统错误");
         }
+
+        //根据openId,查询微信用户信息
+        $userAuth = UserAuth::where("identity_type", "wechat")
+            ->where("identifier", $openId)
+            ->where("subject_id", $subject->id)
+            ->first();
+
+
 
         if (!$userAuth) {
             //用户不存在
