@@ -26,7 +26,7 @@ Route::group($attributes, function ($router) {
         //需要授权的
         Route::group(['middleware' => ['admin.auto_permission']], function ($router) {  //指定auth的guard为mall
             //用户
-            Route::resource('users', 'UserController', ['except' => ['create', 'show', 'store']]);
+            Route::resource('users', 'UserController', ['except' => ['create', 'store']]);
         });
     });
 

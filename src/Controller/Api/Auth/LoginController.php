@@ -24,7 +24,7 @@ class LoginController extends Controller
      * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
-    public function login(Request $request)
+    public function login(Request $request,UserUsecase $userUsecase)
     {
         $requestType = $request->header("REQUEST-TYPE");
         $type = $request->get("type", null);
@@ -39,7 +39,7 @@ class LoginController extends Controller
 
         $this->validate($request, $rules);
 
-        $userUsecase = app(UserUsecase::class);
+//        $userUsecase = app(::class);
 
 
         $user = $userUsecase->existUser($type, false);
