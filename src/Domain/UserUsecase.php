@@ -4,7 +4,6 @@
  */
 
 
-
 namespace Mallto\User\Domain;
 
 
@@ -23,8 +22,9 @@ interface UserUsecase
      * 判断用户是否存在
      *
      * @param        $type
-     * @param bool   $register ,注册或者登录模式,
-     *                         当type是mobile的情况下:注册模式下判断用户是否存在使用提交参数手机号查询,登录模式下判断用户是否存在判断mobile字段是不是空
+     * @param bool   $register  ,注册或者登录模式,
+     *                          当type是mobile的情况下:
+     *                          注册模式下还需要判断注册的手机号是否已经存在
      * @param string $requestType
      * @return bool|User
      */

@@ -35,7 +35,8 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param        $type
      * @param bool   $register ,注册或者登录模式,
-     *                         当type是mobile的情况下:注册模式下判断用户是否存在使用提交参数手机号查询,登录模式下判断用户是否存在判断mobile字段是不是空
+     *                         当type是mobile的情况下:
+     *                         注册模式下还需要判断注册的手机号是否已经存在
      * @param string $requestType
      * @return bool|User
      */
@@ -56,6 +57,15 @@ class UserUsecaseImpl implements UserUsecase
                 if (!empty($type)) {
                     $query = $userAuth->user()
                         ->where("subject_id", $subject->id);
+
+                    if ($register) {
+                        $user = $query->whereNotNull($type)
+                            ->where($type, Input::get("identifier"))
+                            ->first();
+                        if ($user) {
+                            throw new ResourceException("该".$type."已经被注册");
+                        }
+                    }
 
                     $user = $query->whereNotNull($type)
                         ->where($type, "!=", "")
@@ -116,9 +126,9 @@ class UserUsecaseImpl implements UserUsecase
                 $nickname = $wechatUserInfo->nickname;
 
                 $data = [
-                    "subject_id" => $subject->id,
-                    "nickname"   => $nickname,
-                    "avatar"     => $wechatUserInfo->avatar,
+                    "subject_id"     => $subject->id,
+                    "nickname"       => $nickname,
+                    "avatar"         => $wechatUserInfo->avatar,
                     "top_subject_id" => $subject->id,
                 ];
 
