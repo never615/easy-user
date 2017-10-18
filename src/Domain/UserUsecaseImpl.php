@@ -38,7 +38,7 @@ class UserUsecaseImpl implements UserUsecase
      *                         当type是mobile的情况下:
      *                         注册模式下还需要判断注册的手机号是否已经存在
      * @param string $requestType
-     * @return bool|User
+     * @return bool|\Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Relations\BelongsTo|\Illuminate\Database\Query\Builder|UserAuth|UserUsecaseImpl
      */
     public function existUser($type = null, $register = true, $requestType = "")
     {
@@ -92,6 +92,17 @@ class UserUsecaseImpl implements UserUsecase
 
                 return $user;
             } else {
+                //userAuth 不存在,如果此时进入注册模式,还需判断手机号是否已经注册
+                //在用户已经注册,换了微信使用的情况下会出现这种情况
+                if ($register) {
+                    $tempUser = User::where("subject_id", $subject->id)
+                        ->where("mobile", Input::get("identifier"))
+                        ->first();
+                    if ($tempUser) {
+                        throw new ResourceException("该".Input::get("identifier")."已经被注册");
+                    }
+                }
+
                 return false;
             }
         } else {
@@ -260,6 +271,4 @@ class UserUsecaseImpl implements UserUsecase
 
         return $wechatUserInfo;
     }
-
-
 }
