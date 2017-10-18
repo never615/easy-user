@@ -59,11 +59,14 @@ class UserUsecaseImpl implements UserUsecase
                         ->where("subject_id", $subject->id);
 
                     if ($register) {
-                        $user = $query->whereNotNull($type)
-                            ->where($type, Input::get("identifier"))
-                            ->first();
-                        if ($user) {
-                            throw new ResourceException("该".$type."已经被注册");
+                        if (Input::get("identifier", null)) {
+
+                            $user = $query->whereNotNull($type)
+                                ->where($type, Input::get("identifier"))
+                                ->first();
+                            if ($user) {
+                                throw new ResourceException("该".$type."已经被注册");
+                            }
                         }
                     }
 
