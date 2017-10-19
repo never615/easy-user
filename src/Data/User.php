@@ -49,6 +49,9 @@ class User extends Authenticatable
 
     ];
 
+    protected $dates = [
+        'bind_car_at',
+    ];
 
     protected $casts = [
         'online_time'        => "double",
