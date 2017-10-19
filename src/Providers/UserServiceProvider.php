@@ -5,8 +5,8 @@ namespace Mallto\User\Providers;
 use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
-use Mallto\User\Domain\UserUsecaseImpl;
 use Mallto\User\Domain\UserUsecase;
+use Mallto\User\Domain\UserUsecaseImpl;
 
 class UserServiceProvider extends ServiceProvider
 {
@@ -16,6 +16,7 @@ class UserServiceProvider extends ServiceProvider
      */
     protected $commands = [
         'Mallto\User\Commands\InstallCommand',
+        'Mallto\User\Commands\UpdateCommand',
     ];
 
     /**
