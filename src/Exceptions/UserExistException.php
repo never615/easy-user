@@ -1,5 +1,9 @@
 <?php
 /**
+ * Copyright (c) 2017. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
+ */
+
+/**
  * Created by PhpStorm.
  * User: never615
  * Date: 12/07/2017
