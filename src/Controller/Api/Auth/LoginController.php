@@ -33,10 +33,10 @@ class LoginController extends Controller
         $requestType = $request->header("REQUEST-TYPE");
         $type = $request->get("type", null);
         $rules = [];
+        $rules = array_merge($rules, [
+            "identifier" => "required",
+        ]);
         if ($requestType == "WECHAT") {
-            $rules = array_merge($rules, [
-                "openid" => "required",
-            ]);
         } else {
             throw new PermissionDeniedException("暂不支持非微信终端登录");
         }

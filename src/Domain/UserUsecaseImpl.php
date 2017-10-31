@@ -237,13 +237,13 @@ class UserUsecaseImpl implements UserUsecase
     public function getOpenid()
     {
         try {
-            $openid = Input::get("openid");
+            $openid = Input::get("identifier");
             $openid = urldecode($openid);
             $openid = decrypt($openid);
 
             return $openid;
         } catch (DecryptException $e) {
-            \Log::warning(Input::get("openid"));
+            \Log::warning(Input::get("identifier"));
             \Log::error("openid解密失败");
             throw new ResourceException("openid无效");
         }
