@@ -58,14 +58,21 @@ class UserUsecaseImpl implements UserUsecase
                         ->where("subject_id", $subject->id);
 
                     if ($register) {
-                        if (Input::get("identifier", null)) {
+                        switch ($type) {
+                            case 'mobile':
+                                if (Input::get("mobile", null)) {
 
-                            $user = $query->whereNotNull($type)
-                                ->where($type, Input::get("identifier"))
-                                ->first();
-                            if ($user) {
-                                throw new ResourceException("该".$type."已经被注册");
-                            }
+                                    $user = $query->whereNotNull($type)
+                                        ->where($type, Input::get("mobile"))
+                                        ->first();
+                                    if ($user) {
+                                        throw new ResourceException("该".$type."已经被注册");
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new ResourceException("不支持该类型的注册:".$type);
+                                break;
                         }
                     }
 
@@ -98,7 +105,7 @@ class UserUsecaseImpl implements UserUsecase
                 //在用户已经注册,换了微信使用的情况下会出现这种情况
                 if ($register) {
                     $tempUser = User::where("subject_id", $subject->id)
-                        ->where("mobile", Input::get("identifier"))
+                        ->where("mobile", Input::get("mobile"))
                         ->first();
                     if ($tempUser) {
                         throw new ResourceException("该".Input::get("identifier")."已经被注册");
