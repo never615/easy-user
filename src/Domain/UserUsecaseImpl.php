@@ -48,11 +48,10 @@ class UserUsecaseImpl implements UserUsecase
         if ($requestType == "WECHAT" || $requestType == 'bridge') {
             $openid = $this->getOpenid();
             //根据openId,查询微信用户信息
-            $query = UserAuth::where("identity_type", "wechat")
+            $userAuth = UserAuth::where("identity_type", "wechat")
                 ->where("identifier", $openid)
-                ->where("subject_id", $subject->id);
+                ->where("subject_id", $subject->id)->first();
 
-            $userAuth = $query->first();
             if ($userAuth) {
                 if (!empty($type)) {
                     $query = $userAuth->user()

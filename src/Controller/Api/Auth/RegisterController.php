@@ -63,7 +63,7 @@ class RegisterController extends Controller
             switch ($type) {
                 case "mobile":
                     $rules = array_merge($rules, [
-                        'identifier' => 'required|size:11',
+                        'mobile' => 'required|size:11',
                     ]);
                     break;
                 default:
@@ -72,15 +72,17 @@ class RegisterController extends Controller
             }
         }
 
+        $rules = array_merge($rules, [
+            "identifier" => "required",
+        ]);
+
         if ($requestType == "WECHAT") {
-            $rules = array_merge($rules, [
-                "openid" => "required",
-            ]);
+
         }
 
         $this->validate($request, $rules);
 
-        $this->checkVerifyCode($request->identifier, $request->code, $type);
+        $this->checkVerifyCode($request->mobile, $request->code, $type);
 
         $userUsecase = app(UserUsecase::class);
 
