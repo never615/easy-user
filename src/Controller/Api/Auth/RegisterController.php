@@ -7,8 +7,11 @@ namespace Mallto\User\Controller\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Mallto\Tool\Exception\PermissionDeniedException;
-use Mallto\User\Domain\PublicUsecase;
+use Illuminate\Validation\Rule;
+use Mallto\Tool\Exception\ResourceException;
+use Mallto\Tool\Utils\SubjectUtils;
+use Mallto\User\Data\User;
+use Mallto\User\Domain\Traits\AuthValidateTrait;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 use Mallto\User\Exceptions\UserExistException;
@@ -22,77 +25,83 @@ use Mallto\User\Exceptions\UserExistException;
  */
 class RegisterController extends Controller
 {
-    use VerifyCodeTrait;
+    use VerifyCodeTrait, AuthValidateTrait;
+
 
     /**
-     * @var PublicUsecase
-     */
-    private $publicUsecase;
-
-    /**
-     * RegisterController constructor.
+     * app注册用户
      *
-     * @param PublicUsecase $publicUsecase
+     * @param Request     $request
+     * @param UserUsecase $userUsecase
      */
-    public function __construct(PublicUsecase $publicUsecase)
+    public function registerByApp(Request $request, UserUsecase $userUsecase)
     {
-        $this->publicUsecase = $publicUsecase;
+        //todo
     }
 
 
     /**
-     * 注册,支持微信/app;支持必须绑定手机用户 或者绑定邮箱用户等
+     * 微信注册用户
      *
-     * @param Request $request
-     * @return PermissionDeniedException|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
+     * @param Request     $request
+     * @param UserUsecase $userUsecase
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
-    public function register(Request $request)
+    public function registerByWechat(Request $request, UserUsecase $userUsecase)
     {
-        $type = $request->get("type", null);
-
-        $requestType = $request->header("REQUEST-TYPE");
-
+        //请求字段验证
+        //验证规则
         $rules = [];
-
-        if (!empty($type)) {
-//            $rules = array_merge($rules, [
-//                'name'     => 'required',
-//                'birthday' => 'required|date',
-//                'gender'   => 'required|integer',
-//            ]);
-            switch ($type) {
-                case "mobile":
-                    $rules = array_merge($rules, [
-                        'mobile' => 'required|size:11',
-                    ]);
-                    break;
-                default:
-                    throw new PermissionDeniedException("不支持该类型注册:".$type);
-                    break;
-            }
-        }
-
         $rules = array_merge($rules, [
-            "identifier" => "required",
+            "identifier"    => "required",
+            "identity_type" => "required",
+            'bind_data'     => "required",
+            "bind_type"     => [
+                "required",
+                Rule::in(User::SUPPORT_BIND_TYPE),
+            ],
+            "code"          => "required|numeric",
         ]);
-
-        if ($requestType == "WECHAT") {
-
-        }
 
         $this->validate($request, $rules);
 
-        $this->checkVerifyCode($request->mobile, $request->code, $type);
+        $this->isWechatRequest($request);
 
-        $userUsecase = app(UserUsecase::class);
+        $this->checkVerifyCode($request->bind_data, $request->code);
 
-        if ($userUsecase->existUser($type)) {
-            throw new UserExistException();
+        $subject = SubjectUtils::getSubject();
+        $bindData = $request->bind_data;
+        $bindType = $request->bind_type;
+
+        //检查bind_date是否被占用
+        if ($userUsecase->isBinded($bindData, $bindType, $subject->id)) {
+            throw new UserExistException($bindType."已经被使用");
+        }
+        //检查用户是否存在
+        $credentials = $userUsecase->transformCredentials($request);
+        $user = $userUsecase->retrieveByCredentials($credentials, $subject);
+        if ($user) {
+            //用户已经存在
+            if (empty($user->$bindType)) {
+                //用户没有绑定对应数据
+                //继续注册流程,绑定数据
+                $user = $userUsecase->bind($user, $bindType, $bindData);
+            } else {
+                //用户已经绑定了,则在微信注册模式下,不应该调用到该接口,抛出异常
+                throw new ResourceException("接口调用异常,用户已存在");
+            }
+        } else {
+            //开始创建用户
+            $user = $userUsecase->createUserByWechat($credentials, $subject);
         }
 
-        $user = $userUsecase->createUser($type);
 
-        return $userUsecase->getUserInfo($user->id);
+        //更新用户微信信息
+        $userUsecase->updateUserWechatInfo($user, $credentials, $subject);
+
+        $user = $userUsecase->getReturenUserInfo($user);
+
+        return $user;
     }
 
 }

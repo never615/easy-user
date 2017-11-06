@@ -44,32 +44,11 @@ Route::group($attributes, function ($router) {
         Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
 
 
-
-
-        Route::group(["middleware" => ["scopes:account-token"]], function () {
-            //(新) 登录接口
-            Route::post("", 'Auth\LoginController@login');
-        });
-
-
-        //(新) 登录接口
+        //登录接口
         Route::post("login", 'Auth\LoginController@login');
         //注册:通用注册,包含微信和app
         Route::post('register', 'Auth\RegisterController@register');
 
-
-//        Route::post('bind', 'Auth\RegisterController@bind');
-
-
-        //todo 登录登出 app使用
-//        Route::post('login', 'Auth\LoginController@login');
-//        Route::post('logout', 'Auth\LoginController@logout');
-//
-//        // Registration Routes...
-//        Route::post('register', 'Auth\RegisterController@register');
-//
-//        // Password Reset Routes... 忘记密码
-//        Route::post('password/email', 'Auth\ForgotPasswordController@resetPassword');
 
         /**
          * 需要经过签名校验

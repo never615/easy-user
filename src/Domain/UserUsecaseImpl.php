@@ -5,18 +5,14 @@
 
 namespace Mallto\User\Domain;
 
-use Encore\Admin\AppUtils;
 use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Request;
-use Mallto\Tool\Exception\PermissionDeniedException;
+use Illuminate\Support\Str;
+use Mallto\Tool\Domain\WechatUsecase;
+use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
-use Mallto\User\Data\WechatAuthInfo;
-use Mallto\User\Data\WechatUserInfo;
-use Mallto\User\Exceptions\UserExistException;
+use Mallto\User\Data\UserProfile;
 
 /**
  * 默认版的用户处理
@@ -31,203 +27,56 @@ use Mallto\User\Exceptions\UserExistException;
 class UserUsecaseImpl implements UserUsecase
 {
     /**
-     * 判断用户是否存在
-     *
-     * @param        $type
-     * @param bool   $register ,注册或者登录模式,
-     *                         当type是mobile的情况下:
-     *                         注册模式下还需要判断注册的手机号是否已经存在
-     * @param string $requestType
-     * @return bool|\Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Relations\BelongsTo|\Illuminate\Database\Query\Builder|UserAuth|UserUsecaseImpl
+     * @var WechatUsecase
      */
-    public function existUser($type = null, $register = true, $requestType = "")
+    protected $wechatUsecase;
+
+    /**
+     * UserUsecaseImpl constructor.
+     */
+    public function __construct(WechatUsecase $wechatUsecase)
     {
-        $requestType = $requestType ?: Request::header("REQUEST-TYPE");
-        $subject = AppUtils::getSubject();
-
-        if ($requestType == "WECHAT" || $requestType == 'bridge') {
-            $openid = $this->getOpenid();
-            //根据openId,查询微信用户信息
-            $userAuth = UserAuth::where("identity_type", "wechat")
-                ->where("identifier", $openid)
-                ->where("subject_id", $subject->id)->first();
-
-            if ($userAuth) {
-                if (!empty($type)) {
-                    $query = $userAuth->user()
-                        ->where("subject_id", $subject->id);
-
-                    if ($register) {
-                        switch ($type) {
-                            case 'mobile':
-                                if (Input::get("mobile", null)) {
-
-                                    $user = $query->whereNotNull($type)
-                                        ->where($type, Input::get("mobile"))
-                                        ->first();
-                                    if ($user) {
-                                        throw new ResourceException("该".$type."已经被注册");
-                                    }
-                                }
-                                break;
-                            default:
-                                throw new ResourceException("不支持该类型的注册:".$type);
-                                break;
-                        }
-                    }
-
-                    $user = $query->whereNotNull($type)
-                        ->where($type, "!=", "")
-                        ->first();
-                } else {
-                    $user = $userAuth->user;
-                }
-
-                if ($user) {
-                    //用户存在处理用户微信信息更新
-                    $wechatUserInfo = $this->getWechatUserInfo($subject->uuid, $openid);
-                    //填充微信信息
-                    $user->userProfile->update([
-                        "wechat_nickname"  => $wechatUserInfo->nickname,
-                        "wechat_avatar"    => $wechatUserInfo->avatar,
-                        "wechat_province"  => $wechatUserInfo->province,
-                        "wechat_city"      => $wechatUserInfo->city,
-                        "wechat_country"   => $wechatUserInfo->country,
-                        "wechat_sex"       => $wechatUserInfo->sex,
-                        "wechat_language"  => $wechatUserInfo->language,
-                        "wechat_privilege" => $wechatUserInfo->privilege,
-                    ]);
-                }
-
-                return $user;
-            } else {
-                //userAuth 不存在,如果此时进入注册模式,还需判断手机号是否已经注册
-                //在用户已经注册,换了微信使用的情况下会出现这种情况
-                if ($register) {
-                    $tempUser = User::where("subject_id", $subject->id)
-                        ->where("mobile", Input::get("mobile"))
-                        ->first();
-                    if ($tempUser) {
-                        throw new ResourceException("该".Input::get("identifier")."已经被注册");
-                    }
-                }
-
-                return false;
-            }
-        } else {
-            //todo 兼容企业号
-            throw new PermissionDeniedException("暂不支持出微信以外场景");
-        }
+        $this->wechatUsecase = $wechatUsecase;
     }
 
 
     /**
-     * 创建用户
+     * 从请求中提取用户凭证
      *
-     * @param string $type ,mobile or email ..
-     * @param        $info
-     * @param string $requestType
-     * @return $this|bool|\Illuminate\Database\Eloquent\Model|User
+     * @param $request
+     * @return array
      */
-    public function createUser($type = null, $info = null, $requestType = "")
+    public function transformCredentials($request)
     {
-        $requestType = $requestType ?: Request::header("REQUEST-TYPE");
+        $credentials = [
+            'identityType' => $request->get("identity_type"),
+            'identifier'   => $request->get("identifier"),
+            '$requestType' => $request->header("REQUEST-TYPE"),
+        ];
 
-        if ($requestType == "WECHAT" || $requestType == 'bridge') {
-            $openid = $this->getOpenid();
-            $subject = AppUtils::getSubject();
-            $uuid = $subject->uuid;
-
-            if (!$this->existUser($type, true, $requestType)) {
-                //用户不存在
-
-                $wechatUserInfo = $this->getWechatUserInfo($uuid, $openid);
-
-                $nickname = $wechatUserInfo->nickname;
-
-                $data = [
-                    "subject_id"     => $subject->id,
-                    "nickname"       => $nickname,
-                    "avatar"         => $wechatUserInfo->avatar,
-                    "top_subject_id" => $subject->id,
-                ];
-
-                if (!empty($type)) {
-                    $data = array_merge($data, [$type => Input::get('identifier')]);
-                }
-
-                DB::beginTransaction();
-
-                //先判断有没有存在纯微信用户
-                if ($this->existUser(null, true, $requestType)) {
-                    //已经存在纯微信用户信息了,更新
-                    $user = $this->existUser(null, true, $requestType);
-                    $user->update($data);
-                } else {
-                    //不存在纯微信用户,直接创建
-                    //创建用户
-                    $user = User::create($data);
-
-                    $user->userAuths()->create([
-                        "identity_type" => "wechat",
-                        "identifier"    => $openid,
-                        "subject_id"    => $subject->id,
-
-                    ]);
-
-                    //填充微信信息
-                    if ($user->userProfile) {
-                        $user->userProfile->update([
-                            "wechat_nickname"  => $wechatUserInfo->nickname,
-                            "wechat_avatar"    => $wechatUserInfo->avatar,
-                            "wechat_province"  => $wechatUserInfo->province,
-                            "wechat_city"      => $wechatUserInfo->city,
-                            "wechat_country"   => $wechatUserInfo->country,
-                            "wechat_sex"       => $wechatUserInfo->sex,
-                            "wechat_language"  => $wechatUserInfo->language,
-                            "wechat_privilege" => $wechatUserInfo->privilege,
-                        ]);
-                    } else {
-                        $user->userProfile()->create([
-                            "wechat_nickname"  => $wechatUserInfo->nickname,
-                            "wechat_avatar"    => $wechatUserInfo->avatar,
-                            "wechat_province"  => $wechatUserInfo->province,
-                            "wechat_city"      => $wechatUserInfo->city,
-                            "wechat_country"   => $wechatUserInfo->country,
-                            "wechat_sex"       => $wechatUserInfo->sex,
-                            "wechat_language"  => $wechatUserInfo->language,
-                            "wechat_privilege" => $wechatUserInfo->privilege,
-                        ]);
-                    }
-                }
-
-                DB::commit();
-
-                return $user;
-            } else {
-                throw new UserExistException();
-            }
-        } else {
-            throw new PermissionDeniedException("暂不支持来自非微信的注册");
+        if (!empty($request->get('credential'))) {
+            $credentials['credential'] = $request->get('credential');
         }
+
+        return $credentials;
     }
 
     /**
-     * 获取用户信息
+     * 给user对象添加token
+     * token分不同的类型,即不同的作用域,比如有普通的微信令牌和绑定手机的微信用户的令牌
      *
-     * @param $userId
-     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
+     * @param $user
      */
-    public function getUserInfo($userId)
+    public function addToken($user)
     {
-        $subjectId = AppUtils::getSubjectId();
-        $user = User::where("subject_id", $subjectId)
-            ->findOrFail($userId);
+        if (!$user) {
+            throw new NotFoundException("用户不存在");
+        }
 
-        if ($user->mobile) {
-            $token = $user->createToken("easy", ["mobile-token"])->accessToken;
+        if (!empty($user->mobile)) {
+            $token = $user->createToken(config("app.unique"), ["mobile-token"])->accessToken;
         } else {
-            $token = $user->createToken("easy", ["wechat-token"])->accessToken;
+            $token = $user->createToken(config("app.unique"), ["wechat-token"])->accessToken;
         }
 
         $user->token = $token;
@@ -235,49 +84,231 @@ class UserUsecaseImpl implements UserUsecase
         return $user;
     }
 
+
     /**
-     * 获取openid
+     * 根据标识符检查用户是否通过验证
      *
+     * 1. 登录的时候需要用
+     * 2. 注册的时候也可以使用来判断用户是否存在
+     *
+     * @param $credentials
+     * @param $subject
+     * @return User|null
+     */
+    public function retrieveByCredentials($credentials, $subject)
+    {
+        if (empty($credentials)) {
+            return null;
+        }
+
+        $requestType = $credentials['requestType'];
+        $identityType = $credentials['identityType'];
+        $identifier = $credentials['identifier'];
+
+        switch ($requestType) {
+            case "WECHAT":
+                $identifier = $this->decryptOpenid($identifier);
+                break;
+        }
+
+
+        $query = UserAuth::where("identity_type", $identityType)
+            ->where("identifier", $identifier)
+            ->where("subject_id", $subject->id);
+
+        foreach ($credentials as $key => $value) {
+            if (!Str::contains($key, 'credential')) {
+                $query->where($key, $value);
+            }
+        }
+
+        $userAuth = $query->first();
+
+        if (!$userAuth) {
+            return null;
+        }
+
+        $user = $userAuth->user;
+        if (!$user) {
+            //userAuth存在,user不存在,系统异常
+            \Log::error("异常:userAuth存在,user不存在,");
+
+            return null;
+        }
+
+
+        return $userAuth->user;
+    }
+
+
+    const SUPPORT_BIND_TYPE = ['mobile'];
+
+
+    /**
+     * 检查用户的绑定状态
+     * 存在对应绑定项目,返回true;否则返回false
+     *
+     * @param $user
+     * @param $bindType
+     * @return bool
+     */
+    public function checkUserBindStatus($user, $bindType)
+    {
+        return empty($user->$bindType) ? false : true;
+    }
+
+
+    /**
+     * 检查对应项是否已经被绑定,注册可用
+     * 如:检查手机号是否被绑定
+     *
+     * @param $bindDate
+     * @param $bindType
+     * @param $subjectId
+     */
+    public function isBinded($bindDate, $bindType, $subjectId)
+    {
+        return User::where($bindType, $bindDate)
+            ->where("subject_id", $subjectId)
+            ->exist();
+    }
+
+
+    /**
+     * 绑定数据(如:手机,邮箱)
+     *
+     * @param $user
+     * @param $bindType
+     * @param $bindData
      * @return mixed
      */
-    public function getOpenid()
+    public function bind($user, $bindType, $bindData)
+    {
+        $user->$bindType = $bindData;
+        $user->save();
+
+        return $user;
+    }
+
+
+    /**
+     * 微信:创建用户
+     *
+     * @param      $credentials
+     * @param      $subject
+     * @param null $info
+     * @return User
+     */
+    public function createUserByWechat($credentials, $subject, $info = null)
+    {
+        if (empty($credentials)) {
+            throw new ResourceException("异常请求:credentials为空");
+        }
+
+        $identityType = $credentials['identityType'];
+        $identifier = $credentials['identifier'];
+        $credential = null;
+        foreach ($credentials as $key => $value) {
+            if (!Str::contains($key, 'credential')) {
+                $credential = $value;
+            }
+        }
+        $wechatUserInfo = $this->wechatUsecase->getWechatUserInfo($subject->uuid,
+            $this->decryptOpenid($credentials['credential']));
+
+        $userData = [
+            'subject_id' => $subject->id,
+            'nickname'   => $wechatUserInfo->nickname,
+            "avatar"     => $wechatUserInfo->avatar,
+        ];
+
+        \DB::beginTransaction();
+
+        $user = User::create($userData);
+
+        $user->userAuths()->create([
+            'subject_id'    => $subject->id,
+            'identity_type' => $identityType,
+            'identifier'    => $identifier,
+            'credential'    => $credential,
+        ]);
+
+        \DB::commit();
+
+        return $user;
+    }
+
+
+    /**
+     * 解密openid
+     *
+     * @param $openid
+     * @return string
+     */
+    public function decryptOpenid($openid)
     {
         try {
-            $openid = Input::get("identifier");
             $openid = urldecode($openid);
             $openid = decrypt($openid);
 
             return $openid;
         } catch (DecryptException $e) {
-            \Log::warning(Input::get("identifier"));
-            \Log::error("openid解密失败");
+            \Log::error("openid解密失败:".$openid);
             throw new ResourceException("openid无效");
         }
     }
 
+
     /**
-     * @param $uuid
-     * @param $openid
-     * @return mixed
+     * 获取用户信息
+     * 默认实现即返回用户对象,不同的项目可以需要返回的不一样.
+     * 比如:mall项目需要返回member信息等,不同项目可以有自己不同的实现
+     *
+     * @param $user
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
-    public function getWechatUserInfo($uuid, $openid)
+    public function getReturenUserInfo($user)
     {
-        //查询微信用户信息
-        $wechatAuthInfo = WechatAuthInfo::where("uuid", $uuid)->first();
-        if (!$wechatAuthInfo) {
-            throw new PermissionDeniedException("公众号未授权");
-        }
-
-        $wechatUserInfo = WechatUserInfo::where("openid", $openid)
-            ->where("app_id", $wechatAuthInfo->authorizer_appid)
-            ->first();
-
-        if (!$wechatUserInfo) {
-            \Log::error("无法获取微信信息");
-
-            throw new PermissionDeniedException("openid未找到,请在微信内打开");
-        }
-
-        return $wechatUserInfo;
+        return $this->addToken($user);
     }
+
+
+    /**
+     * 更新用户的微信信息
+     *
+     * @param $user
+     * @param $credentials
+     * @param $subject
+     */
+    public function updateUserWechatInfo($user, $credentials, $subject)
+    {
+        $wechatUserInfo = $this->wechatUsecase->getWechatUserInfo($subject->uuid,
+            $this->decryptOpenid($credentials['credential']));
+        $this->updateOrCreateUserProfile($user, $wechatUserInfo);
+    }
+
+
+    /**
+     * 更新或者创建用户的微信信息
+     *
+     * @param $user
+     * @param $wechatUserInfo
+     */
+    private function updateOrCreateUserProfile($user, $wechatUserInfo)
+    {
+        UserProfile::updateOrCreate(['user_id' => $user->id],
+            [
+                "wechat_nickname"  => $wechatUserInfo->nickname,
+                "wechat_avatar"    => $wechatUserInfo->avatar,
+                "wechat_province"  => $wechatUserInfo->province,
+                "wechat_city"      => $wechatUserInfo->city,
+                "wechat_country"   => $wechatUserInfo->country,
+                "wechat_sex"       => $wechatUserInfo->sex,
+                "wechat_language"  => $wechatUserInfo->language,
+                "wechat_privilege" => $wechatUserInfo->privilege,
+            ]
+        );
+
+    }
+
 }

@@ -35,7 +35,13 @@ use Mallto\Mall\Data\UserCoupon;
 
 class User extends Authenticatable
 {
-    use Notifiable, DynamicData, HasApiTokens, SelectSource;
+    use Notifiable, DynamicData, HasApiTokens, SelectSource, \Mallto\User\Domain\Traits\UserAuthTrait;
+
+    /**
+     * 支持绑定的字段
+     */
+    const SUPPORT_BIND_TYPE = ['mobile'];
+
 
     /**
      * 用户信息接口需要展示的字段
@@ -63,6 +69,19 @@ class User extends Authenticatable
         'total_offline_time' => "double",
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'deleted_at',
+        'easemob_id',
+        'easemob_password',
+        'easemob_username',
+        'remember_token',
+    ];
+
     public static function selectSourceDate()
     {
         return static::dynamicData()->pluck("nickname", "id");
@@ -76,18 +95,6 @@ class User extends Authenticatable
             })->pluck("nickname", "id");
     }
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'deleted_at',
-        'easemob_id',
-        'easemob_password',
-        'easemob_username',
-        'remember_token',
-    ];
 
     /**
      *
