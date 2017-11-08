@@ -9,10 +9,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Mallto\Tool\Exception\NotFoundException;
+use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Utils\SubjectUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
 use Mallto\User\Domain\UserUsecase;
+use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
 
 /**
@@ -26,6 +28,35 @@ class LoginController extends Controller
 
     use AuthValidateTrait;
 
+    /**
+     * 登录
+     *
+     * @param Request     $request
+     * @param UserUsecase $userUsecase
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
+     */
+    public function login(Request $request, UserUsecase $userUsecase)
+    {
+        switch ($request->header("REQUEST-TYPE")) {
+            case "WECHAT":
+                $request->identity_type = 'wechat';
+
+                if (!empty($request->get("bind_type"))) {
+                    return $this->loginByWechatWithBinding($request, $userUsecase);
+                } else {
+                    return $this->loginByWechat($request, $userUsecase);
+                }
+
+
+                break;
+            case "IOS":
+            case "ANDROID":
+                throw new PermissionDeniedException("不可用");
+                break;
+        }
+        throw new PreconditionRequiredHttpException();
+    }
+
 
     /**
      * 纯微信用户登录
@@ -34,7 +65,7 @@ class LoginController extends Controller
      * @param UserUsecase $userUsecase
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
-    public function wechatLogin(Request $request, UserUsecase $userUsecase)
+    public function loginByWechat(Request $request, UserUsecase $userUsecase)
     {
         //请求字段验证
         //验证规则
@@ -68,7 +99,14 @@ class LoginController extends Controller
     }
 
 
-    public function wechatLoginWithBinding(Request $request, UserUsecase $userUsecase)
+    /**
+     * 微信登录,用户需要绑定手机或者其他项
+     *
+     * @param Request     $request
+     * @param UserUsecase $userUsecase
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
+     */
+    public function loginByWechatWithBinding(Request $request, UserUsecase $userUsecase)
     {
         //请求字段验证
         //验证规则
@@ -114,68 +152,5 @@ class LoginController extends Controller
         return $user;
     }
 
-
-
-
-
-//    /**
-//     * 登录2.0版本接口
-//     *
-//     * @param Request     $request
-//     * @param UserUsecase $userUsecase
-//     * @return bool
-//     */
-//    public function login(Request $request, UserUsecase $userUsecase)
-//    {
-//        //请求字段验证
-//        //验证规则
-//        $rules = [];
-//        $rules = array_merge($rules, [
-//            "identifier"    => "required",
-//            "identity_type" => "required",
-//            "bind_type"     => [
-//                Rule::in(User::SUPPORT_BIND_TYPE),
-//            ],
-//        ]);
-//        $this->validate($request, $rules);
-//
-//        //对于账户是否有绑定需求,如果有则需要传递该字段
-//        $bindType = $request->get("bind_type");
-//
-//        $subject = SubjectUtils::getSubject();
-//
-//        //从请求中提取需要的信息
-//        $credentials = $userUsecase->transformCredentials($request);
-//        //检查用户是否存在
-//        $user = $userUsecase->retrieveByCredentials($credentials, $subject);
-//        if ($user) {
-//            //检查绑定状态
-//            //绑定状态字段不为空且检查用户该字段不存在,则失败.抛出用户不存在.
-//            if (!empty($bindType) && !$userUsecase->checkUserBindStatus($user, $bindType)) {
-//                throw new NotFoundException("用户不存在");
-//            }
-//        } else {
-//            //用户不存在
-//            //如果是微信模式下且不存在绑定要求(即bindType为null),则直接创建用户
-//            //否则返回用户不存在
-//            if ($request->header("REQUEST-TYPE") == "WECHAT" && empty($bindType)) {
-//                $user = $userUsecase->createUserByWechat($credentials, $subject);
-//            } else {
-//                throw new NotFoundException("用户不存在");
-//            }
-//        }
-//
-//        //如果是微信请求则拉取最新的用户微信信息
-//        $userUsecase->updateUserWechatInfo($user, $credentials, $subject);
-//
-//        $user = $userUsecase->getReturenUserInfo($user);
-//
-//        $user = $userUsecase->addToken($user);
-//
-//        return $user;
-//    }
-
-
-    //todo 登出 app才有
 
 }

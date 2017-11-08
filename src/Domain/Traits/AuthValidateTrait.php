@@ -28,4 +28,7 @@ trait AuthValidateTrait
             throw new PreconditionFailedHttpException(trans("errors.precondition_failed"));
         }
     }
+
+
+
 }

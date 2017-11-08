@@ -72,10 +72,8 @@ class PublicController extends Controller
             throw new ValidationHttpException($validator->errors()->first());
         }
 
-//        $faker = Faker::create();
-//        $code = $faker->numerify('####');
 
-        $code = rand(1000, 9999);
+        $code = mt_rand(1000, 9999);
 
         if (Cache::has('code'.$subjectId.$email)) {
             //如果验证码还没过期,用户再次请求则重复发送一次验证码

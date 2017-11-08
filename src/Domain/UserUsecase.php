@@ -21,18 +21,12 @@ interface UserUsecase
     /**
      * 从请求中提取用户凭证
      *
-     * @param $request
+     * @param      $request
+     * @param bool $credential ,是否提取凭证
      * @return array
      */
-    public function transformCredentials($request);
+    public function transformCredentials($request, $credential = false);
 
-    /**
-     * 给user对象添加token
-     * token分不同的类型,即不同的作用域,比如有普通的微信令牌和绑定手机的微信用户的令牌
-     *
-     * @param $user
-     */
-    public function addToken($user);
 
     /**
      * 根据标识符检查用户是否通过验证
@@ -70,11 +64,12 @@ interface UserUsecase
      * 检查对应项是否已经被绑定,注册可用
      * 如:检查手机号是否被绑定
      *
-     * @param $bindDate
      * @param $bindType
+     * @param $bindDate
      * @param $subjectId
+     * @return \Illuminate\Database\Eloquent\Model|null|static
      */
-    public function isBinded($bindDate, $bindType, $subjectId);
+    public function isBinded($bindType, $bindDate, $subjectId);
 
     /**
      * 解密openid
@@ -95,6 +90,15 @@ interface UserUsecase
      */
     public function createUserByWechat($credentials, $subject, $info = null);
 
+    /**
+     * app注册创建用户
+     *
+     * @param      $credentials
+     * @param      $subject
+     * @param null $info
+     * @return User
+     */
+    public function createUserByApp($credentials, $subject, $info = null);
 
     /**
      * 更新用户的微信信息
@@ -111,10 +115,54 @@ interface UserUsecase
      * 默认实现即返回用户对象,不同的项目可以需要返回的不一样.
      * 比如:mall项目需要返回member信息等,不同项目可以有自己不同的实现
      *
-     * @param $user
-     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
+     * @param      $user
+     * @param bool $addToken
+     * @return User
      */
-    public function getReturenUserInfo($user);
+    public function getReturenUserInfo($user, $addToken = true);
 
+    /**
+     * 更新用户信息
+     *
+     * @param $user
+     * @param $info
+     */
+    public function updateUser($user, $info);
+
+    /**
+     * 给user对象添加token
+     * token分不同的类型,即不同的作用域,比如有普通的微信令牌和绑定手机的微信用户的令牌
+     *
+     * @param $user
+     */
+    public function addToken($user);
+
+
+    /**
+     * 增加授权方式
+     *
+     * @param $user
+     * @param $credentials
+     */
+    public function addIdentifier($user, $credentials);
+
+    /**
+     * 检查用户是否有对应的凭证类型
+     *
+     * @param $identityType
+     */
+    public function hasIdentityType($user, $identityType);
+
+    /**
+     * 合并用户
+     *
+     * 把两个用户账户合并,一般是用户已经是纯微信用户,且已经使用手机注册了app.此时需要用户在微信要绑定手机,则需要合并两个用户
+     *
+     * 要做的事情:把用户的所有相关的业务数据的user_id都改成同一个,然后删除废弃用户
+     *
+     * @param $appUser
+     * @param $wechatUser
+     */
+    public function mergeAccount($appUser, $wechatUser);
 
 }

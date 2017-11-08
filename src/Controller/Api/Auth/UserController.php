@@ -8,8 +8,10 @@ namespace Mallto\User\Controller\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
+use Mallto\User\Data\User;
 use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 
@@ -39,15 +41,31 @@ class UserController extends Controller
         return $userUsecase->getUserInfo($user->id);
     }
 
-//    /**
-//     * 更新用户信息
-//     *
-//     * @param Request $request
-//     */
-//    public function update(Request $request)
-//    {
-//        \Log::info($request->all());
-//    }
+    /**
+     * 更新用户信息
+     *
+     * @param Request     $request
+     * @param UserUsecase $userUsecase
+     * @return User
+     */
+    public function update(Request $request, UserUsecase $userUsecase)
+    {
+        $user = Auth::guard("api")->user();
+
+        //请求字段验证
+        $rules = [
+            "birthday" => "date",
+            "gender"   => [
+                Rule::in(["0", "1", "2"]),
+            ],
+        ];
+
+        $this->validate($request, $rules);
+
+        $userUsecase->updateUser($user, $request->all());
+
+        return $userUsecase->getReturenUserInfo($user, false);
+    }
 
 
     /**

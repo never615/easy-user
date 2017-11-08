@@ -48,6 +48,8 @@ Route::group($attributes, function ($router) {
         Route::post("login", 'Auth\LoginController@login');
         //注册:通用注册,包含微信和app
         Route::post('register', 'Auth\RegisterController@register');
+        //salt
+        Route::get('salt', 'Auth\RegisterController@userSalt');
 
 
         /**

@@ -67,6 +67,7 @@ class User extends Authenticatable
         'total_online_time'  => "double",
         'offline_time'       => "double",
         'total_offline_time' => "double",
+        'wechat_user'        => 'array',
     ];
 
     /**
@@ -221,6 +222,11 @@ class User extends Authenticatable
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function userSalt()
+    {
+        return $this->hasOne(UserSalt::class);
     }
 
 

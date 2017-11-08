@@ -43,19 +43,20 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 从请求中提取用户凭证
      *
-     * @param $request
+     * @param      $request
+     * @param bool $credential
      * @return array
      */
-    public function transformCredentials($request)
+    public function transformCredentials($request, $credential = false)
     {
         $credentials = [
             'identityType' => $request->get("identity_type"),
             'identifier'   => $request->get("identifier"),
-            '$requestType' => $request->header("REQUEST-TYPE"),
+            'requestType'  => $request->header("REQUEST-TYPE"),
         ];
 
-        if (!empty($request->get('credential'))) {
-            $credentials['credential'] = $request->get('credential');
+        if ($credential && $request->get('credentials')) {
+            $credentials["credentials"] = $request->get('credentials');
         }
 
         return $credentials;
@@ -162,14 +163,27 @@ class UserUsecaseImpl implements UserUsecase
      * 检查对应项是否已经被绑定,注册可用
      * 如:检查手机号是否被绑定
      *
-     * @param $bindDate
      * @param $bindType
+     * @param $bindDate
      * @param $subjectId
+     * @return \Illuminate\Database\Eloquent\Model|null|static
      */
-    public function isBinded($bindDate, $bindType, $subjectId)
+    public function isBinded($bindType, $bindDate, $subjectId)
     {
         return User::where($bindType, $bindDate)
             ->where("subject_id", $subjectId)
+            ->first();
+    }
+
+    /**
+     * 检查用户是否有对应的凭证类型
+     *
+     * @param $identityType
+     */
+    public function hasIdentityType($user, $identityType)
+    {
+        return $user->userAuth()
+            ->where("identity_type", $identityType)
             ->exist();
     }
 
@@ -222,6 +236,53 @@ class UserUsecaseImpl implements UserUsecase
             "avatar"     => $wechatUserInfo->avatar,
         ];
 
+
+        \DB::beginTransaction();
+
+        $user = User::create($userData);
+
+
+        $user->userAuths()->create([
+            'subject_id'    => $subject->id,
+            'identity_type' => $identityType,
+            'identifier'    => $identifier,
+            'credential'    => $credential,
+        ]);
+
+        \DB::commit();
+
+        return $user;
+    }
+
+
+    /**
+     * app注册创建用户
+     *
+     * @param      $credentials
+     * @param      $subject
+     * @param null $info
+     * @return User
+     */
+    public function createUserByApp($credentials, $subject, $info = null)
+    {
+        if (empty($credentials)) {
+            throw new ResourceException("异常请求:credentials为空");
+        }
+
+        $identityType = $credentials['identityType'];
+        $identifier = $credentials['identifier'];
+        $credential = null;
+        foreach ($credentials as $key => $value) {
+            if (!Str::contains($key, 'credential')) {
+                $credential = $value;
+            }
+        }
+
+        $userData = [
+            $credentials["identity_type"] => $credentials['identifier'],
+            'subject_id'                  => $subject->id,
+        ];
+
         \DB::beginTransaction();
 
         $user = User::create($userData);
@@ -238,6 +299,41 @@ class UserUsecaseImpl implements UserUsecase
         return $user;
     }
 
+    /**
+     * 增加授权方式
+     *
+     * @param $user
+     * @param $credentials
+     */
+    public function addIdentifier($user, $credentials)
+    {
+        $user->userAuth()->create([
+            "identifier"    => $credentials['identifier'],
+            "identity_type" => $credentials["identity_type"],
+            "credential"    => isset($credentials["credential"]) ? $credentials["credential"] : null,
+        ]);
+
+    }
+
+
+    /**
+     * 更新用户信息
+     *
+     * @param $user
+     * @param $info
+     */
+    public function updateUser($user, $info)
+    {
+        $info['name'] ? $user->nickname = $info['name'] : null;
+        $info['avatar'] ? $user->avatar = $info['avatar'] : null;
+        $info['birthday'] ? $user->userProfile->birthday = $info['birthday'] : null;
+        $info['gender'] ? $user->userProfile->gender = $info['gender'] : null;
+
+        $user->save();
+        $user->userProfile->save();
+
+        return $user;
+    }
 
     /**
      * 解密openid
@@ -264,12 +360,20 @@ class UserUsecaseImpl implements UserUsecase
      * 默认实现即返回用户对象,不同的项目可以需要返回的不一样.
      * 比如:mall项目需要返回member信息等,不同项目可以有自己不同的实现
      *
-     * @param $user
-     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
+     * @param      $user
+     * @param bool $addToken
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User
      */
-    public function getReturenUserInfo($user)
+    public function getReturenUserInfo($user, $addToken = true)
     {
-        return $this->addToken($user);
+        $user = User::with("userProfile")
+            ->findOrFail($user->id);
+
+        if ($addToken) {
+            $user = $this->addToken($user);
+        }
+
+        return $user;
     }
 
 
@@ -287,6 +391,32 @@ class UserUsecaseImpl implements UserUsecase
         $this->updateOrCreateUserProfile($user, $wechatUserInfo);
     }
 
+    /**
+     * 合并用户
+     *
+     * 把两个用户账户合并,一般是用户已经是纯微信用户,且已经使用手机注册了app.此时需要用户在微信要绑定手机,则需要合并两个用户
+     *
+     * 要做的事情:把用户的所有相关的业务数据的user_id都改成同一个,然后删除废弃用户
+     *
+     * @param $appUser
+     * @param $wechatUser
+     */
+    public function mergeAccount($appUser, $wechatUser)
+    {
+        \Log::error("mergeAccount");
+        \Log::error($appUser);
+        \Log::error($wechatUser);
+        $wechatUserAuth = $wechatUser->userAuth()
+            ->where("identity_type", 'wechat')
+            ->first();
+        //1. 合并wechatUser的授权方式到appUser
+        $this->addIdentifier($appUser, [
+            "identityType" => $wechatUserAuth->identity_type,
+            "identifier"   => $wechatUserAuth->identifier,
+        ]);
+        //2. 删除wechatUser
+        $wechatUser->delete();
+    }
 
     /**
      * 更新或者创建用户的微信信息
@@ -298,17 +428,10 @@ class UserUsecaseImpl implements UserUsecase
     {
         UserProfile::updateOrCreate(['user_id' => $user->id],
             [
-                "wechat_nickname"  => $wechatUserInfo->nickname,
-                "wechat_avatar"    => $wechatUserInfo->avatar,
-                "wechat_province"  => $wechatUserInfo->province,
-                "wechat_city"      => $wechatUserInfo->city,
-                "wechat_country"   => $wechatUserInfo->country,
-                "wechat_sex"       => $wechatUserInfo->sex,
-                "wechat_language"  => $wechatUserInfo->language,
-                "wechat_privilege" => $wechatUserInfo->privilege,
+                "wechat_user" => $wechatUserInfo->toArray(),
             ]
         );
-
     }
+
 
 }

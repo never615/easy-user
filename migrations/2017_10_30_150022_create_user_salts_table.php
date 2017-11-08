@@ -3,9 +3,9 @@
  * Copyright (c) 2017. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
  */
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * 用户加密salt表
@@ -20,23 +20,14 @@ class CreateUserSaltsTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_auths', function (Blueprint $table) {
+        Schema::create('user_salts', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
-            $table->string('identity_type')->comment('登录类型,约定如下.用户名:username;手机:mobile;邮箱:email;微博:weibo;微信:weixin');
-            $table->string('identifier')->comment('登录校验的唯一标识,如手机号/用户名或者第三方登录标识');
-            $table->string('credential')->nullable()->comment('登录凭证,站内登录保存密码,站外的不保存或者保存token');
+            $table->unsignedInteger('user_id')->nullable();
 
-            $table->integer('subject_id')->comment('主体id');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('CASCADE');
+            $table->text("salt");
 
             $table->timestamps();
             $table->softDeletes();
-
-            $table->index(['subject_id']);
-            
-            $table->unique(['subject_id',"identity_type","identifier"]);
         });
     }
 
@@ -47,6 +38,6 @@ class CreateUserSaltsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_auths');
+        Schema::dropIfExists('user_salts');
     }
 }
