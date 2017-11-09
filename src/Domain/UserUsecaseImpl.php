@@ -7,12 +7,12 @@ namespace Mallto\User\Domain;
 
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Str;
-use Mallto\Tool\Domain\WechatUsecase;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
+use Overtrue\LaravelWechat\Domain\WechatUsecase;
 
 /**
  * 默认版的用户处理
@@ -47,7 +47,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param bool $credential
      * @return array
      */
-    public function transformCredentials($request, $credential = false)
+    public function transformCredentialsFromRequest($request, $credential = false)
     {
         $credentials = [
             'identityType' => $request->get("identity_type"),
@@ -57,6 +57,31 @@ class UserUsecaseImpl implements UserUsecase
 
         if ($credential && $request->get('credentials')) {
             $credentials["credentials"] = $request->get('credentials');
+        }
+
+        return $credentials;
+    }
+
+
+    /**
+     * 从请求中提取用户凭证
+     *
+     * @param      $identityType
+     * @param bool $identifier
+     * @param null $requestType
+     * @param null $credential
+     * @return array
+     */
+    public function transformCredentials($identityType, $identifier, $requestType = null, $credential = null)
+    {
+        $credentials = [
+            'identityType' => $identityType,
+            'identifier'   => $identifier,
+            'requestType'  => $requestType,
+        ];
+
+        if (!empty($credential)) {
+            $credentials["credentials"] = $credential;
         }
 
         return $credentials;
@@ -112,13 +137,12 @@ class UserUsecaseImpl implements UserUsecase
                 break;
         }
 
-
         $query = UserAuth::where("identity_type", $identityType)
             ->where("identifier", $identifier)
             ->where("subject_id", $subject->id);
 
         foreach ($credentials as $key => $value) {
-            if (!Str::contains($key, 'credential')) {
+            if (Str::contains($key, 'credential')) {
                 $query->where($key, $value);
             }
         }
@@ -182,9 +206,9 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function hasIdentityType($user, $identityType)
     {
-        return $user->userAuth()
+        return $user->userAuths()
             ->where("identity_type", $identityType)
-            ->exist();
+            ->first();
     }
 
 
@@ -228,7 +252,7 @@ class UserUsecaseImpl implements UserUsecase
             }
         }
         $wechatUserInfo = $this->wechatUsecase->getWechatUserInfo($subject->uuid,
-            $this->decryptOpenid($credentials['credential']));
+            $this->decryptOpenid($credentials['identifier']));
 
         $userData = [
             'subject_id' => $subject->id,
@@ -245,7 +269,7 @@ class UserUsecaseImpl implements UserUsecase
         $user->userAuths()->create([
             'subject_id'    => $subject->id,
             'identity_type' => $identityType,
-            'identifier'    => $identifier,
+            'identifier'    => $this->decryptOpenid($identifier),
             'credential'    => $credential,
         ]);
 
@@ -387,7 +411,7 @@ class UserUsecaseImpl implements UserUsecase
     public function updateUserWechatInfo($user, $credentials, $subject)
     {
         $wechatUserInfo = $this->wechatUsecase->getWechatUserInfo($subject->uuid,
-            $this->decryptOpenid($credentials['credential']));
+            $this->decryptOpenid($credentials['identifier']));
         $this->updateOrCreateUserProfile($user, $wechatUserInfo);
     }
 
@@ -406,16 +430,18 @@ class UserUsecaseImpl implements UserUsecase
         \Log::error("mergeAccount");
         \Log::error($appUser);
         \Log::error($wechatUser);
-        $wechatUserAuth = $wechatUser->userAuth()
+        $wechatUserAuth = $wechatUser->userAuths()
             ->where("identity_type", 'wechat')
             ->first();
         //1. 合并wechatUser的授权方式到appUser
-        $this->addIdentifier($appUser, [
+        $appUser = $this->addIdentifier($appUser, [
             "identityType" => $wechatUserAuth->identity_type,
             "identifier"   => $wechatUserAuth->identifier,
         ]);
         //2. 删除wechatUser
         $wechatUser->delete();
+
+        return $appUser;
     }
 
     /**
@@ -433,5 +459,17 @@ class UserUsecaseImpl implements UserUsecase
         );
     }
 
+
+    /**
+     * 绑定会员
+     *
+     * @param $user
+     * @param $info
+     * @return mixed
+     */
+    public function bindMember($user, $info)
+    {
+
+    }
 
 }

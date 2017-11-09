@@ -29,13 +29,10 @@ class RegisterController extends Controller
 {
     use VerifyCodeTrait, AuthValidateTrait;
 
-
     public function register(Request $request, UserUsecase $userUsecase)
     {
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
-                $request->identity_type = 'wechat';
-
                 return $this->registerByWechat($request, $userUsecase);
                 break;
             case "IOS":
@@ -96,6 +93,7 @@ class RegisterController extends Controller
 
         //检查用户是否存在
         $credentials = $userUsecase->transformCredentials($request);
+
         $user = $userUsecase->retrieveByCredentials($credentials, $subject);
         if ($user) {
             //使用注册凭证查询到对应的用户,表示用户已经存在了
@@ -162,7 +160,9 @@ class RegisterController extends Controller
         $bindType = $request->bind_type;
 
         //检查该微信用户是否已经存在
-        $credentials = $userUsecase->transformCredentials($request);
+        $credentials = $userUsecase->
+        transformCredentials("wechat", $request->identifier, $request->header('REQUEST-TYPE'));
+
         $user = $userUsecase->retrieveByCredentials($credentials, $subject);
         if ($user) {
             //微信用户已经存在
@@ -174,7 +174,7 @@ class RegisterController extends Controller
                     //存在
                     if ($userUsecase->hasIdentityType($bindUser, "wechat")) {
                         //存在的这个用户已经绑定了微信号,提示该手机已经被其他微信绑定
-                        throw new ResourceException($request->identifier."已经被其他微信绑定");
+                        throw new ResourceException($bindData."已经被微信绑定");
                     } else {
                         //存在的绑定了这个手机的用户没有绑定微信号.
                         $user = $userUsecase->mergeAccount($bindUser, $user);
@@ -186,8 +186,8 @@ class RegisterController extends Controller
             } else {
                 //用户已经绑定了,则在微信注册模式下,不应该调用到该接口,抛出异常
                 //因为微信是自动调用登录接口的
-                throw new PermissionDeniedException("非法调用,用户已存在,绑定的".$request->identity_type.
-                    "是:".$request->identifier);
+                throw new PermissionDeniedException("非法调用,用户已存在,绑定的".$bindType.
+                    "是:".$bindData);
             }
         } else {
             //微信用户不存在
@@ -196,7 +196,7 @@ class RegisterController extends Controller
                 //存在
                 if ($userUsecase->hasIdentityType($bindUser, "wechat")) {
                     //存在的这个用户已经绑定了微信号,提示该手机已经被其他微信绑定
-                    throw new ResourceException($request->identifier."已经被其他微信绑定");
+                    throw new ResourceException($bindData."已经被微信绑定");
                 } else {
                     //存在的绑定了这个手机的用户没有绑定微信号,关联手机和微信
                     $user = $userUsecase->addIdentifier($bindUser, $credentials);
@@ -205,8 +205,11 @@ class RegisterController extends Controller
                 //不存在关联用户,继续下一步
                 //开始创建用户
                 $user = $userUsecase->createUserByWechat($credentials, $subject);
+                //绑定
+                $user = $userUsecase->bind($user, $bindType, $bindData);
             }
         }
+
 
         //更新用户微信信息
         $userUsecase->updateUserWechatInfo($user, $credentials, $subject);

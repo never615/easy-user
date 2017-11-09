@@ -22,10 +22,22 @@ interface UserUsecase
      * 从请求中提取用户凭证
      *
      * @param      $request
-     * @param bool $credential ,是否提取凭证
+     * @param bool $credential
      * @return array
      */
-    public function transformCredentials($request, $credential = false);
+    public function transformCredentialsFromRequest($request, $credential = false);
+
+
+    /**
+     * 从请求中提取用户凭证
+     *
+     * @param      $identityType
+     * @param bool $identifier
+     * @param null $requestType
+     * @param null $credential
+     * @return array
+     */
+    public function transformCredentials($identityType, $identifier, $requestType = null, $credential = null);
 
 
     /**
@@ -164,5 +176,14 @@ interface UserUsecase
      * @param $wechatUser
      */
     public function mergeAccount($appUser, $wechatUser);
+
+    /**
+     * 绑定会员
+     *
+     * @param $user
+     * @param $info
+     * @return mixed
+     */
+    public function bindMember($user,$info);
 
 }

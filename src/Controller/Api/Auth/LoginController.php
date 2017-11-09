@@ -39,15 +39,11 @@ class LoginController extends Controller
     {
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
-                $request->identity_type = 'wechat';
-
                 if (!empty($request->get("bind_type"))) {
                     return $this->loginByWechatWithBinding($request, $userUsecase);
                 } else {
                     return $this->loginByWechat($request, $userUsecase);
                 }
-
-
                 break;
             case "IOS":
             case "ANDROID":
@@ -72,7 +68,6 @@ class LoginController extends Controller
         $rules = [];
         $rules = array_merge($rules, [
             "identifier"    => "required",
-            "identity_type" => "required",
         ]);
         $this->validate($request, $rules);
 
@@ -81,7 +76,9 @@ class LoginController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //从请求中提取需要的信息
-        $credentials = $userUsecase->transformCredentials($request);
+        $credentials = $userUsecase->
+        transformCredentials("wechat", $request->identifier, $request->header('REQUEST-TYPE'));
+
         //检查用户是否存在
         $user = $userUsecase->retrieveByCredentials($credentials, $subject);
 
@@ -113,7 +110,6 @@ class LoginController extends Controller
         $rules = [];
         $rules = array_merge($rules, [
             "identifier"    => "required",
-            "identity_type" => "required",
             "bind_type"     => [
                 'required',
                 Rule::in(User::SUPPORT_BIND_TYPE),
@@ -129,7 +125,8 @@ class LoginController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //从请求中提取需要的信息
-        $credentials = $userUsecase->transformCredentials($request);
+        $credentials = $userUsecase->
+        transformCredentials("wechat", $request->identifier, $request->header('REQUEST-TYPE'));
         //检查用户是否存在
         $user = $userUsecase->retrieveByCredentials($credentials, $subject);
 

@@ -36,7 +36,8 @@ class UserProfile extends Model
 //    ];
 
     protected $casts = [
-        'extra' => 'array',
+        'extra'       => 'array',
+        'wechat_user' => 'array',
     ];
 
 
