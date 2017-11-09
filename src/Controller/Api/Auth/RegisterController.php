@@ -139,7 +139,6 @@ class RegisterController extends Controller
         //请求字段验证
         $rules = [
             "identifier"    => "required",
-            "identity_type" => "required",
             'bind_data'     => "required",
             "bind_type"     => [
                 "required",
