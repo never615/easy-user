@@ -92,7 +92,7 @@ class RegisterController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //检查用户是否存在
-        $credentials = $userUsecase->transformCredentials($request);
+        $credentials = $userUsecase->transformCredentialsFromRequest($request);
 
         $user = $userUsecase->retrieveByCredentials($credentials, $subject);
         if ($user) {
@@ -161,14 +161,13 @@ class RegisterController extends Controller
         //检查该微信用户是否已经存在
         $credentials = $userUsecase->
         transformCredentials("wechat", $request->identifier, $request->header('REQUEST-TYPE'));
-
         $user = $userUsecase->retrieveByCredentials($credentials, $subject);
         if ($user) {
             //微信用户已经存在
             if (empty($user->$bindType)) {
                 //用户没有绑定对应数据
                 //继续注册流程,绑定数据
-                //检查是否存在关联的identifier(可以是手机)用户
+                //检查是否存在关联的bind_data(可以是手机)用户
                 if ($bindUser = $userUsecase->isBinded($bindType, $bindData, $subject->id)) {
                     //存在
                     if ($userUsecase->hasIdentityType($bindUser, "wechat")) {

@@ -178,12 +178,12 @@ interface UserUsecase
     public function mergeAccount($appUser, $wechatUser);
 
     /**
-     * 绑定会员
+     * 处理其他用户信息
      *
      * @param $user
      * @param $info
      * @return mixed
      */
-    public function bindMember($user,$info);
+    public function bindOtherInfo($user, $info);
 
 }

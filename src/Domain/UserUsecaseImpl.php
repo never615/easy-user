@@ -447,13 +447,13 @@ class UserUsecaseImpl implements UserUsecase
 
 
     /**
-     * 绑定会员
+     * 处理其他用户信息
      *
      * @param $user
      * @param $info
      * @return mixed
      */
-    public function bindMember($user, $info)
+    public function bindOtherInfo($user, $info)
     {
 
     }
@@ -464,7 +464,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param $openid
      * @param $subject
      */
-    protected function getWechatUserInfo($openid, $subject):
+    protected function getWechatUserInfo($openid, $subject)
     {
         $wechatUsecase = app(WechatUsecase::class);
 
