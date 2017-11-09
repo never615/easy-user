@@ -463,7 +463,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param $subject
      * @return \Overtrue\LaravelWechat\Model\WechatUserInfo
      */
-    private function getWechatUserInfo($openid, $subject): \Overtrue\LaravelWechat\Model\WechatUserInfo
+    protected function getWechatUserInfo($openid, $subject): \Overtrue\LaravelWechat\Model\WechatUserInfo
     {
         $wechatUsecase = app(WechatUsecase::class);
 
