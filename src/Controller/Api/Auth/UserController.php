@@ -32,13 +32,11 @@ class UserController extends Controller
      *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
      */
-    public function show()
+    public function show(UserUsecase $userUsecase)
     {
-        $userUsecase = app(UserUsecase::class);
-
         $user = Auth::guard("api")->user();
 
-        return $userUsecase->getUserInfo($user->id);
+        return $userUsecase->getReturenUserInfo($user);
     }
 
     /**

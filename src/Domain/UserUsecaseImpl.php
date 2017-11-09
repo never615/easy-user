@@ -26,19 +26,6 @@ use Overtrue\LaravelWechat\Domain\WechatUsecase;
  */
 class UserUsecaseImpl implements UserUsecase
 {
-    /**
-     * @var WechatUsecase
-     */
-    protected $wechatUsecase;
-
-    /**
-     * UserUsecaseImpl constructor.
-     */
-    public function __construct(WechatUsecase $wechatUsecase)
-    {
-        $this->wechatUsecase = $wechatUsecase;
-    }
-
 
     /**
      * 从请求中提取用户凭证
@@ -251,8 +238,7 @@ class UserUsecaseImpl implements UserUsecase
                 $credential = $value;
             }
         }
-        $wechatUserInfo = $this->wechatUsecase->getWechatUserInfo($subject->uuid,
-            $this->decryptOpenid($credentials['identifier']));
+        $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
 
         $userData = [
             'subject_id' => $subject->id,
@@ -410,8 +396,8 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function updateUserWechatInfo($user, $credentials, $subject)
     {
-        $wechatUserInfo = $this->wechatUsecase->getWechatUserInfo($subject->uuid,
-            $this->decryptOpenid($credentials['identifier']));
+        $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
+
         $this->updateOrCreateUserProfile($user, $wechatUserInfo);
     }
 
@@ -470,6 +456,21 @@ class UserUsecaseImpl implements UserUsecase
     public function bindMember($user, $info)
     {
 
+    }
+
+    /**
+     * @param $openid
+     * @param $subject
+     * @return \Overtrue\LaravelWechat\Model\WechatUserInfo
+     */
+    private function getWechatUserInfo($openid, $subject): \Overtrue\LaravelWechat\Model\WechatUserInfo
+    {
+        $wechatUsecase = app(WechatUsecase::class);
+
+        $wechatUserInfo = $wechatUsecase->getWechatUserInfo($subject->uuid,
+            $this->decryptOpenid($openid));
+
+        return $wechatUserInfo;
     }
 
 }
