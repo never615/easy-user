@@ -38,7 +38,7 @@ class PublicUsecase
             throw new ValidationHttpException($validator->errors()->first());
         }
 
-        $code = rand(1000, 9999);
+        $code = mt_rand(1000, 9999);
 
         if (Cache::has('code'.$subjectId.$mobile)) {
             //如果验证码还没过期,用户再次请求则重复发送一次验证码

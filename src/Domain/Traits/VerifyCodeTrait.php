@@ -30,7 +30,8 @@ trait VerifyCodeTrait
     protected function checkVerifyCode($verifyObj, $code)
     {
         $tempCode = Cache::get('code'.SubjectUtils::getSubjectId().$verifyObj);
-        if ($tempCode !== $code) {
+
+        if ($tempCode != $code) {
             if (config("app.env") !== 'production' && $code == "000000") {
                 return true;
             } else {
