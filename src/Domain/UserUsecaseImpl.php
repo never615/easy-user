@@ -153,9 +153,6 @@ class UserUsecaseImpl implements UserUsecase
     }
 
 
-    const SUPPORT_BIND_TYPE = ['mobile'];
-
-
     /**
      * 检查用户的绑定状态
      * 存在对应绑定项目,返回true;否则返回false
@@ -248,17 +245,13 @@ class UserUsecaseImpl implements UserUsecase
 
 
         \DB::beginTransaction();
-
         $user = User::create($userData);
-
-
         $user->userAuths()->create([
             'subject_id'    => $subject->id,
             'identity_type' => $identityType,
             'identifier'    => $this->decryptOpenid($identifier),
             'credential'    => $credential,
         ]);
-
         \DB::commit();
 
         return $user;
