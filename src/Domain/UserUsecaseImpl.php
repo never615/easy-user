@@ -43,7 +43,7 @@ class UserUsecaseImpl implements UserUsecase
         ];
 
         if ($credential && $request->get('credentials')) {
-            $credentials["credentials"] = $request->get('credentials');
+            $credentials["credential"] = $request->get('credential');
         }
 
         return $credentials;
@@ -68,7 +68,7 @@ class UserUsecaseImpl implements UserUsecase
         ];
 
         if (!empty($credential)) {
-            $credentials["credentials"] = $credential;
+            $credentials["credential"] = $credential;
         }
 
         return $credentials;
