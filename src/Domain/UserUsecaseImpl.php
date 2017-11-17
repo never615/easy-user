@@ -231,7 +231,7 @@ class UserUsecaseImpl implements UserUsecase
         $identifier = $credentials['identifier'];
         $credential = null;
         foreach ($credentials as $key => $value) {
-            if (!Str::contains($key, 'credential')) {
+            if (Str::contains($key, 'credential')) {
                 $credential = $value;
             }
         }
@@ -276,7 +276,7 @@ class UserUsecaseImpl implements UserUsecase
         $identifier = $credentials['identifier'];
         $credential = null;
         foreach ($credentials as $key => $value) {
-            if (!Str::contains($key, 'credential')) {
+            if (Str::contains($key, 'credential')) {
                 $credential = $value;
             }
         }
