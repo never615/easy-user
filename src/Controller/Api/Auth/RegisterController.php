@@ -75,8 +75,6 @@ class RegisterController extends Controller
      */
     private function registerByApp(Request $request, UserUsecase $userUsecase)
     {
-        //todo app注册用户
-
         //请求字段验证
         $rules = [
             "identifier"    => "required",
@@ -101,10 +99,15 @@ class RegisterController extends Controller
         } else {
             //使用注册凭证查询不到对应的用户
 
-            //检查是否存在关联的用户(检查是否是否有用户已经绑定了要注册的字段:比如手机)
+            //检查是否存在关联的用户(检查是否有用户已经绑定了要注册的字段:比如手机)
             if ($bindUser = $userUsecase->isBinded($request->identity_type, $request->identifier, $subject->id)) {
-                //存在(已经在微信注册过了),关联此用户,即增加新的identifier+credential的登录方式
-                $user = $userUsecase->addIdentifier($bindUser, $credentials);
+                //检查此用户是否已经有手机号密码的登录方式
+                if ($userUsecase->hasIdentityType($bindUser, "mobile")) {
+                    throw new ResourceException("手机号已经被注册:".$bindUser->mobile);
+                } else {
+                    //存在(已经在微信注册过了),关联此用户,即增加新的identifier+credential的登录方式
+                    $user = $userUsecase->addIdentifier($bindUser, $credentials);
+                }
             } else {
                 //不存在,正常注册
                 $user = $userUsecase->createUserByApp($credentials, $subject);
@@ -138,13 +141,13 @@ class RegisterController extends Controller
     {
         //请求字段验证
         $rules = [
-            "identifier"    => "required",
-            'bind_data'     => "required",
-            "bind_type"     => [
+            "identifier" => "required",
+            'bind_data'  => "required",
+            "bind_type"  => [
                 "required",
                 Rule::in(User::SUPPORT_BIND_TYPE),
             ],
-            "code"          => "required|numeric",
+            "code"       => "required|numeric",
         ];
 
         $this->validate($request, $rules);
