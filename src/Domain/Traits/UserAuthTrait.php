@@ -26,9 +26,6 @@ trait UserAuthTrait
      */
     public function findForPassport($username)
     {
-        \Log::info('findForPassport');
-        \Log::info($username);
-
         $userAuth = UserAuth::where("identity_type", 'mobile')
             ->where("identifier", $username)
             ->first();
@@ -41,14 +38,14 @@ trait UserAuthTrait
      * 在Laravel\Passport\Bridge\UserRepository会调用
      *
      * @param $password
+     * @return bool
      */
     public function validateForPassportPasswordGrant($password)
     {
-        \Log::info('validateForPassportPasswordGrant');
-        \Log::info($password);
+        $auth = $this->userAuths()
+            ->where("identity_type", 'mobile')
+            ->first();
 
-        return $this->user->userAuth()
-            ->where("credential", $password)
-            ->exist();
+        return \Hash::check($password, $auth->credential);
     }
 }

@@ -67,7 +67,7 @@ class LoginController extends Controller
         //验证规则
         $rules = [];
         $rules = array_merge($rules, [
-            "identifier"    => "required",
+            "identifier" => "required",
         ]);
         $this->validate($request, $rules);
 
@@ -109,8 +109,8 @@ class LoginController extends Controller
         //验证规则
         $rules = [];
         $rules = array_merge($rules, [
-            "identifier"    => "required",
-            "bind_type"     => [
+            "identifier" => "required",
+            "bind_type"  => [
                 'required',
                 Rule::in(User::SUPPORT_BIND_TYPE),
             ],

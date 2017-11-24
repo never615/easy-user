@@ -75,9 +75,11 @@ class UserServiceProvider extends ServiceProvider
 
     private function authBoot()
     {
-        Passport::routes();
-        Passport::tokensExpireIn(Carbon::now()->addDays(15));
-//        Passport::refreshTokensExpireIn(Carbon::now()->addDays(30));
+        Passport::routes(null,[
+            'prefix' => 'api/oauth',
+        ]);
+        Passport::tokensExpireIn(Carbon::now()->addDays(1));
+        Passport::refreshTokensExpireIn(Carbon::now()->addDays(60));
 
 
         Passport::tokensCan([

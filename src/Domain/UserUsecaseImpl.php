@@ -12,6 +12,7 @@ use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
+use Mallto\User\Data\UserSalt;
 use Overtrue\LaravelWechat\Domain\WechatUsecase;
 
 /**
@@ -42,7 +43,7 @@ class UserUsecaseImpl implements UserUsecase
             'requestType'  => $request->header("REQUEST-TYPE"),
         ];
 
-        if ($credential && $request->get('credentials')) {
+        if ($credential && $request->get('credential')) {
             $credentials["credential"] = $request->get('credential');
         }
 
@@ -282,19 +283,27 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         $userData = [
-            $credentials["identity_type"] => $credentials['identifier'],
-            'subject_id'                  => $subject->id,
+            $credentials["identityType"] => $credentials['identifier'],
+            'subject_id'                 => $subject->id,
         ];
 
         \DB::beginTransaction();
 
+
         $user = User::create($userData);
+
+        //保存$credential的时候再进行一次加密
+        $hashCreential = \Hash::make($credential);
+        \Log::info("注册");
+        \Log::info($credentials);
+        \Log::info($credential);
+        \LOg::info($hashCreential);
 
         $user->userAuths()->create([
             'subject_id'    => $subject->id,
             'identity_type' => $identityType,
             'identifier'    => $identifier,
-            'credential'    => $credential,
+            'credential'    => $hashCreential,
         ]);
 
         \DB::commit();
@@ -310,10 +319,16 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function addIdentifier($user, $credentials)
     {
+        $hashCreential = null;
+        if (isset($credentials["credential"])) {
+            $hashCreential = password_hash($credentials["credential"], PASSWORD_BCRYPT);
+        }
+
+
         $user->userAuth()->create([
             "identifier"    => $credentials['identifier'],
             "identity_type" => $credentials["identity_type"],
-            "credential"    => isset($credentials["credential"]) ? $credentials["credential"] : null,
+            "credential"    => $hashCreential,
         ]);
 
     }
@@ -465,6 +480,11 @@ class UserUsecaseImpl implements UserUsecase
             $this->decryptOpenid($openid));
 
         return $wechatUserInfo;
+    }
+
+    public function bindSalt($user, $saltId)
+    {
+        UserSalt::where('id', $saltId)->update(['user_id', $user->id]);
     }
 
 }

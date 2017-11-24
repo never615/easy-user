@@ -186,4 +186,13 @@ interface UserUsecase
      */
     public function bindOtherInfo($user, $info);
 
+    /**
+     * 关联用户id和salt
+     *
+     * @param $user
+     * @param $saltId
+     * @return mixed
+     */
+    public function bindSalt($user, $saltId);
+
 }
