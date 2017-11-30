@@ -13,8 +13,8 @@ use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\SubjectUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserSalt;
+use Mallto\User\Domain\SmsUsecase;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
-use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
@@ -27,7 +27,22 @@ use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
  */
 class RegisterController extends Controller
 {
-    use VerifyCodeTrait, AuthValidateTrait;
+    use  AuthValidateTrait;
+
+    /**
+     * @var SmsUsecase
+     */
+    private $smsUsecase;
+
+    /**
+     * RegisterController constructor.
+     *
+     * @param SmsUsecase $smsUsecase
+     */
+    public function __construct(SmsUsecase $smsUsecase)
+    {
+        $this->smsUsecase = $smsUsecase;
+    }
 
     public function register(Request $request, UserUsecase $userUsecase)
     {
@@ -37,8 +52,6 @@ class RegisterController extends Controller
                 break;
             case "IOS":
             case "ANDROID":
-                throw new PermissionDeniedException("不可用");
-
                 return $this->registerByApp($request, $userUsecase);
                 break;
         }
@@ -86,7 +99,7 @@ class RegisterController extends Controller
         ];
 
         $this->validate($request, $rules);
-        $this->checkVerifyCode($request->bind_data, $request->code);
+        $this->smsUsecase->checkVerifyCode($request->bind_data, $request->code);
         $subject = SubjectUtils::getSubject();
 
         //检查用户是否存在
@@ -156,7 +169,7 @@ class RegisterController extends Controller
 
         $this->isWechatRequest($request);
 
-        $this->checkVerifyCode($request->bind_data, $request->code);
+        $this->smsUsecase->checkVerifyCode($request->bind_data, $request->code);
 
         $subject = SubjectUtils::getSubject();
 

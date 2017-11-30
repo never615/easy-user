@@ -9,8 +9,10 @@ use Encore\Admin\AppUtils;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ThirdPartException;
 use Mallto\Tool\Exception\ValidationHttpException;
+use Mallto\Tool\Utils\SubjectUtils;
 
 /**
  * Created by PhpStorm.
@@ -18,16 +20,56 @@ use Mallto\Tool\Exception\ValidationHttpException;
  * Date: 13/07/2017
  * Time: 6:57 PM
  */
-class PublicUsecase
+class SmsUsecase
 {
+
+    /**
+     * 检查验证码
+     *
+     * @param        $verifyObj
+     * @param        $code
+     * @param string $use
+     * @return bool
+     */
+    public function checkVerifyCode($verifyObj, $code, $use = "register")
+    {
+        $key = $this->getSmsCacheKey($use, SubjectUtils::getSubjectId(), $verifyObj);
+
+        $tempCode = Cache::get($key);
+
+        if ($tempCode != $code) {
+            if (config("app.env") !== 'production' && $code == "000000") {
+                return true;
+            } else {
+                throw  new ResourceException("验证码错误");
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 获取验证码的cache key
+     *
+     * @param $use
+     * @param $subjectId
+     * @param $mobile
+     * @return string
+     */
+    private function getSmsCacheKey($use, $subjectId, $mobile)
+    {
+        return 'code'.$use.$subjectId.$mobile;
+    }
+
     /**
      * 发送短信验证码
      *
-     * @param $mobile
-     * @param $subjectId
+     * @param        $mobile
+     * @param        $subjectId
+     * @param string $use
      * @return mixed
      */
-    public function sendSms($mobile, $subjectId)
+    public function sendSms($mobile, $subjectId, $use = 'register')
     {
         $data['mobile'] = $mobile;
         $validator = Validator::make($data,
@@ -38,15 +80,17 @@ class PublicUsecase
             throw new ValidationHttpException($validator->errors()->first());
         }
 
+        $key = $this->getSmsCacheKey($use, $subjectId, $mobile);
+
         $code = mt_rand(1000, 9999);
 
-        if (Cache::has('code'.$subjectId.$mobile)) {
+        if (Cache::has($key)) {
             //如果验证码还没过期,用户再次请求则重复发送一次验证码
-            $code = Cache::get('code'.$subjectId.$mobile);
-            Cache::put('code'.$subjectId.$mobile, $code, 10);
+            $code = Cache::get($key);
+            Cache::put($key, $code, 10);
 //            throw new RateLimitExceededException();
         } else {
-            Cache::put('code'.$subjectId.$mobile, $code, 10);
+            Cache::put($key, $code, 10);
         }
 
         $subject = AppUtils::getSubject();

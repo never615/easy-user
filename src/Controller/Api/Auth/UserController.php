@@ -12,7 +12,6 @@ use Illuminate\Validation\Rule;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
-use Mallto\User\Domain\Traits\VerifyCodeTrait;
 use Mallto\User\Domain\UserUsecase;
 
 
@@ -25,7 +24,6 @@ use Mallto\User\Domain\UserUsecase;
 class UserController extends Controller
 {
 
-    use VerifyCodeTrait;
 
     /**
      * 请求用户信息
@@ -73,7 +71,6 @@ class UserController extends Controller
      */
     public function updatePassword(Request $request)
     {
-
         $this->validate($request, [
             "identity_type" => "required",
             "old_passwd"    => "required",
