@@ -74,15 +74,13 @@ class UserController extends Controller
     public function updatePassword(Request $request)
     {
 
-        \Log::info($request->all());
-
         $this->validate($request, [
             "identity_type" => "required",
             "old_passwd"    => "required",
             "new_passwd"    => "required",
         ]);
         $user = Auth::guard("api")->user();
-        $userAuth = $user->userAuth()->where("identity_type", $request->identity_type)->fisrt();
+        $userAuth = $user->userAuths()->where("identity_type", $request->identity_type)->first();
 
         if (!$userAuth) {
             throw new ResourceException("未找到对应的授权方式:".$request->identity_type);
@@ -96,6 +94,7 @@ class UserController extends Controller
 
         //2.更新密码
         $userAuth->credential = \Hash::make($request->new_passwd);
+        $userAuth->save();
 
         return response()->nocontent();
     }
