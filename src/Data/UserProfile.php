@@ -6,7 +6,7 @@
 namespace Mallto\User\Data;
 
 
-use Illuminate\Database\Eloquent\Model;
+use Encore\Admin\Auth\Database\Traits\BaseModel;
 
 /**
  * 用户资料
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Module\User\UserProfile
  */
-class UserProfile extends Model
+class UserProfile extends BaseModel
 {
 
 //    /**
@@ -35,6 +35,22 @@ class UserProfile extends Model
 //        'wechat_unionid',
 //    ];
 
+
+    protected $hidden = [
+        'wechat_nickname',
+        'wechat_avatar',
+        'wechat_province',
+        'wechat_city',
+        'wechat_country',
+        'wechat_sex',
+        'wechat_language',
+        'wechat_privilege',
+        'wechat_unionid',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
     protected $casts = [
         'extra'       => 'array',
         'wechat_user' => 'array',
@@ -42,15 +58,6 @@ class UserProfile extends Model
 
 
     protected $guarded = [];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'deleted_at',
-    ];
 
 
     public function user()

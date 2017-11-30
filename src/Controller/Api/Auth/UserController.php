@@ -36,7 +36,7 @@ class UserController extends Controller
     {
         $user = Auth::guard("api")->user();
 
-        return $userUsecase->getReturenUserInfo($user,false);
+        return $userUsecase->getReturenUserInfo($user, false);
     }
 
     /**
@@ -60,13 +60,49 @@ class UserController extends Controller
 
         $this->validate($request, $rules);
 
-        $userUsecase->updateUser($user, $request->all());
+        $userUsecase->updateUser($user, $request->only(["birthday", "gender", "name", 'avatar']));
 
         return $userUsecase->getReturenUserInfo($user, false);
     }
 
 
     /**
+     * 更新密码
+     *
+     * @param Request $request
+     */
+    public function updatePassword(Request $request)
+    {
+
+        \Log::info($request->all());
+
+        $this->validate($request, [
+            "identity_type" => "required",
+            "old_passwd"    => "required",
+            "new_passwd"    => "required",
+        ]);
+        $user = Auth::guard("api")->user();
+        $userAuth = $user->userAuth()->where("identity_type", $request->identity_type)->fisrt();
+
+        if (!$userAuth) {
+            throw new ResourceException("未找到对应的授权方式:".$request->identity_type);
+        }
+
+
+        //1.校验旧的密码
+        if (!\Hash::check($request->old_passwd, $userAuth->credential)) {
+            throw new ResourceException("旧密码输入错误");
+        }
+
+        //2.更新密码
+        $userAuth->credential = \Hash::make($request->new_passwd);
+
+        return response()->nocontent();
+    }
+
+
+    /**
+     * todo
      * 验证旧的手机号/邮箱
      */
     public function verifyOldIdentifier(Request $request)
@@ -93,6 +129,7 @@ class UserController extends Controller
     }
 
     /**
+     * todo
      * 更新手机/邮箱
      *
      * @param Request $request

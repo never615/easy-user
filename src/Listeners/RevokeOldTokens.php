@@ -28,16 +28,16 @@ class RevokeOldTokens
     public function handle(AccessTokenCreated $event)
     {
 
-        $userId = $event->userId;
-        $clientId = $event->clientId;
-        $tokenId = $event->tokenId;
-
-
-        \DB::table("oauth_access_tokens")
-            ->where("id", "!=", $tokenId)
-            ->where("user_id", $userId)
-            ->where("client_id", $clientId)
-            ->delete();
+//        $userId = $event->userId;
+//        $clientId = $event->clientId;
+//        $tokenId = $event->tokenId;
+//
+//
+//        \DB::table("oauth_access_tokens")
+//            ->where("id", "!=", $tokenId)
+//            ->where("user_id", $userId)
+//            ->where("client_id", $clientId)
+//            ->delete();
 
 
     }

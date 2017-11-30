@@ -294,10 +294,6 @@ class UserUsecaseImpl implements UserUsecase
 
         //保存$credential的时候再进行一次加密
         $hashCreential = \Hash::make($credential);
-        \Log::info("注册");
-        \Log::info($credentials);
-        \Log::info($credential);
-        \LOg::info($hashCreential);
 
         $user->userAuths()->create([
             'subject_id'    => $subject->id,
@@ -321,7 +317,7 @@ class UserUsecaseImpl implements UserUsecase
     {
         $hashCreential = null;
         if (isset($credentials["credential"])) {
-            $hashCreential = password_hash($credentials["credential"], PASSWORD_BCRYPT);
+            $hashCreential = \Hash::make($credentials["credential"]);
         }
 
 
@@ -342,13 +338,21 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function updateUser($user, $info)
     {
-        $info['name'] ? $user->nickname = $info['name'] : null;
-        $info['avatar'] ? $user->avatar = $info['avatar'] : null;
-        $info['birthday'] ? $user->userProfile->birthday = $info['birthday'] : null;
-        $info['gender'] ? $user->userProfile->gender = $info['gender'] : null;
+
+
+        isset($info['name']) ? $user->nickname = $info['name'] : null;
+        isset($info['avatar']) ? $user->avatar = $info['avatar'] : null;
+
+        $birthDay = isset($info['birthday']) ? $info['birthday'] : null;
+        $gender = isset($info['gender']) ? $info['gender'] : null;
 
         $user->save();
-        $user->userProfile->save();
+        UserProfile::updateOrCreate(['user_id' => $user->id],
+            [
+                'birthday' => $birthDay,
+                'gender'   => $gender,
+            ]
+        );
 
         return $user;
     }
@@ -406,7 +410,14 @@ class UserUsecaseImpl implements UserUsecase
     {
         $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
 
-        $this->updateOrCreateUserProfile($user, $wechatUserInfo);
+
+        UserProfile::updateOrCreate(['user_id' => $user->id],
+            [
+                "wechat_user" => $wechatUserInfo->toArray(),
+            ]
+        );
+
+//        $this->updateOrCreateUserProfileByWechat($user, $wechatUserInfo);
     }
 
     /**
@@ -438,20 +449,20 @@ class UserUsecaseImpl implements UserUsecase
         return $appUser;
     }
 
-    /**
-     * 更新或者创建用户的微信信息
-     *
-     * @param $user
-     * @param $wechatUserInfo
-     */
-    private function updateOrCreateUserProfile($user, $wechatUserInfo)
-    {
-        UserProfile::updateOrCreate(['user_id' => $user->id],
-            [
-                "wechat_user" => $wechatUserInfo->toArray(),
-            ]
-        );
-    }
+//    /**
+//     * 更新或者创建用户的微信信息
+//     *
+//     * @param $user
+//     * @param $wechatUserInfo
+//     */
+//    private function updateOrCreateUserProfileByWechat($user, $wechatUserInfo)
+//    {
+//        UserProfile::updateOrCreate(['user_id' => $user->id],
+//            [
+//                "wechat_user" => $wechatUserInfo->toArray(),
+//            ]
+//        );
+//    }
 
 
     /**

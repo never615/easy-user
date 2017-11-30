@@ -81,8 +81,8 @@ class RegisterController extends Controller
             "identity_type" => "required",
             "credential"    => "required",
             "code"          => "required|numeric",
-            "name"          => "required",
-            "salt_id"       => "required",
+//            "name"          => "required",
+//            "salt_id"       => "required",
         ];
 
         $this->validate($request, $rules);
@@ -90,7 +90,7 @@ class RegisterController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //检查用户是否存在
-        $credentials = $userUsecase->transformCredentialsFromRequest($request,true);
+        $credentials = $userUsecase->transformCredentialsFromRequest($request, true);
 
         $user = $userUsecase->retrieveByCredentials($credentials, $subject);
         if ($user) {
@@ -107,12 +107,12 @@ class RegisterController extends Controller
                 } else {
                     //存在(已经在微信注册过了),关联此用户,即增加新的identifier+credential的登录方式
                     $user = $userUsecase->addIdentifier($bindUser, $credentials);
-                    $userUsecase->bindSalt($user,$request->salt_Id);
+//                    $userUsecase->bindSalt($user,$request->salt_Id);
                 }
             } else {
                 //不存在,正常注册
                 $user = $userUsecase->createUserByApp($credentials, $subject);
-                $userUsecase->bindSalt($user,$request->salt_Id);
+//                $userUsecase->bindSalt($user,$request->salt_Id);
             }
 
             $user = $userUsecase->getReturenUserInfo($user);
