@@ -97,12 +97,10 @@ class RegisterController extends Controller
             ],
             "credential"    => "required",
             "code"          => "required|numeric",
-//            "name"          => "required",
-//            "salt_id"       => "required",
         ];
 
         $this->validate($request, $rules);
-        $this->smsUsecase->checkVerifyCode($request->bind_data, $request->code);
+        $this->smsUsecase->checkVerifyCode($request->identity_type, $request->code);
         $subject = SubjectUtils::getSubject();
 
         //检查用户是否存在
