@@ -23,10 +23,13 @@ use Mallto\Tool\Utils\SubjectUtils;
 class SmsUsecase
 {
 
+    const USE_RESET = "reset";
+    const USE_REGISET = "register";
+
     /**
      * 检查验证码
      *
-     * @param        $verifyObj
+     * @param        $verifyObj ,校验的对象,如:mobile/email
      * @param        $code
      * @param string $use
      * @return bool

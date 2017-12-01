@@ -51,6 +51,8 @@ Route::group($attributes, function ($router) {
         //salt
         Route::get('salt', 'Auth\RegisterController@userSalt');
 
+        //重置密码
+        Route::post('password/reset', 'Auth\ResetPasswordController@reset');
 
         /**
          * 需要经过签名校验
@@ -81,6 +83,7 @@ Route::group($attributes, function ($router) {
                 Route::patch('user', 'Auth\UserController@update');
                 //更新用户密码
                 Route::patch('user/password', 'Auth\UserController@updatePassword');
+
                 //验证旧的的手机/邮箱
 //                Route::post("user/verify_old_identifier", 'Auth\UserController@verifyOldIdentifier');
             });

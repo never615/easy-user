@@ -91,7 +91,10 @@ class RegisterController extends Controller
         //请求字段验证
         $rules = [
             "identifier"    => "required",
-            "identity_type" => "required",
+            "identity_type" => [
+                "required",
+                Rule::in(['mobile']),
+            ],
             "credential"    => "required",
             "code"          => "required|numeric",
 //            "name"          => "required",
