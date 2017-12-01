@@ -100,7 +100,7 @@ class RegisterController extends Controller
         ];
 
         $this->validate($request, $rules);
-        $this->smsUsecase->checkVerifyCode($request->identity_type, $request->code);
+        $this->smsUsecase->checkVerifyCode($request->identifier, $request->code);
         $subject = SubjectUtils::getSubject();
 
         //检查用户是否存在
