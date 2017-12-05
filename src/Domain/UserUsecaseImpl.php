@@ -7,6 +7,7 @@ namespace Mallto\User\Domain;
 
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Str;
+use Mallto\Tool\Domain\Lottery\Lottery;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
@@ -255,6 +256,8 @@ class UserUsecaseImpl implements UserUsecase
         ]);
         \DB::commit();
 
+        $this->createSuccess($user);
+
         return $user;
     }
 
@@ -304,7 +307,23 @@ class UserUsecaseImpl implements UserUsecase
 
         \DB::commit();
 
+        $this->createSuccess($user);
+
         return $user;
+    }
+
+
+    /**
+     * 注册成功之后执行
+     * 可以在执行注册送礼等需要等逻辑
+     *
+     * @param $user
+     */
+    protected function createSuccess($user)
+    {
+        $lottery = app(Lottery::class);
+
+
     }
 
     /**
@@ -338,21 +357,14 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function updateUser($user, $info)
     {
-
-
         isset($info['name']) ? $user->nickname = $info['name'] : null;
         isset($info['avatar']) ? $user->avatar = $info['avatar'] : null;
 
-        $birthDay = isset($info['birthday']) ? $info['birthday'] : null;
-        $gender = isset($info['gender']) ? $info['gender'] : null;
+        $birthDay = isset($info['birthday']) ? $user->userProfile->birthday = $info['birthday'] : null;
+        $gender = isset($info['gender']) ? $user->userProfile->gender = $info['gender'] : null;
 
         $user->save();
-        UserProfile::updateOrCreate(['user_id' => $user->id],
-            [
-                'birthday' => $birthDay,
-                'gender'   => $gender,
-            ]
-        );
+        $user->userProfile->save();
 
         return $user;
     }
