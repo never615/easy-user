@@ -30,6 +30,7 @@ use Mallto\Dangjian\Data\UserOnlineStudyRecord;
 use Mallto\Mall\Data\Member;
 use Mallto\Mall\Data\ParkingRecord;
 use Mallto\Mall\Data\PointHistory;
+use Mallto\Mall\Data\ShopComment;
 use Mallto\Mall\Data\Ticket;
 use Mallto\Mall\Data\UserCoupon;
 
@@ -233,6 +234,12 @@ class User extends Authenticatable
     public function topSubject()
     {
         return $this->belongsTo(Subject::class, "top_subject_id");
+    }
+
+
+    public function shopComments()
+    {
+        return $this->hasMany(ShopComment::class);
     }
 
 
