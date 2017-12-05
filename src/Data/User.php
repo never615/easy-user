@@ -235,6 +235,20 @@ class User extends Authenticatable
         return $this->belongsTo(Subject::class, "top_subject_id");
     }
 
+
+    public function getAvatarAttribute($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if (starts_with($value, "http")) {
+            return $value;
+        }
+
+        return config("app.file_url_prefix").$value;
+    }
+
     /**
      * 查询用户今年的这次考试
      *
