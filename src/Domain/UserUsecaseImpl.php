@@ -7,7 +7,6 @@ namespace Mallto\User\Domain;
 
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Str;
-use Mallto\Tool\Domain\Lottery\Lottery;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
@@ -256,8 +255,6 @@ class UserUsecaseImpl implements UserUsecase
         ]);
         \DB::commit();
 
-        $this->createSuccess($user);
-
         return $user;
     }
 
@@ -307,8 +304,6 @@ class UserUsecaseImpl implements UserUsecase
 
         \DB::commit();
 
-        $this->createSuccess($user);
-
         return $user;
     }
 
@@ -319,10 +314,8 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param $user
      */
-    protected function createSuccess($user)
+    public function createSuccess($user)
     {
-        $lottery = app(Lottery::class);
-
 
     }
 

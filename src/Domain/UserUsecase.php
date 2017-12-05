@@ -195,4 +195,13 @@ interface UserUsecase
      */
     public function bindSalt($user, $saltId);
 
+
+    /**
+     * 注册成功之后执行
+     * 可以在执行注册送礼等需要等逻辑
+     *
+     * @param $user
+     */
+    public function createSuccess($user);
+
 }
