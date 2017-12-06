@@ -7,6 +7,7 @@ namespace Mallto\User\Controller\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\PermissionDeniedException;
@@ -147,6 +148,24 @@ class LoginController extends Controller
         $user = $userUsecase->getReturenUserInfo($user);
 
         return $user;
+    }
+
+
+    public function logout()
+    {
+        //删除用户token
+        $user = Auth::guard("api")->user();
+
+        $client = \DB::table("oauth_clients")
+            ->where('name', "墨兔科技 Password Grant Client")
+            ->first();
+
+
+        $user->tokens()
+            ->where("client_id", $client->id)
+            ->delete();
+
+        return response()->nocontent();
     }
 
 
