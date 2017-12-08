@@ -19,19 +19,14 @@ class MenuTablesSeeder extends Seeder
     public function run()
     {
         $order = 3000;
-        
-        $menu=Menu::where("title","用户管理")->orWhere("title","会员管理")->first();
-        if($menu){
-            return;
-        }
-        
+
         /**
          * --------------------------------  会员管理   -----------------------------------
          */
         $menu = Menu::create([
             'parent_id' => 0,
             'order'     => $order += 1,
-            'title'     => '用户管理',
+            'title'     => '会员管理',
             'icon'      => 'fa-user',
             'uri'       => '',
         ]);
