@@ -129,17 +129,19 @@ class UserUsecaseImpl implements UserUsecase
             ->where("identifier", $identifier)
             ->where("subject_id", $subject->id);
 
-        foreach ($credentials as $key => $value) {
-            if (Str::contains($key, 'credential')) {
-                $query->where($key, $value);
-            }
-        }
-
         $userAuth = $query->first();
-
         if (!$userAuth) {
             return null;
         }
+
+        foreach ($credentials as $key => $value) {
+            if (Str::contains($key, 'credential')) {
+                if(!\Hash::check($value, $userAuth->credential)){
+                    return null;
+                }
+            }
+        }
+
 
         $user = $userAuth->user;
         if (!$user) {

@@ -9,8 +9,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Mallto\Tool\Exception\AuthorizeFailedException;
 use Mallto\Tool\Exception\NotFoundException;
-use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Utils\SubjectUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
@@ -48,10 +48,43 @@ class LoginController extends Controller
                 break;
             case "IOS":
             case "ANDROID":
-                throw new PermissionDeniedException("不可用");
+                return $this->loginByApp($request, $userUsecase);
                 break;
         }
         throw new PreconditionRequiredHttpException();
+    }
+
+
+    /**
+     * app登录
+     *
+     * @param Request     $request
+     * @param UserUsecase $userUsecase
+     * @return User
+     */
+    public function loginByApp(Request $request, UserUsecase $userUsecase)
+    {
+        $this->validate($request, [
+            "identifier"    => "required",
+            "identity_type" => [
+                "required",
+                Rule::in(['mobile']),
+            ],
+            "credential"    => "required",
+        ]);
+
+
+        $credentials = $userUsecase->transformCredentialsFromRequest($request, true);
+        $user = $userUsecase->retrieveByCredentials($credentials, SubjectUtils::getSubject());
+
+
+
+        if (!$user) {
+            throw new AuthorizeFailedException();
+        }
+
+
+        return $userUsecase->getReturenUserInfo($user);
     }
 
 
