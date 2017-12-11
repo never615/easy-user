@@ -353,6 +353,12 @@ class UserUsecaseImpl implements UserUsecase
         isset($info['name']) ? $user->nickname = $info['name'] : null;
         isset($info['avatar']) ? $user->avatar = $info['avatar'] : null;
 
+        if (!$user->userProfile) {
+            UserProfile::create([
+                "user_id"=>$user->id
+            ]);
+        }
+
         $birthDay = isset($info['birthday']) ? $user->userProfile->birthday = $info['birthday'] : null;
         $gender = isset($info['gender']) ? $user->userProfile->gender = $info['gender'] : null;
 
