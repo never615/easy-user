@@ -41,7 +41,7 @@ class SmsUsecase
         $tempCode = Cache::get($key);
 
         if ($tempCode != $code) {
-            if (config("app.env") !== 'production' && $code == "000000") {
+            if (config("app.env") !== 'production' && $code === "000000") {
                 return true;
             } else {
                 throw  new ResourceException("验证码错误");

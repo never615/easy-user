@@ -136,7 +136,7 @@ class UserUsecaseImpl implements UserUsecase
 
         foreach ($credentials as $key => $value) {
             if (Str::contains($key, 'credential')) {
-                if(!\Hash::check($value, $userAuth->credential)){
+                if (!\Hash::check($value, $userAuth->credential)) {
                     return null;
                 }
             }
@@ -193,9 +193,10 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function hasIdentityType($user, $identityType)
     {
-        return $user->userAuths()
+        $userAuth = $user->userAuths()
             ->where("identity_type", $identityType)
             ->first();
+        return $userAuth;
     }
 
 
@@ -335,12 +336,18 @@ class UserUsecaseImpl implements UserUsecase
         }
 
 
-        $user->userAuth()->create([
+        if ($credentials['identityType'] == 'wechat') {
+            $credentials['identifier'] = decrypt($credentials['identifier']);
+        }
+
+        $user->userAuths()->create([
             "identifier"    => $credentials['identifier'],
-            "identity_type" => $credentials["identity_type"],
+            "identity_type" => $credentials["identityType"],
             "credential"    => $hashCreential,
+            "subject_id"    => $user->subject_id,
         ]);
 
+        return $user;
     }
 
 
@@ -357,7 +364,7 @@ class UserUsecaseImpl implements UserUsecase
 
         if (!$user->userProfile) {
             UserProfile::create([
-                "user_id"=>$user->id
+                "user_id" => $user->id,
             ]);
         }
 
