@@ -246,12 +246,18 @@ class User extends Authenticatable
     public function getAvatarAttribute($value)
     {
         if (empty($value)) {
+            $user = User::find($this->id);
+            if ($user->userProfile && $user->userProfile->wechat_user) {
+                return $user->userProfile->wechat_user['avatar'];
+            }
+
             return null;
         }
 
         if (starts_with($value, "http")) {
             return $value;
         }
+
 
         return config("app.file_url_prefix").$value;
     }
