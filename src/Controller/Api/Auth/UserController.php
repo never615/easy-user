@@ -52,9 +52,10 @@ class UserController extends Controller
         $rules = [
             "birthday" => "date",
             "gender"   => [
-                Rule::in(["0", "1", "2"]),
+                Rule::in([0, 1, 2]),
             ],
         ];
+
 
         $this->validate($request, $rules);
 
