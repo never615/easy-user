@@ -29,7 +29,7 @@ class SmsUsecase
     /**
      * 检查验证码
      *
-     * @param        $verifyObj ,校验的对象,如:mobile/email
+     * @param        $verifyObj ,校验的对象,如:手机号,邮箱等
      * @param        $code
      * @param string $use
      * @return bool

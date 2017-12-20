@@ -54,7 +54,7 @@ class ResetPasswordController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //校验短信验证码
-        if (!$this->smsUsecase->checkVerifyCode($request->identity_type, $request->code, SmsUsecase::USE_RESET)) {
+        if (!$this->smsUsecase->checkVerifyCode($request->identifier, $request->code, SmsUsecase::USE_RESET)) {
             throw new ResourceException("验证码错误");
         }
 
