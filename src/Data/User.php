@@ -237,6 +237,11 @@ class User extends Authenticatable
     }
 
 
+    public function subject(){
+        return $this->belongsTo(Subject::class);
+    }
+
+
     public function shopComments()
     {
         return $this->hasMany(ShopComment::class);
