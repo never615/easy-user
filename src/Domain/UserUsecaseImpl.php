@@ -365,6 +365,7 @@ class UserUsecaseImpl implements UserUsecase
         if (!$user->userProfile) {
             UserProfile::create([
                 "user_id" => $user->id,
+                "gender"  => 0,
             ]);
         }
 
