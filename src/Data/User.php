@@ -237,7 +237,8 @@ class User extends Authenticatable
     }
 
 
-    public function subject(){
+    public function subject()
+    {
         return $this->belongsTo(Subject::class);
     }
 
