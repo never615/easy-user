@@ -33,10 +33,12 @@ use Mallto\Mall\Data\PointHistory;
 use Mallto\Mall\Data\ShopComment;
 use Mallto\Mall\Data\Ticket;
 use Mallto\Mall\Data\UserCoupon;
+use Mallto\Mall\Domain\Traits\TagTrait;
 
 class User extends Authenticatable
 {
-    use Notifiable, DynamicData, HasApiTokens, SelectSource, \Mallto\User\Domain\Traits\UserAuthTrait;
+    use Notifiable, DynamicData, HasApiTokens, SelectSource,
+        \Mallto\User\Domain\Traits\UserAuthTrait, TagTrait;
 
     /**
      * 支持绑定的字段
@@ -237,7 +239,8 @@ class User extends Authenticatable
     }
 
 
-    public function subject(){
+    public function subject()
+    {
         return $this->belongsTo(Subject::class);
     }
 
