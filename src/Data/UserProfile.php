@@ -54,6 +54,7 @@ class UserProfile extends BaseModel
     protected $casts = [
         'extra'       => 'array',
         'wechat_user' => 'array',
+        'archive'     => 'array',
     ];
 
 
