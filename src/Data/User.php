@@ -36,7 +36,7 @@ use Mallto\Mall\Data\ShopComment;
 use Mallto\Mall\Data\SpecialTopic;
 use Mallto\Mall\Data\Ticket;
 use Mallto\Mall\Data\UserCoupon;
-use Mallto\Mall\Domain\Traits\TagTrait;
+use Mallto\Tool\Domain\Traits\TagTrait;
 
 class User extends Authenticatable
 {
