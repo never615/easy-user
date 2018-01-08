@@ -153,10 +153,12 @@ interface UserUsecase
     /**
      * 增加授权方式
      *
-     * @param $user
-     * @param $credentials
+     * @param      $user
+     * @param      $credentials
+     * @param bool $decrypt
+     * @return
      */
-    public function addIdentifier($user, $credentials);
+    public function addIdentifier($user, $credentials,$decrypt=true);
 
     /**
      * 检查用户是否有对应的凭证类型

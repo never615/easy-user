@@ -325,10 +325,12 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 增加授权方式
      *
-     * @param $user
-     * @param $credentials
+     * @param      $user
+     * @param      $credentials
+     * @param bool $decrypt
+     * @return
      */
-    public function addIdentifier($user, $credentials)
+    public function addIdentifier($user, $credentials,$decrypt=true)
     {
         $hashCreential = null;
         if (isset($credentials["credential"])) {
@@ -336,7 +338,7 @@ class UserUsecaseImpl implements UserUsecase
         }
 
 
-        if ($credentials['identityType'] == 'wechat') {
+        if ($credentials['identityType'] == 'wechat'&&$decrypt) {
             $credentials['identifier'] = decrypt($credentials['identifier']);
         }
 
@@ -463,7 +465,7 @@ class UserUsecaseImpl implements UserUsecase
         $appUser = $this->addIdentifier($appUser, [
             "identityType" => $wechatUserAuth->identity_type,
             "identifier"   => $wechatUserAuth->identifier,
-        ]);
+        ],false);
         //2. 删除wechatUser
         $wechatUser->delete();
 
