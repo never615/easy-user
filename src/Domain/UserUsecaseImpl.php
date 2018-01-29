@@ -6,6 +6,7 @@
 namespace Mallto\User\Domain;
 
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
@@ -458,6 +459,8 @@ class UserUsecaseImpl implements UserUsecase
         \Log::error("mergeAccount");
         \Log::error($appUser);
         \Log::error($wechatUser);
+
+        DB::begintransaction();
         $wechatUserAuth = $wechatUser->userAuths()
             ->where("identity_type", 'wechat')
             ->first();
@@ -466,8 +469,10 @@ class UserUsecaseImpl implements UserUsecase
             "identityType" => $wechatUserAuth->identity_type,
             "identifier"   => $wechatUserAuth->identifier,
         ],false);
+
         //2. 删除wechatUser
         $wechatUser->delete();
+        DB::commit();
 
         return $appUser;
     }

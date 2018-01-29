@@ -38,7 +38,6 @@ class CreateUserAuthsTable extends Migration
 
             $table->index(['subject_id']);
             
-            $table->unique(['subject_id',"identity_type","identifier"]);
         });
     }
 
