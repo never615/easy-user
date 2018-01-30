@@ -32,16 +32,22 @@ class SmsUsecase
      * @param        $verifyObj ,校验的对象,如:手机号,邮箱等
      * @param        $code
      * @param string $use
+     * @param null   $subjectId
      * @return bool
      */
-    public function checkVerifyCode($verifyObj, $code, $use = "register")
+    public function checkVerifyCode($verifyObj, $code, $use = "register", $subjectId = null)
     {
-        $key = $this->getSmsCacheKey($use, SubjectUtils::getSubjectId(), $verifyObj);
+        if (!$subjectId) {
+            $subjectId = SubjectUtils::getSubjectId();
+        }
+
+        $key = $this->getSmsCacheKey($use, $subjectId, $verifyObj);
 
         $tempCode = Cache::get($key);
 
+
         if ($tempCode != $code) {
-            if (config("app.env") !== 'production' && $code === "000000") {
+            if (config("app.env") !== 'production' && $code == "000000") {
                 return true;
             } else {
                 throw  new ResourceException("验证码错误");
