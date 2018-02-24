@@ -15,10 +15,10 @@ use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
-use Overtrue\LaravelWechat\Model\WechatAuthInfo;
-use Overtrue\LaravelWechat\Model\WechatCorpAuth;
-use Overtrue\LaravelWechat\Model\WechatCorpUserInfo;
-use Overtrue\LaravelWechat\Model\WechatUserInfo;
+use Overtrue\LaravelWeChat\Model\WechatAuthInfo;
+use Overtrue\LaravelWeChat\Model\WechatCorpAuth;
+use Overtrue\LaravelWeChat\Model\WechatCorpUserInfo;
+use Overtrue\LaravelWeChat\Model\WechatUserInfo;
 
 /**
  *

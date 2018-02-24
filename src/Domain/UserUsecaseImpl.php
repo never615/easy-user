@@ -14,7 +14,7 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
-use Overtrue\LaravelWechat\Domain\WechatUsecase;
+use Overtrue\LaravelWeChat\Domain\WechatUsecase;
 
 /**
  * 默认版的用户处理
