@@ -6,7 +6,6 @@
 namespace Mallto\User\Controller\Api\Auth;
 
 use Encore\Admin\AppUtils;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Log;
@@ -50,7 +49,7 @@ class WechatLoginController extends \Illuminate\Routing\Controller
      * @deprecated
      *
      * @param $type
-     * @return AuthenticationException
+     * @return \Illuminate\Http\JsonResponse
      */
     public function wechatLoginWithType($type)
     {

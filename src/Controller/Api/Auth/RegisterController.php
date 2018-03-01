@@ -15,6 +15,7 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserSalt;
 use Mallto\User\Domain\SmsUsecase;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
+use Mallto\User\Domain\Traits\OpenidCheckTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
@@ -27,7 +28,7 @@ use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
  */
 class RegisterController extends Controller
 {
-    use  AuthValidateTrait;
+    use  AuthValidateTrait,OpenidCheckTrait;
 
     /**
      * @var SmsUsecase
@@ -48,7 +49,9 @@ class RegisterController extends Controller
     {
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
-                return $this->registerByWechat($request, $userUsecase);
+                //校验identifier(实际就是加密过得openid),确保只使用了一次
+                $this->checkOpenid($request,'identifier');
+            return $this->registerByWechat($request, $userUsecase);
                 break;
             case "IOS":
             case "ANDROID":
