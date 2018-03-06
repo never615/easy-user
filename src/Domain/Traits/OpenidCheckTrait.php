@@ -38,7 +38,7 @@ trait OpenidCheckTrait
         if (Cache::has($orginalOpenid)) {
             $times = Cache::get($orginalOpenid);
             if ($times >= 2) {
-                throw new AuthenticationException("openid已被使用");
+//                throw new AuthenticationException("openid已被使用");
             } else {
                 Cache::put($orginalOpenid, 2, 5);
             }
