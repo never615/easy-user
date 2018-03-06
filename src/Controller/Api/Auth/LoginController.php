@@ -43,8 +43,7 @@ class LoginController extends Controller
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $this->checkOpenid($request,'identifier');
-
+                $request= $this->checkOpenid($request,'identifier');
                 if (!empty($request->get("bind_type"))) {
                     return $this->loginByWechatWithBinding($request, $userUsecase);
                 } else {

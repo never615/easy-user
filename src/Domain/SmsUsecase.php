@@ -120,11 +120,13 @@ class SmsUsecase
             ]);
 
         $res = json_decode($response->getBody(), true);
+
         if ($res['error_code'] != 0) {
             throw new ThirdPartException("聚合:".$res['reason']);
         } else {
             //增加主体消费的短信数量
             $subject->increment('sms_count');
+            return true;
         }
     }
 }

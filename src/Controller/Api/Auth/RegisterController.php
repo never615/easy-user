@@ -28,7 +28,7 @@ use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
  */
 class RegisterController extends Controller
 {
-    use  AuthValidateTrait,OpenidCheckTrait;
+    use  AuthValidateTrait, OpenidCheckTrait;
 
     /**
      * @var SmsUsecase
@@ -50,8 +50,9 @@ class RegisterController extends Controller
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $this->checkOpenid($request,'identifier');
-            return $this->registerByWechat($request, $userUsecase);
+                $request = $this->checkOpenid($request, 'identifier');
+
+                return $this->registerByWechat($request, $userUsecase);
                 break;
             case "IOS":
             case "ANDROID":

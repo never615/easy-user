@@ -32,34 +32,46 @@ trait OpenidCheckTrait
      */
     public function checkOpenid(Request $request, $openidKeyName = 'identifier')
     {
-        $openid = $request->$openidKeyName;
-        $openid = decrypt($openid);
-        $openids = explode("|||", $openid);
-        $timestamp = $openids[1];
-        $openid = $openids[0];
-
-        if (empty($openid)) {
-            throw new ResourceException("openid为空");
-        }
-
-        //1.检查时效性
-        $minutes = (time() - $timestamp) / 60;
-        if ($minutes >= 5) {
-            throw new AuthenticationException("openid过期");
-        }
-
-        //2.检查是否被使用过
-        if (Cache::has($openid)) {
-            throw new AuthenticationException("openid已被使用");
+        $orginalOpenid = $request->$openidKeyName;
+//        \Log::info($orginalOpenid);
+        //检查是否被使用过
+        if (Cache::has($orginalOpenid)) {
+            $times = Cache::get($orginalOpenid);
+            if ($times >= 2) {
+                throw new AuthenticationException("openid已被使用");
+            } else {
+                Cache::put($orginalOpenid, 2, 5);
+            }
         } else {
-            Cache::put($openid, $openid, 5);
+            Cache::put($orginalOpenid, 1, 5);
         }
 
+        $openid = decrypt($orginalOpenid);
+//        \Log::info($openid);
 
-        $input=[
-            $openidKeyName => encrypt($openid),
-        ];
-        $request->replace($input);
+        $openids = explode("|||", $openid);
+        if (count($openids) > 1) {
+            $timestamp = $openids[1];
+            $openid = $openids[0];
+
+            if (empty($openid)) {
+                throw new ResourceException("openid为空");
+            }
+
+            //检查时效性
+            $minutes = (time() - $timestamp) / 60;
+            if ($minutes >= 5) {
+                throw new AuthenticationException("openid过期");
+            }
+
+            $inputs = $request->all();
+
+            $inputs[$openidKeyName] = encrypt($openid);
+
+
+            $request->replace($inputs);
+        }
+
 
         return $request;
     }
