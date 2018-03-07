@@ -50,7 +50,7 @@ class RegisterController extends Controller
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $request = $this->checkOpenid($request, 'identifier');
+                $request = $this->checkOpenid($request, 'identifier',false);
 
                 return $this->registerByWechat($request, $userUsecase);
                 break;

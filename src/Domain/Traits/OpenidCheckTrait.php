@@ -25,25 +25,29 @@ trait OpenidCheckTrait
      * 校验openid
      * 并且把request中的openid参数替换成不包含时间戳的参数
      *
-     * @param        $request
-     * @param string $openidKeyName
+     * @param Request $request
+     * @param string  $openidKeyName
+     * @param bool    $checkTimes
      * @return mixed
      * @throws AuthenticationException
      */
-    public function checkOpenid(Request $request, $openidKeyName = 'identifier')
+    public function checkOpenid(Request $request, $openidKeyName = 'identifier', $checkTimes = true)
     {
         $orginalOpenid = $request->$openidKeyName;
 //        \Log::info($orginalOpenid);
         //检查是否被使用过
-        if (Cache::has($orginalOpenid)) {
-            $times = Cache::get($orginalOpenid);
-            if ($times >= 2) {
-//                throw new AuthenticationException("openid已被使用");
+
+        if ($checkTimes) {
+            if (Cache::has($orginalOpenid)) {
+                $times = Cache::get($orginalOpenid);
+                if ($times >= 2) {
+                    throw new AuthenticationException("openid已被使用");
+                } else {
+                    Cache::put($orginalOpenid, $times + 1, 5);
+                }
             } else {
-                Cache::put($orginalOpenid, 2, 5);
+                Cache::put($orginalOpenid, 1, 5);
             }
-        } else {
-            Cache::put($orginalOpenid, 1, 5);
         }
 
         $openid = decrypt($orginalOpenid);
@@ -74,5 +78,23 @@ trait OpenidCheckTrait
 
 
         return $request;
+    }
+
+
+    /**
+     * 解析openid
+     *
+     * @param $openid
+     * @return string
+     */
+    public function parseOpenid($openid)
+    {
+        $openid = decrypt($openid);
+        $openids = explode("|||", $openid);
+        if (count($openids) > 1) {
+            $openid = $openids[0];
+        }
+
+        return encrypt($openid);
     }
 }

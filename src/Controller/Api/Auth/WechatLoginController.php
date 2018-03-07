@@ -14,6 +14,7 @@ use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
+use Mallto\User\Domain\Traits\OpenidCheckTrait;
 use Overtrue\LaravelWeChat\Model\WechatAuthInfo;
 use Overtrue\LaravelWeChat\Model\WechatCorpAuth;
 use Overtrue\LaravelWeChat\Model\WechatCorpUserInfo;
@@ -26,10 +27,13 @@ use Overtrue\LaravelWeChat\Model\WechatUserInfo;
  * User: never615
  * Date: 19/04/2017
  * Time: 7:01 PM
+ *
  * @deprecated
  */
 class WechatLoginController extends \Illuminate\Routing\Controller
 {
+
+    use OpenidCheckTrait;
 
     /**
      * 根据openId登录
@@ -59,7 +63,11 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
     private function wechatLoginInter($type = null)
     {
+
         $openId = Input::get("open_id");
+
+        $openId = $this->parseOpenid($openId);
+
         try {
             $openId = decrypt($openId);
         } catch (DecryptException $e) {
@@ -97,7 +105,6 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             ->where("identifier", $openId)
             ->where("subject_id", $subject->id)
             ->first();
-
 
 
         if (!$userAuth) {
@@ -247,8 +254,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                     'gender'     => $wechatUserInfo->gender,
                     'department' => $wechatUserInfo->department,
                     'position'   => $wechatUserInfo->position,
-                    "email"    => $wechatUserInfo->email,
-                    "mobile"   => $wechatUserInfo->mobile,
+                    "email"      => $wechatUserInfo->email,
+                    "mobile"     => $wechatUserInfo->mobile,
                 ],
             ]);
         } else {
@@ -257,8 +264,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
                     'gender'     => $wechatUserInfo->gender,
                     'department' => $wechatUserInfo->department,
                     'position'   => $wechatUserInfo->position,
-                    "email"    => $wechatUserInfo->email,
-                    "mobile"   => $wechatUserInfo->mobile,
+                    "email"      => $wechatUserInfo->email,
+                    "mobile"     => $wechatUserInfo->mobile,
                 ],
             ]);
         }
