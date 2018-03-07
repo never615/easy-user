@@ -14,6 +14,7 @@ namespace Mallto\User\Domain\Traits;
 
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Mallto\Tool\Exception\ResourceException;
@@ -50,8 +51,13 @@ trait OpenidCheckTrait
             }
         }
 
-        $openid = decrypt($orginalOpenid);
-//        \Log::info($openid);
+        try {
+            $openid = decrypt($orginalOpenid);
+        } catch (DecryptException $decryptException) {
+            \Log::error("解析openid失败");
+            \Log::warning($orginalOpenid);
+            throw new AuthenticationException("授权失败,openid解析失败");
+        }
 
         $openids = explode("|||", $openid);
         if (count($openids) > 1) {
