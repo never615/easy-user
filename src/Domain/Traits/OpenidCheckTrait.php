@@ -54,9 +54,15 @@ trait OpenidCheckTrait
         try {
             $openid = decrypt($orginalOpenid);
         } catch (DecryptException $decryptException) {
-            \Log::error("解析openid失败");
-            \Log::warning($orginalOpenid);
-            throw new AuthenticationException("授权失败,openid解析失败");
+            //解析失败尝试url解码在进行解析
+            $orginalOpenid = urldecode($orginalOpenid);
+            try {
+                $openid = decrypt($orginalOpenid);
+            } catch (DecryptException $decryptException) {
+                \Log::error("解析openid失败");
+                \Log::warning($orginalOpenid);
+                throw new AuthenticationException("授权失败,openid解析失败");
+            }
         }
 
         $openids = explode("|||", $openid);
@@ -92,10 +98,24 @@ trait OpenidCheckTrait
      *
      * @param $openid
      * @return string
+     * @throws AuthenticationException
      */
     public function parseOpenid($openid)
     {
-        $openid = decrypt($openid);
+        try {
+            $openid = decrypt($openid);
+        } catch (DecryptException $decryptException) {
+            //解析失败尝试url解码在进行解析
+            $openid = urldecode($openid);
+            try {
+                $openid = decrypt($openid);
+            } catch (DecryptException $decryptException) {
+                \Log::error("解析openid失败");
+                \Log::warning($openid);
+                throw new AuthenticationException("授权失败,openid解析失败");
+            }
+        }
+
         $openids = explode("|||", $openid);
         if (count($openids) > 1) {
             $openid = $openids[0];
