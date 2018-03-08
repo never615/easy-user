@@ -95,6 +95,8 @@ class WechatLoginController extends \Illuminate\Routing\Controller
 
         if (!$wechatUserInfo) {
             Log::error("无法获取微信信息");
+            Log::warning($openId);
+            Log::warning($uuid);
 
             return new PermissionDeniedException("无法获取微信信息,请在微信内打开");
 //                return new  InternalHttpException("系统错误");
