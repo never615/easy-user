@@ -36,20 +36,6 @@ trait OpenidCheckTrait
     {
         $orginalOpenid = $request->$openidKeyName;
 //        \Log::info($orginalOpenid);
-        //检查是否被使用过
-
-        if ($checkTimes) {
-            if (Cache::has($orginalOpenid)) {
-                $times = Cache::get($orginalOpenid);
-                if ($times >= 2) {
-                    throw new AuthenticationException("openid已被使用");
-                } else {
-                    Cache::put($orginalOpenid, $times + 1, 5);
-                }
-            } else {
-                Cache::put($orginalOpenid, 1, 5);
-            }
-        }
 
         try {
             $openid = decrypt($orginalOpenid);
@@ -66,7 +52,24 @@ trait OpenidCheckTrait
         }
 
         $openids = explode("|||", $openid);
+
+
+        //检查是否被使用过
         if (count($openids) > 1) {
+            if ($checkTimes) {
+                if (Cache::has($orginalOpenid)) {
+                    $times = Cache::get($orginalOpenid);
+                    if ($times >= 2) {
+                        throw new AuthenticationException("openid已被使用");
+                    } else {
+                        Cache::put($orginalOpenid, $times + 1, 5);
+                    }
+                } else {
+                    Cache::put($orginalOpenid, 1, 5);
+                }
+            }
+
+
             $timestamp = $openids[1];
             $openid = $openids[0];
 
@@ -85,11 +88,11 @@ trait OpenidCheckTrait
             $inputs[$openidKeyName] = encrypt($openid);
 
 
-            $request->replace($inputs);
+            $request=$request->replace($inputs);
         }
 
-
         return $request;
+
     }
 
 
@@ -100,8 +103,10 @@ trait OpenidCheckTrait
      * @return string
      * @throws AuthenticationException
      */
-    public function parseOpenid($openid)
-    {
+    public
+    function parseOpenid(
+        $openid
+    ) {
         try {
             $openid = decrypt($openid);
         } catch (DecryptException $decryptException) {
