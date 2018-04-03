@@ -7,9 +7,9 @@ namespace Mallto\User\Data;
 
 
 use Carbon\Carbon;
-use Encore\Admin\Auth\Database\Subject;
-use Encore\Admin\Auth\Database\Traits\DynamicData;
-use Encore\Admin\Auth\Database\Traits\SelectSource;
+use Mallto\Admin\Data\Subject;
+use Mallto\Admin\Data\Traits\DynamicData;
+use Mallto\Admin\Data\Traits\SelectSource;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;

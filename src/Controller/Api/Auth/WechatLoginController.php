@@ -5,7 +5,7 @@
 
 namespace Mallto\User\Controller\Api\Auth;
 
-use Encore\Admin\AppUtils;
+use Mallto\Admin\SubjectUtils;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Log;
@@ -76,9 +76,9 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             throw new ResourceException("openid无效");
         }
 
-        $subject = AppUtils::getSubject();
+        $subject = SubjectUtils::getSubject();
 
-        $uuid = AppUtils::getUUID();
+        $uuid =SubjectUtils::getUUID();
 
         //先判断该openId有没有对应的用户
 
@@ -198,9 +198,9 @@ class WechatLoginController extends \Illuminate\Routing\Controller
             throw new ResourceException("openid无效");
         }
 
-        $subject = AppUtils::getSubject();
+        $subject = SubjectUtils::getSubject();
 
-        $uuid = AppUtils::getUUID();
+        $uuid =SubjectUtils::getUUID();
 
         //先判断该openId有没有对应的用户
 

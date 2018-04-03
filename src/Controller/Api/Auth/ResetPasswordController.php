@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\Tool\Utils\SubjectUtils;
+use Mallto\Admin\SubjectUtils;
 use Mallto\User\Domain\SmsUsecase;
 use Mallto\User\Domain\UserUsecase;
 

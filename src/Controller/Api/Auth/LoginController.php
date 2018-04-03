@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Mallto\Tool\Exception\AuthorizeFailedException;
 use Mallto\Tool\Exception\NotFoundException;
-use Mallto\Tool\Utils\SubjectUtils;
+use Mallto\Admin\SubjectUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
 use Mallto\User\Domain\Traits\OpenidCheckTrait;

@@ -25,13 +25,11 @@ $attributes = [
 Route::group($attributes, function ($router) {
 
 //----------------------------------------  管理端开始  -----------------------------------------------
-    Route::group(['prefix' => config('admin.prefix'), "middleware" => ["admin"]], function ($router) {
-        //需要授权的
-        Route::group(['middleware' => ['admin.auto_permission']], function ($router) {  //指定auth的guard为mall
+    Route::group(['prefix' => config('admin.route.prefix'), "middleware" => ["adminE"]],
+        function ($router) {
             //用户
             Route::resource('users', 'UserController', ['except' => ['create', 'store']]);
         });
-    });
 
 //----------------------------------------  管理端结束  -----------------------------------------------
 

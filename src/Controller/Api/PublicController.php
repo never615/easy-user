@@ -7,7 +7,7 @@ namespace Mallto\User\Controller\Api;
 
 
 use App\Http\Controllers\Controller;
-use Encore\Admin\AppUtils;
+use Mallto\Admin\SubjectUtils;
 use Illuminate\Support\Facades\Input;
 use Mallto\User\Domain\SmsUsecase;
 
@@ -44,7 +44,7 @@ class PublicController extends Controller
     {
         $mobile = Input::get('mobile');
         $use = Input::get("use", "register");
-        $subjectId = AppUtils::getSubjectId();
+        $subjectId = SubjectUtils::getSubjectId();
 
         $this->smsUsecase->sendSms($mobile, $subjectId, $use);
 
@@ -57,7 +57,7 @@ class PublicController extends Controller
 //    public function getMailMessageCode()
 //    {
 //        $email = Input::get('email');
-//        $subjectId = AppUtils::getSubjectId();
+//        $subjectId = SubjectUtils::getSubjectId();
 //
 //        $data['email'] = $email;
 //        $validator = Validator::make($data,

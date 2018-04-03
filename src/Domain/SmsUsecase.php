@@ -5,14 +5,13 @@
 
 namespace Mallto\User\Domain;
 
-use Encore\Admin\AppUtils;
+use Mallto\Admin\SubjectUtils;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ThirdPartException;
 use Mallto\Tool\Exception\ValidationHttpException;
-use Mallto\Tool\Utils\SubjectUtils;
 
 /**
  * Created by PhpStorm.
@@ -102,7 +101,7 @@ class SmsUsecase
             Cache::put($key, $code, 10);
         }
 
-        $subject = AppUtils::getSubject();
+        $subject = SubjectUtils::getSubject();
         $name = $subject->name;
         //模板id
         $tplValue = urlencode("#code#=$code&#app#=$name");
