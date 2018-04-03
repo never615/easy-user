@@ -6,7 +6,7 @@
 namespace Mallto\User\Data;
 
 
-use Encore\Admin\Auth\Database\Traits\BaseModel;
+use Mallto\Admin\Data\Traits\BaseModel;
 
 /**
  * 用户资料

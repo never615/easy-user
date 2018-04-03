@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\Tool\Utils\SubjectUtils;
+use Mallto\Admin\SubjectUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserSalt;
 use Mallto\User\Domain\SmsUsecase;
