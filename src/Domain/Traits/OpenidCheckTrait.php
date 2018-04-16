@@ -88,7 +88,7 @@ trait OpenidCheckTrait
             $inputs[$openidKeyName] = encrypt($openid);
 
 
-            $request=$request->replace($inputs);
+            $request->replace($inputs);
         }
 
         return $request;
