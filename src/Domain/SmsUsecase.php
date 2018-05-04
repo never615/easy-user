@@ -91,14 +91,16 @@ class SmsUsecase
 
         $code = mt_rand(1000, 9999);
 
-        if (Cache::has($key)) {
-            //如果验证码还没过期,用户再次请求则重复发送一次验证码
-            $code = Cache::get($key);
-            Cache::put($key, $code, 10);
-//            throw new RateLimitExceededException();
-        } else {
-            Cache::put($key, $code, 10);
-        }
+        Cache::put($key, $code, 10);
+
+//        if (Cache::has($key)) {
+//            //如果验证码还没过期,用户再次请求则重复发送一次验证码
+//            $code = Cache::get($key);
+//            Cache::put($key, $code, 10);
+////            throw new RateLimitExceededException();
+//        } else {
+//            Cache::put($key, $code, 10);
+//        }
 
         $subject = SubjectUtils::getSubject();
         $name = $subject->name;
