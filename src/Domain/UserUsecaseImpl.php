@@ -447,7 +447,9 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 合并用户
      *
-     * 把两个用户账户合并,一般是用户已经是纯微信用户,且已经使用手机注册了app.此时需要用户在微信要绑定手机,则需要合并两个用户
+     * 把两个用户账户合并,一般是用户已经是纯微信用户,且已经使用手机注册了app.
+     *
+     * 此时需要用户在微信要绑定手机,则需要合并两个用户
      *
      * 要做的事情:把用户的所有相关的业务数据的user_id都改成同一个,然后删除废弃用户
      *
@@ -457,8 +459,8 @@ class UserUsecaseImpl implements UserUsecase
     public function mergeAccount($appUser, $wechatUser)
     {
         \Log::error("mergeAccount");
-        \Log::error($appUser);
-        \Log::error($wechatUser);
+        \Log::waring($appUser);
+        \Log::waring($wechatUser);
 
         DB::begintransaction();
         $wechatUserAuth = $wechatUser->userAuths()
@@ -470,7 +472,10 @@ class UserUsecaseImpl implements UserUsecase
             "identifier"   => $wechatUserAuth->identifier,
         ],false);
 
-        //2. 删除wechatUser
+        //2. 把微信用户的业务数据合并
+        //目前合并只有海上世界项目会出现,海上世界的纯微信用户没有需要合并的业务,所以不需要处理
+
+        //3. 删除wechatUser
         $wechatUser->delete();
         DB::commit();
 
