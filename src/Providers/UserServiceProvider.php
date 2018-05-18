@@ -6,6 +6,7 @@
 namespace Mallto\User\Providers;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 use Mallto\User\Domain\UserUsecase;
@@ -13,6 +14,30 @@ use Mallto\User\Domain\UserUsecaseImpl;
 
 class UserServiceProvider extends ServiceProvider
 {
+
+
+    /**
+     * The event listener mappings for the application.
+     *
+     * @var array
+     */
+    protected $listen = [
+        'Laravel\Passport\Events\AccessTokenCreated' => [
+            'Mallto\User\Listeners\RevokeOldTokens',
+        ],
+
+        'Laravel\Passport\Events\RefreshTokenCreated' => [
+            'Mallto\User\Listeners\PruneOldTokens',
+        ],
+    ];
+
+
+    /**
+     * The subscriber classes to register.
+     *
+     * @var array
+     */
+    protected $subscribe = [];
 
     /**
      * @var array
@@ -45,6 +70,15 @@ class UserServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        foreach ($this->listens() as $event => $listeners) {
+            foreach ($listeners as $listener) {
+                Event::listen($event, $listener);
+            }
+        }
+
+        foreach ($this->subscribe as $subscriber) {
+            Event::subscribe($subscriber);
+        }
 
         $this->loadViewsFrom(__DIR__.'/../../views', 'user');
 
@@ -75,10 +109,11 @@ class UserServiceProvider extends ServiceProvider
 
     private function authBoot()
     {
-        Passport::routes(null,[
+        Passport::routes(null, [
             'prefix' => 'api/oauth',
         ]);
-        Passport::tokensExpireIn(Carbon::now()->addDays(1));
+        //私人令牌下列设置无效
+        Passport::tokensExpireIn(Carbon::now()->addDays(7));
         Passport::refreshTokensExpireIn(Carbon::now()->addDays(60));
 
 
@@ -88,6 +123,17 @@ class UserServiceProvider extends ServiceProvider
             'parking-token' => '停车需要使用到的token',
             'account-token' => "账户操作权限:如重新绑定手机",
         ]);
+    }
+
+
+    /**
+     * Get the events and handlers.
+     *
+     * @return array
+     */
+    public function listens()
+    {
+        return $this->listen;
     }
 
 }

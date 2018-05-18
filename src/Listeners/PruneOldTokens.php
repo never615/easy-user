@@ -7,6 +7,12 @@ namespace Mallto\User\Listeners;
 
 use Laravel\Passport\Events\RefreshTokenCreated;
 
+/**
+ * 刷新令牌
+ * Class PruneOldTokens
+ *
+ * @package Mallto\User\Listeners
+ */
 class PruneOldTokens
 {
     /**
