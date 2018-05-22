@@ -459,8 +459,8 @@ class UserUsecaseImpl implements UserUsecase
     public function mergeAccount($appUser, $wechatUser)
     {
         \Log::error("mergeAccount");
-        \Log::waring($appUser);
-        \Log::waring($wechatUser);
+        \Log::warning($appUser);
+        \Log::warning($wechatUser);
 
         DB::begintransaction();
         $wechatUserAuth = $wechatUser->userAuths()
