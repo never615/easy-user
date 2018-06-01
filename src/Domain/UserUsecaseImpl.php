@@ -466,17 +466,24 @@ class UserUsecaseImpl implements UserUsecase
         $wechatUserAuth = $wechatUser->userAuths()
             ->where("identity_type", 'wechat')
             ->first();
-        //1. 合并wechatUser的授权方式到appUser
-        $appUser = $this->addIdentifier($appUser, [
-            "identityType" => $wechatUserAuth->identity_type,
-            "identifier"   => $wechatUserAuth->identifier,
-        ],false);
 
-        //2. 把微信用户的业务数据合并
+        $wechatUserIdentityType=$wechatUserAuth->identity_type;
+        $wechatUserIdentifier=$wechatUserAuth->identifier;
+
+
+        //1. 把微信用户的业务数据合并
         //目前合并只有海上世界项目会出现,海上世界的纯微信用户没有需要合并的业务,所以不需要处理
 
-        //3. 删除wechatUser
+        //2. 删除wechatUser
         $wechatUser->delete();
+
+
+        //3. 合并wechatUser的授权方式到appUser
+        $appUser = $this->addIdentifier($appUser, [
+            "identityType" => $wechatUserIdentityType,
+            "identifier"   => $wechatUserIdentifier,
+        ],false);
+
         DB::commit();
 
         return $appUser;
