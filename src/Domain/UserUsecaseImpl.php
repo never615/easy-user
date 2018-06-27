@@ -191,12 +191,14 @@ class UserUsecaseImpl implements UserUsecase
      * 检查用户是否有对应的凭证类型
      *
      * @param $identityType
+     * @return
      */
     public function hasIdentityType($user, $identityType)
     {
         $userAuth = $user->userAuths()
             ->where("identity_type", $identityType)
             ->first();
+
         return $userAuth;
     }
 
@@ -211,6 +213,16 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function bind($user, $bindType, $bindData)
     {
+        if ($bindType == 'mobile') {
+            //如果是手机绑定,均添加sms的验证方式
+            $user->userAuths()->create([
+                "identifier"    => $bindData,
+                "identity_type" => "sms",
+                "credential"    => null,
+                "subject_id"    => $user->subject_id,
+            ]);
+        }
+
         $user->$bindType = $bindData;
         $user->save();
 
@@ -331,7 +343,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param bool $decrypt
      * @return
      */
-    public function addIdentifier($user, $credentials,$decrypt=true)
+    public function addIdentifier($user, $credentials, $decrypt = true)
     {
         $hashCreential = null;
         if (isset($credentials["credential"])) {
@@ -339,9 +351,10 @@ class UserUsecaseImpl implements UserUsecase
         }
 
 
-        if ($credentials['identityType'] == 'wechat'&&$decrypt) {
+        if ($credentials['identityType'] == 'wechat' && $decrypt) {
             $credentials['identifier'] = decrypt($credentials['identifier']);
         }
+
 
         $user->userAuths()->create([
             "identifier"    => $credentials['identifier'],
@@ -467,8 +480,8 @@ class UserUsecaseImpl implements UserUsecase
             ->where("identity_type", 'wechat')
             ->first();
 
-        $wechatUserIdentityType=$wechatUserAuth->identity_type;
-        $wechatUserIdentifier=$wechatUserAuth->identifier;
+        $wechatUserIdentityType = $wechatUserAuth->identity_type;
+        $wechatUserIdentifier = $wechatUserAuth->identifier;
 
 
         //1. 把微信用户的业务数据合并
@@ -482,7 +495,7 @@ class UserUsecaseImpl implements UserUsecase
         $appUser = $this->addIdentifier($appUser, [
             "identityType" => $wechatUserIdentityType,
             "identifier"   => $wechatUserIdentifier,
-        ],false);
+        ], false);
 
         DB::commit();
 

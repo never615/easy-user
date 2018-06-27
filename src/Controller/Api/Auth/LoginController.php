@@ -36,6 +36,7 @@ class LoginController extends Controller
      * @param Request     $request
      * @param UserUsecase $userUsecase
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function login(Request $request, UserUsecase $userUsecase)
     {
