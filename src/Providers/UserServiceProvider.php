@@ -45,6 +45,7 @@ class UserServiceProvider extends ServiceProvider
     protected $commands = [
         'Mallto\User\Commands\InstallCommand',
         'Mallto\User\Commands\UpdateCommand',
+        'Mallto\User\Commands\UserAuthAddSmsCommand',
     ];
 
     /**

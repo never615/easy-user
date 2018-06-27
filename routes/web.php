@@ -29,6 +29,9 @@ Route::group($attributes, function ($router) {
         function ($router) {
             //用户
             Route::resource('users', 'UserController', ['except' => ['create', 'store']]);
+            //解绑
+            Route::get('users/{id}/unbind', 'UserController@unbind')
+                ->name("users.unbind");
         });
 
 //----------------------------------------  管理端结束  -----------------------------------------------
