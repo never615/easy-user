@@ -75,6 +75,7 @@ class SmsUsecase
      * @param        $subjectId
      * @param string $use
      * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function sendSms($mobile, $subjectId, $use = 'register')
     {
@@ -93,20 +94,10 @@ class SmsUsecase
 
         Cache::put($key, $code, 10);
 
-//        if (Cache::has($key)) {
-//            //如果验证码还没过期,用户再次请求则重复发送一次验证码
-//            $code = Cache::get($key);
-//            Cache::put($key, $code, 10);
-////            throw new RateLimitExceededException();
-//        } else {
-//            Cache::put($key, $code, 10);
-//        }
-
         $subject = SubjectUtils::getSubject();
         $name = $subject->name;
         //模板id
         $tplValue = urlencode("#code#=$code&#app#=$name");
-
 
         $client = new Client();
         $response = $client->request('GET',

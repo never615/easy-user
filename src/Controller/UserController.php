@@ -71,6 +71,10 @@ class UserController extends AdminCommonController
         })->tab("微信信息", function ($form) {
             $this->wechatInfoForm($form);
         });
+        
+        
+        
+        
 
         $form->ignore(['subject_id', 'new_mobile', 'mobile_code']);
 

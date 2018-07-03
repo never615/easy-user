@@ -128,4 +128,30 @@ trait OpenidCheckTrait
 
         return encrypt($openid);
     }
+
+
+    public function decryptOpenid($openid){
+        try {
+            $openid = decrypt($openid);
+        } catch (DecryptException $decryptException) {
+            //解析失败尝试url解码在进行解析
+            $openid = urldecode($openid);
+            try {
+                $openid = decrypt($openid);
+            } catch (DecryptException $decryptException) {
+                \Log::error("解析openid失败");
+                \Log::warning($openid);
+                throw new AuthenticationException("授权失败,openid解析失败");
+            }
+        }
+
+        $openids = explode("|||", $openid);
+        if (count($openids) > 1) {
+            $openid = $openids[0];
+        }
+
+        return $openid;
+    }
+
+
 }
