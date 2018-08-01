@@ -215,11 +215,12 @@ class UserUsecaseImpl implements UserUsecase
     {
         if ($bindType == 'mobile') {
             //如果是手机绑定,均添加sms的验证方式
-            $user->userAuths()->create([
+            $user->userAuths()->updateOrCreate([
                 "identifier"    => $bindData,
                 "identity_type" => "sms",
-                "credential"    => null,
                 "subject_id"    => $user->subject_id,
+            ], [
+                "credential" => null,
             ]);
         }
 
