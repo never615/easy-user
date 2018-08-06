@@ -5,10 +5,11 @@
 
 namespace Mallto\User\Domain;
 
-use Mallto\Admin\SubjectUtils;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Mallto\Admin\SubjectUtils;
+use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ThirdPartException;
 use Mallto\Tool\Exception\ValidationHttpException;
@@ -92,8 +93,23 @@ class SmsUsecase
 
         $code = mt_rand(1000, 9999);
 
-        Cache::put($key, $code, 10);
 
+        return $this->juheSend($code, $mobile, $key);
+//        return $this->aliSend($code, $mobile, $key);
+
+    }
+
+    /**
+     * 使用聚合接口发送短信
+     *
+     * @param $code
+     * @param $mobile
+     * @param $key
+     * @return bool
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    private function juheSend($code, $mobile, $key)
+    {
         $subject = SubjectUtils::getSubject();
         $name = $subject->name;
         //模板id
@@ -115,9 +131,38 @@ class SmsUsecase
         if ($res['error_code'] != 0) {
             throw new ThirdPartException("聚合:".$res['reason']);
         } else {
+            Cache::put($key, $code, 10);
+
             //增加主体消费的短信数量
             $subject->increment('sms_count');
+
             return true;
         }
     }
+
+
+    /**
+     * 使用阿里云接口发送短信
+     *
+     * @param $code
+     * @param $mobile
+     * @param $key
+     * @return mixed
+     */
+    private function aliSend($code, $mobile, $key)
+    {
+
+        $sign = SubjectUtils::getSubectConfig2("sms_sign", "墨兔");
+
+        $sms = app(Sms::class);
+        $result = $sms->sendSms($mobile, $sign, "SMS_141255069", [
+            "code" => $code,
+        ]);
+        if ($result) {
+            Cache::put($key, $code, 5);
+        }
+
+        return response()->nocontent();
+    }
+
 }
