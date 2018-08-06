@@ -6,7 +6,7 @@
 namespace Mallto\User\Commands;
 
 use Illuminate\Console\Command;
-use Mallto\User\Seeder\UserTablesSeeder;
+use Mallto\User\Seeder\TablesSeeder;
 
 class InstallCommand extends Command
 {
@@ -51,6 +51,6 @@ class InstallCommand extends Command
     {
         $this->call('migrate', ['--path' => str_replace(base_path(), '', __DIR__).'/../../migrations/']);
 
-        $this->call('db:seed', ['--class' => UserTablesSeeder::class]);
+        $this->call('db:seed', ['--class' => TablesSeeder::class]);
     }
 }

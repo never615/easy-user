@@ -3,12 +3,18 @@
  * Copyright (c) 2017. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
  */
 
-namespace Mallto\User\Seeder;
+namespace Mallto\User\Seeder\Permission;
 
 use Illuminate\Database\Seeder;
+use Mallto\Admin\Seeder\SeederMaker;
 
-class UserTablesSeeder extends Seeder
+class PermissionTablesSeeder extends Seeder
 {
+
+    use SeederMaker;
+
+    protected $order = 1000;
+
     /**
      * Run the database seeds.
      *
@@ -16,7 +22,6 @@ class UserTablesSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(MenuTablesSeeder::class);
-        $this->call(PermissionTablesSeeder::class);
+        $this->createPermissions("用户", "users");
     }
 }
