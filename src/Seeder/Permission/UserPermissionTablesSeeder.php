@@ -8,7 +8,7 @@ namespace Mallto\User\Seeder\Permission;
 use Illuminate\Database\Seeder;
 use Mallto\Admin\Seeder\SeederMaker;
 
-class PermissionTablesSeeder extends Seeder
+class UserPermissionTablesSeeder extends Seeder
 {
 
     use SeederMaker;

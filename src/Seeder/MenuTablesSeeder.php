@@ -6,17 +6,19 @@
 namespace Mallto\User\Seeder;
 
 use Illuminate\Database\Seeder;
+use Mallto\User\Seeder\Menu\UserMenuTablesSeeder;
+use Mallto\User\Seeder\Permission\UserPermissionTablesSeeder;
 
-class TablesSeeder extends Seeder
+class MenuTablesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      *
      * @return void
      */
-    public function run(MenuTablesSeeder $menuTablesSeeder, PermissionTablesSeeder $permissionTablesSeeder)
+    public function run()
     {
-        $menuTablesSeeder->run();
-        $permissionTablesSeeder->run();
+        $this->call(UserMenuTablesSeeder::class);
+//DummySeeder
     }
 }

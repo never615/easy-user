@@ -5,11 +5,13 @@
 
 namespace Mallto\User\Seeder\Menu;
 
-use Encore\Admin\Auth\Database\Menu;
 use Illuminate\Database\Seeder;
+use Mallto\Admin\Seeder\MenuSeederMaker;
 
-class MenuTablesSeeder extends Seeder
+class UserMenuTablesSeeder extends Seeder
 {
+
+    use MenuSeederMaker;
 
     /**
      * Run the database seeds.
