@@ -23,7 +23,7 @@ class UserMenuTablesSeeder extends Seeder
         $order = 500;
 
         $userManagerMenu = $this->updateOrCreate(
-            "user_manager", 0, $order++, "会员管理", "fa-user");
+            "user_manager", 0, $order++, "用户管理", "fa-user");
 
 
         $this->updateOrCreate(
