@@ -50,7 +50,7 @@ trait WechatInfoTrait
             }
         });
 
-        $form->display('userprofile.wechat_user', "国家")->with(function ($value) {
+        $form->display('userprofile.wechat_user', "性别")->with(function ($value) {
             if ($value) {
                 $value = $value['sex'];
                 if (is_null($value)) {

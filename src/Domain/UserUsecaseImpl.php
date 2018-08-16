@@ -153,7 +153,7 @@ class UserUsecaseImpl implements UserUsecase
         }
 
 
-        return $userAuth->user;
+        return $user;
     }
 
 
