@@ -32,6 +32,9 @@ Route::group($attributes, function ($router) {
             //解绑
             Route::get('users/{id}/unbind', 'UserController@unbind')
                 ->name("users.unbind");
+
+            //用户统计数据
+            Route::post('statistics/users/cumulate', 'Admin\UserStatisticsController@cumulateUser');
         });
 
 //----------------------------------------  管理端结束  -----------------------------------------------

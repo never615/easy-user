@@ -46,6 +46,7 @@ class UserServiceProvider extends ServiceProvider
         'Mallto\User\Commands\InstallCommand',
         'Mallto\User\Commands\UpdateCommand',
         'Mallto\User\Commands\UserAuthAddSmsCommand',
+        'Mallto\User\Commands\UserStatisticsCommand',
     ];
 
     /**
