@@ -35,6 +35,7 @@ Route::group($attributes, function ($router) {
 
             //用户统计数据
             Route::post('statistics/users/cumulate', 'Admin\UserStatisticsController@cumulateUser');
+            Route::post('statistics/users/new_user', 'Admin\UserStatisticsController@newUser');
         });
 
 //----------------------------------------  管理端结束  -----------------------------------------------

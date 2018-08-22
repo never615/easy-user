@@ -5,6 +5,7 @@
 
 namespace Mallto\User\Domain;
 
+use Doctrine\DBAL\Driver\DriverException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -239,6 +240,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param      $subject
      * @param null $info
      * @return User
+     * @throws DriverException
      */
     public function createUserByWechat($credentials, $subject, $info = null)
     {
@@ -264,13 +266,23 @@ class UserUsecaseImpl implements UserUsecase
 
 
         \DB::beginTransaction();
-        $user = User::create($userData);
-        $user->userAuths()->create([
-            'subject_id'    => $subject->id,
-            'identity_type' => $identityType,
-            'identifier'    => $this->decryptOpenid($identifier),
-            'credential'    => $credential,
-        ]);
+        try {
+
+            $user = User::create($userData);
+
+            $user->userAuths()->create([
+                'subject_id'    => $subject->id,
+                'identity_type' => $identityType,
+                'identifier'    => $this->decryptOpenid($identifier),
+                'credential'    => $credential,
+            ]);
+        } catch (DriverException $exception) {
+            \DB::rollback();
+            //检查用户是否已经创建成功
+            //todo
+            \Log::error("DriverException");
+            throw $exception;
+        }
         \DB::commit();
 
         return $user;
