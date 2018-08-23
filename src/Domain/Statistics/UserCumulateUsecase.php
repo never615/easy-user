@@ -19,10 +19,9 @@ use Mallto\User\Data\UserCumulate;
 
 
 /**
- * 用户累计数据
  * Class UserCumulateUsecase
  *
- * @package Overtrue\LaravelWeChat\Domain\WechatStatistics
+ * @package Mallto\User\Domain\Statistics
  */
 class UserCumulateUsecase
 {

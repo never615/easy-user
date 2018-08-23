@@ -33,6 +33,10 @@ Route::group($attributes, function ($router) {
             Route::get('users/{id}/unbind', 'UserController@unbind')
                 ->name("users.unbind");
 
+            //微信统计数据
+            Route::post('statistics/wechat_user/cumulate', 'Admin\WechatUserStatisticsController@cumulateUser');
+            Route::post('statistics/wechat_user/new_user', 'Admin\WechatUserStatisticsController@newUser');
+
             //用户统计数据
             Route::post('statistics/users/cumulate', 'Admin\UserStatisticsController@cumulateUser');
             Route::post('statistics/users/new_user', 'Admin\UserStatisticsController@newUser');

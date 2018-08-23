@@ -47,6 +47,8 @@ class UserServiceProvider extends ServiceProvider
         'Mallto\User\Commands\UpdateCommand',
         'Mallto\User\Commands\UserAuthAddSmsCommand',
         'Mallto\User\Commands\UserStatisticsCommand',
+        'Mallto\User\Commands\WechatUserStatisticsCommand',
+
     ];
 
     /**

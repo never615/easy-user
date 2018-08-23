@@ -6,27 +6,28 @@
 namespace Mallto\User\Controller\Admin;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use Encore\Admin\Facades\Admin;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
-use Mallto\Mall\Data\Subject;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\User\Data\UserCumulate;
+use Mallto\User\Data\WechatUserCumulate;
 
 /**
- * Created by PhpStorm.
- * User: never615 <never615.com>
- * Date: 2018/8/22
- * Time: 下午12:03
+ * 微信统计数据
+ * Class WechatUserStatisticsController
+ *
+ * @package Overtrue\LaravelWeChat\Controllers\Admin
  */
-class UserStatisticsController extends Controller
+class WechatUserStatisticsController extends Controller
 {
 
     /**
-     * 用户累计数据
+     * 微信用户累计数据
      *
      * @param Request $request
-     * @return array
+     * @return
      */
     public function cumulateUser(Request $request)
     {
@@ -49,14 +50,12 @@ class UserStatisticsController extends Controller
                     throw new ResourceException("按天查询,间隔不能超过31天");
                 }
 
-                $results = UserCumulate::where("type", $dateType)
+                $results = WechatUserCumulate::where("type", $dateType)
                     ->where("ref_date", ">=", $started)
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "cumulate_user as commom_cumulate_user")
+                    ->select("ref_date", "cumulate_user")
                     ->get();
-
-
                 break;
             case 'month':
                 $startedCarbon = Carbon::createFromFormat("Y-m", $started);
@@ -65,15 +64,15 @@ class UserStatisticsController extends Controller
                     throw new ResourceException("按月查询,间隔不能超过31个月");
                 }
 
-                $results = UserCumulate::where("type", $dateType)
+                $results = WechatUserCumulate::where("type", $dateType)
                     ->where("ref_date", ">=", $startedCarbon->format('Y-m'))
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "cumulate_user as commom_cumulate_user")
+                    ->select("ref_date", "cumulate_user")
                     ->get();
 
                 //合并当月数据
-                $currentMonthData = UserCumulate::where('type', 'day')
+                $currentMonthData = WechatUserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
@@ -81,7 +80,7 @@ class UserStatisticsController extends Controller
                 $results = $results->concat([
                         [
                             'ref_date'      => Carbon::now()->format('Y-m'),
-                            'commom_cumulate_user' => $currentMonthData->cumulate_user,
+                            'cumulate_user' => $currentMonthData->cumulate_user,
                         ],
                     ]
                 );
@@ -94,15 +93,15 @@ class UserStatisticsController extends Controller
                     throw new ResourceException("按年查询,间隔不能超过31年");
                 }
 
-                $results = UserCumulate::where("type", $dateType)
+                $results = WechatUserCumulate::where("type", $dateType)
                     ->where("ref_date", ">=", $startedCarbon->format("Y"))
                     ->where("ref_date", "<=", $endedCarbon->format("Y"))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "cumulate_user as commom_cumulate_user")
+                    ->select("ref_date", "cumulate_user")
                     ->get();
 
                 //合并当年数据
-                $currentMonthData = UserCumulate::where('type', 'day')
+                $currentMonthData = WechatUserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
@@ -110,7 +109,7 @@ class UserStatisticsController extends Controller
                 $results = $results->concat([
                         [
                             'ref_date'      => Carbon::now()->format('Y'),
-                            'commom_cumulate_user' => $currentMonthData->cumulate_user,
+                            'cumulate_user' => $currentMonthData->cumulate_user,
                         ],
                     ]
                 );
@@ -124,13 +123,14 @@ class UserStatisticsController extends Controller
 
 
     /**
-     * 用户新增数据
+     * 新增用户数据
      *
      * @param Request $request
      * @return array
      */
     public function newUser(Request $request)
     {
+
         $started = $request->users_new_started_at;
         $ended = $request->users_new_ended_at;
         $dateType = $request->users_new_date_type;
@@ -150,11 +150,11 @@ class UserStatisticsController extends Controller
                     throw new ResourceException("按天查询,间隔不能超过31天");
                 }
 
-                $results = UserCumulate::where("type", $dateType)
+                $results = WechatUserCumulate::where("type", $dateType)
                     ->where("ref_date", ">=", $started)
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user as commom_new_user")
+                    ->select("ref_date", "new_user")
                     ->get();
                 break;
             case 'month':
@@ -164,20 +164,20 @@ class UserStatisticsController extends Controller
                     throw new ResourceException("按月查询,间隔不能超过31个月");
                 }
 
-                $results = UserCumulate::where("type", $dateType)
+                $results = WechatUserCumulate::where("type", $dateType)
                     ->where("ref_date", ">=", $startedCarbon->format('Y-m'))
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user as commom_new_user")
+                    ->select("ref_date", "new_user")
                     ->get();
 
                 //合并当月数据
-                $currentMonthData = UserCumulate::where('type', 'day')
+                $currentMonthData = WechatUserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
 
-                $lastMonthData = UserCumulate::where('type', 'month')
+                $lastMonthData = WechatUserCumulate::where('type', 'month')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
@@ -186,7 +186,7 @@ class UserStatisticsController extends Controller
                     $results = $results->concat([
                             [
                                 'ref_date' => Carbon::now()->format('Y-m'),
-                                'commom_new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
+                                'new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
                             ],
                         ]
                     );
@@ -202,20 +202,20 @@ class UserStatisticsController extends Controller
                     throw new ResourceException("按年查询,间隔不能超过31年");
                 }
 
-                $results = UserCumulate::where("type", $dateType)
+                $results = WechatUserCumulate::where("type", $dateType)
                     ->where("ref_date", ">=", $startedCarbon->format("Y"))
                     ->where("ref_date", "<=", $endedCarbon->format("Y"))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user as commom_new_user")
+                    ->select("ref_date", "new_user")
                     ->get();
 
                 //合并当年数据
-                $currentYearData = UserCumulate::where('type', 'day')
+                $currentYearData = WechatUserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
 
-                $lastYearData = UserCumulate::where('type', 'year')
+                $lastYearData = WechatUserCumulate::where('type', 'year')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
@@ -225,7 +225,7 @@ class UserStatisticsController extends Controller
                     $results = $results->concat([
                             [
                                 'ref_date' => Carbon::now()->format('Y'),
-                                'commom_new_user' => $newUser,
+                                'new_user' => $newUser,
                             ],
                         ]
                     );
@@ -237,6 +237,7 @@ class UserStatisticsController extends Controller
 
 
         return $results;
+
     }
 
 
@@ -248,6 +249,5 @@ class UserStatisticsController extends Controller
 
         return SubjectUtils::getSubjectId();
     }
-
 
 }
