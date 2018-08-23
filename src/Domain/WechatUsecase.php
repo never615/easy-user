@@ -1,38 +1,27 @@
 <?php
 /**
- * Copyright (c) 2017. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
+ * Copyright (c) 2018. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
  */
 
-
-/**
- * Created by PhpStorm.
- * User: never615
- * Date: 14/07/2017
- * Time: 12:25 PM
- */
-
-namespace Mallto\User\Domain\Statistics;
+namespace Mallto\User\Domain;
 
 
 use GuzzleHttp\Exception\ClientException;
-use Mallto\Tool\Domain\Net\AbstractAPI;
-use Mallto\Tool\Exception\ThirdPartException;
 use Mallto\Tool\Utils\SignUtils;
 
 /**
- * 微信统计数据
- * Class WechatStatistics
- *
- * @package Mallto\User\Domain\Statistics
+ * Created by PhpStorm.
+ * User: never615 <never615.com>
+ * Date: 2018/8/23
+ * Time: 下午7:25
  */
-class WechatStatistics extends AbstractAPI
+class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
 {
+
     protected $slug = 'open_platform';
 
-
-    public function cumulate($uuid, $from, $to, $type='day')
+    public function getUserInfo($uuid, $openid)
     {
-
         if (config("app.env") == 'production' || config("app.env") == 'staging') {
             $baseUrl = "https://wechat.mall-to.com";
         } else {
@@ -41,9 +30,8 @@ class WechatStatistics extends AbstractAPI
 
 
         $requestData = [
-            'from' => $from,
-            'to'   => $to,
-            'type' => $type,
+            'uuid'   => $uuid,
+            'openid' => $openid,
         ];
 
         $sign = SignUtils::sign($requestData, '81eaaa7cd5b8aafc51aa1e5392ae25f2');
@@ -51,8 +39,8 @@ class WechatStatistics extends AbstractAPI
 
         try {
 
-            $content = $this->parseJSON('post', [
-                $baseUrl.'/api/statistics/user/cumulate_data',
+            $content = $this->parseJSON('get', [
+                $baseUrl.'/api/wechat/user',
                 array_merge($requestData, [
                     'sign' => $sign,
                 ]),
@@ -65,16 +53,20 @@ class WechatStatistics extends AbstractAPI
                     ],
                 ],
             ]);
-//            $content = json_decode($content, true);
+
 
             return $content;
         } catch (ClientException $clientException) {
-            \Log::error("请求微信统计数据失败");
+            \Log::error("请求微信用户信息失败");
             \Log::warning($clientException->getMessage());
-            \Log::warning($clientException->getResponse()->getBody()->getContents());
 
-            throw $clientException;
+            $response = $clientException->getResponse()->getBody()->getContents();
+            $content = json_decode($response, true);
+            \Log::warning($content);
+
+            throw new \Mallto\Tool\Exception\HttpException($clientException->getCode(), $content['error']);
         }
+
     }
 
 
@@ -85,10 +77,9 @@ class WechatStatistics extends AbstractAPI
      * @param array $contents
      *
      * @return array
-     * @throws ThirdPartException
+     * @throws \Mallto\Tool\Exception\ThirdPartException
      */
-    protected
-    function checkAndThrow(
+    protected function checkAndThrow(
         array $contents
     ) {
         // TODO: Implement checkAndThrow() method.

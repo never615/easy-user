@@ -15,7 +15,6 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
-use Overtrue\LaravelWeChat\Domain\WechatUsecase;
 
 /**
  * 默认版的用户处理
@@ -553,9 +552,9 @@ class UserUsecaseImpl implements UserUsecase
      */
     protected function getWechatUserInfo($openid, $subject)
     {
-        $wechatUsecase = app(WechatUsecase::class);
+        $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
 
-        $wechatUserInfo = $wechatUsecase->getWechatUserInfo($subject->uuid,
+        $wechatUserInfo = (object) $wechatUsecase->getUserInfo($subject->uuid,
             $this->decryptOpenid($openid));
 
         return $wechatUserInfo;
