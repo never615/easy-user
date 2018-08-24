@@ -53,7 +53,7 @@ class WechatUserCumulateUsecase
                         ->orderBy('ref_date', 'desc')
                         ->first();
                     if ($lastStatistics) {
-                        $from = Carbon::createFromFormat('Y-m-d', $lastStatistics->ref_date);
+                        $from = Carbon::createFromFormat('Y-m-d', $lastStatistics->ref_date)->addDay();
                     } else {
                         $from = Carbon::createFromFormat('Y-m-d', '2015-12-01');
                     }
@@ -67,6 +67,11 @@ class WechatUserCumulateUsecase
                             $from->copy()->addDays(30)->format('Y-m-d')
                         );
 
+                        if ($datas1->count() == 0) {
+                            return;
+                        }
+
+
                         $datas2 = $this->wechatStatistics->cumulate($subject->uuid,
                             $from->copy()->format('Y-m'),
                             $from->copy()->addDays(30)->format('Y-m'),
@@ -79,16 +84,23 @@ class WechatUserCumulateUsecase
                             'year'
                         );
 
-                        $datas = array_merge($datas1, $datas2, $datas3);
+                        $datas = $datas1->merge($datas2)->merge($datas3);
 
-                        $datas = array_map(function ($data) use ($subject) {
+                        $datas = $datas->transform(function ($data) use ($subject) {
                             $data['subject_id'] = $subject->id;
 
                             return $data;
-                        }, $datas);
+                        });
+
+//                        $datas = array_merge($datas1, $datas2, $datas3);
+//                        $datas = array_map(function ($data) use ($subject) {
+//                            $data['subject_id'] = $subject->id;
+//
+//                            return $data;
+//                        }, $datas);
 
 
-                        WechatUserCumulate::insert($datas);
+                        WechatUserCumulate::insert($datas->toArray());
 
                         $from = $from->addDays(31);
                     }

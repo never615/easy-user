@@ -65,8 +65,6 @@ class WechatStatistics extends AbstractAPI
                     ],
                 ],
             ]);
-//            $content = json_decode($content, true);
-
             return $content;
         } catch (ClientException $clientException) {
             \Log::error("请求微信统计数据失败");

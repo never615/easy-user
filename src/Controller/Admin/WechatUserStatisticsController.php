@@ -54,7 +54,7 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", ">=", $started)
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "cumulate_user")
+                    ->select("ref_date", "cumulate_user as wechat_cumulate_user")
                     ->get();
                 break;
             case 'month':
@@ -68,7 +68,7 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", ">=", $startedCarbon->format('Y-m'))
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "cumulate_user")
+                    ->select("ref_date", "cumulate_user as wechat_cumulate_user")
                     ->get();
 
                 //合并当月数据
@@ -80,7 +80,7 @@ class WechatUserStatisticsController extends Controller
                 $results = $results->concat([
                         [
                             'ref_date'      => Carbon::now()->format('Y-m'),
-                            'cumulate_user' => $currentMonthData->cumulate_user,
+                            'wechat_cumulate_user' => $currentMonthData->cumulate_user,
                         ],
                     ]
                 );
@@ -97,7 +97,7 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", ">=", $startedCarbon->format("Y"))
                     ->where("ref_date", "<=", $endedCarbon->format("Y"))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "cumulate_user")
+                    ->select("ref_date", "cumulate_user as wechat_cumulate_user")
                     ->get();
 
                 //合并当年数据
@@ -109,14 +109,13 @@ class WechatUserStatisticsController extends Controller
                 $results = $results->concat([
                         [
                             'ref_date'      => Carbon::now()->format('Y'),
-                            'cumulate_user' => $currentMonthData->cumulate_user,
+                            'wechat_cumulate_user' => $currentMonthData->cumulate_user,
                         ],
                     ]
                 );
 
                 break;
         }
-
 
         return $results;
     }
@@ -154,7 +153,7 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", ">=", $started)
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user")
+                    ->select("ref_date", "new_user as wechat_new_user")
                     ->get();
                 break;
             case 'month':
@@ -168,7 +167,7 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", ">=", $startedCarbon->format('Y-m'))
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user")
+                    ->select("ref_date", "new_user as wechat_new_user")
                     ->get();
 
                 //合并当月数据
@@ -186,7 +185,7 @@ class WechatUserStatisticsController extends Controller
                     $results = $results->concat([
                             [
                                 'ref_date' => Carbon::now()->format('Y-m'),
-                                'new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
+                                'wechat_new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
                             ],
                         ]
                     );
@@ -206,7 +205,7 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", ">=", $startedCarbon->format("Y"))
                     ->where("ref_date", "<=", $endedCarbon->format("Y"))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user")
+                    ->select("ref_date", "new_user as wechat_new_user")
                     ->get();
 
                 //合并当年数据
@@ -225,7 +224,7 @@ class WechatUserStatisticsController extends Controller
                     $results = $results->concat([
                             [
                                 'ref_date' => Carbon::now()->format('Y'),
-                                'new_user' => $newUser,
+                                'wechat_new_user' => $newUser,
                             ],
                         ]
                     );
