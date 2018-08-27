@@ -259,8 +259,8 @@ class UserUsecaseImpl implements UserUsecase
 
         $userData = [
             'subject_id' => $subject->id,
-            'nickname'   => $wechatUserInfo->nickname,
-//            "avatar"     => $wechatUserInfo->avatar,
+            'nickname'   => $wechatUserInfo['nickname'],
+//            "avatar"     => $wechatUserInfo['avatar'],
         ];
 
 
@@ -554,7 +554,7 @@ class UserUsecaseImpl implements UserUsecase
     {
         $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
 
-        $wechatUserInfo = (object) $wechatUsecase->getUserInfo($subject->uuid,
+        $wechatUserInfo = $wechatUsecase->getUserInfo($subject->uuid,
             $this->decryptOpenid($openid));
 
         return $wechatUserInfo;

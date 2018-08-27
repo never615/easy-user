@@ -154,7 +154,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", ">=", $started)
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user as commom_new_user")
+                    ->select("ref_date", "new_user as common_new_user")
                     ->get();
                 break;
             case 'month':
@@ -168,7 +168,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", ">=", $startedCarbon->format('Y-m'))
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user as commom_new_user")
+                    ->select("ref_date", "new_user as common_new_user")
                     ->get();
 
                 //合并当月数据
@@ -186,7 +186,7 @@ class UserStatisticsController extends Controller
                     $results = $results->concat([
                             [
                                 'ref_date' => Carbon::now()->format('Y-m'),
-                                'commom_new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
+                                'common_new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
                             ],
                         ]
                     );
@@ -206,7 +206,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", ">=", $startedCarbon->format("Y"))
                     ->where("ref_date", "<=", $endedCarbon->format("Y"))
                     ->where("subject_id", $subjectId)
-                    ->select("ref_date", "new_user as commom_new_user")
+                    ->select("ref_date", "new_user as common_new_user")
                     ->get();
 
                 //合并当年数据
@@ -225,7 +225,7 @@ class UserStatisticsController extends Controller
                     $results = $results->concat([
                             [
                                 'ref_date' => Carbon::now()->format('Y'),
-                                'commom_new_user' => $newUser,
+                                'common_new_user' => $newUser,
                             ],
                         ]
                     );
