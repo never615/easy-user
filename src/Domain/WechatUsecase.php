@@ -64,7 +64,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
             $content = json_decode($response, true);
             \Log::warning($content);
 
-            throw new \Mallto\Tool\Exception\HttpException($clientException->getCode(), $content['error']);
+            throw new \Mallto\Tool\Exception\HttpException(422, "获取微信信息失败,请在微信内重新打开");
         }
 
     }
