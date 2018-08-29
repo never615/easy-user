@@ -13,6 +13,7 @@
 namespace Mallto\User\Domain\Statistics;
 
 use Carbon\Carbon;
+use GuzzleHttp\Exception\ClientException;
 use Mallto\Admin\Data\Subject;
 use Mallto\User\Data\WechatUserCumulate;
 
@@ -60,15 +61,20 @@ class WechatUserCumulateUsecase
 
 //                    $from = Carbon::createFromFormat('Y-m-d', '2018-07-01');
                     $to = Carbon::now();
-                    while ($to->gte($from)) {
 
-                        $datas1 = $this->wechatStatistics->cumulate($subject->uuid,
-                            $from->copy()->format('Y-m-d'),
-                            $from->copy()->addDays(30)->format('Y-m-d')
-                        );
+                    while ($to->gte($from)) {
+                        try {
+                            $datas1 = $this->wechatStatistics->cumulate($subject->uuid,
+                                $from->copy()->format('Y-m-d'),
+                                $from->copy()->addDays(30)->format('Y-m-d')
+                            );
+                        } catch (ClientException $clientException) {
+                            break;
+                        }
 
 
                         if ($datas1->count() == 0) {
+                            $from = $from->addDays(31);
                             continue;
                         }
 
@@ -97,6 +103,7 @@ class WechatUserCumulateUsecase
                         WechatUserCumulate::insert($datas->toArray());
 
                         $from = $from->addDays(31);
+
                     }
                 }
             });
