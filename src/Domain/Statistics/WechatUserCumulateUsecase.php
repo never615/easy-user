@@ -67,9 +67,11 @@ class WechatUserCumulateUsecase
                             $from->copy()->addDays(30)->format('Y-m-d')
                         );
 
+
                         if ($datas1->count() == 0) {
-                            break;
+                            continue;
                         }
+
 
 
                         $datas2 = $this->wechatStatistics->cumulate($subject->uuid,
