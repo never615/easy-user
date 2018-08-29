@@ -68,7 +68,7 @@ class WechatUserCumulateUsecase
                         );
 
                         if ($datas1->count() == 0) {
-                            return;
+                            break;
                         }
 
 
@@ -92,20 +92,10 @@ class WechatUserCumulateUsecase
                             return $data;
                         });
 
-//                        $datas = array_merge($datas1, $datas2, $datas3);
-//                        $datas = array_map(function ($data) use ($subject) {
-//                            $data['subject_id'] = $subject->id;
-//
-//                            return $data;
-//                        }, $datas);
-
-
                         WechatUserCumulate::insert($datas->toArray());
 
                         $from = $from->addDays(31);
                     }
-
-
                 }
             });
 
