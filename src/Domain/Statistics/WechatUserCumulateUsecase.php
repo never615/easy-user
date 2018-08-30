@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Exception\ClientException;
 use Mallto\Admin\Data\Subject;
 use Mallto\User\Data\WechatUserCumulate;
+use Mallto\User\Domain\WechatUsecase;
 
 
 /**
@@ -27,20 +28,21 @@ use Mallto\User\Data\WechatUserCumulate;
  */
 class WechatUserCumulateUsecase
 {
+
     /**
-     * @var WechatStatistics
+     * @var WechatUsecase
      */
-    private $wechatStatistics;
+    private $wechatUsecase;
 
 
     /**
      * WechatUserCumulateUsecase constructor.
      *
-     * @param WechatStatistics $wechatStatistics
+     * @param WechatUsecase $wechatUsecase
      */
-    public function __construct(WechatStatistics $wechatStatistics)
+    public function __construct(WechatUsecase $wechatUsecase)
     {
-        $this->wechatStatistics = $wechatStatistics;
+        $this->wechatUsecase = $wechatUsecase;
     }
 
     public function handle()
@@ -60,11 +62,12 @@ class WechatUserCumulateUsecase
                     }
 
 //                    $from = Carbon::createFromFormat('Y-m-d', '2018-07-01');
-                    $to = Carbon::now();
+                    $to = Carbon::now()->addDay(-1);
+
 
                     while ($to->gte($from)) {
                         try {
-                            $datas1 = $this->wechatStatistics->cumulate($subject->uuid,
+                            $datas1 = $this->wechatUsecase->cumulate($subject->uuid,
                                 $from->copy()->format('Y-m-d'),
                                 $from->copy()->addDays(30)->format('Y-m-d')
                             );
@@ -80,13 +83,13 @@ class WechatUserCumulateUsecase
 
 
 
-                        $datas2 = $this->wechatStatistics->cumulate($subject->uuid,
+                        $datas2 = $this->wechatUsecase->cumulate($subject->uuid,
                             $from->copy()->format('Y-m'),
                             $from->copy()->addDays(30)->format('Y-m'),
                             'month'
                         );
 
-                        $datas3 = $this->wechatStatistics->cumulate($subject->uuid,
+                        $datas3 = $this->wechatUsecase->cumulate($subject->uuid,
                             $from->copy()->format('Y'),
                             $from->copy()->addDays(30)->format('Y'),
                             'year'

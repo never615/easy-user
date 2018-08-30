@@ -46,7 +46,8 @@ class UserCumulateUsecase
                     }
 
 //                    $from = Carbon::createFromFormat('Y-m-d', '2018-07-01');
-                    $to = Carbon::now();
+                    $to = Carbon::now()->addDay(-1);
+
                     while ($to->gte($from)) {
                         //截止到$from 晚上24时的累计用户
                         $cumulate = User::where("created_at", "<",

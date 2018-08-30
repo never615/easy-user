@@ -70,6 +70,52 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
     }
 
 
+    public function cumulate($uuid, $from, $to, $type='day')
+    {
+
+        if (config("app.env") == 'production' || config("app.env") == 'staging') {
+            $baseUrl = "https://wechat.mall-to.com";
+        } else {
+            $baseUrl = "https://test-wechat.mall-to.com";
+        }
+
+
+        $requestData = [
+            'from' => $from,
+            'to'   => $to,
+            'type' => $type,
+        ];
+
+        $sign = SignUtils::sign($requestData, '81eaaa7cd5b8aafc51aa1e5392ae25f2');
+
+
+        try {
+
+            $content = $this->parseJSON('post', [
+                $baseUrl.'/api/statistics/user/cumulate_data',
+                array_merge($requestData, [
+                    'sign' => $sign,
+                ]),
+                [
+                    'headers' => [
+                        'app-id'       => '1',
+                        'REQUEST-TYPE' => 'SERVER',
+                        'UUID'         => $uuid,
+                        'Accept'       => 'application/json',
+                    ],
+                ],
+            ]);
+            return $content;
+        } catch (ClientException $clientException) {
+            \Log::error("请求微信统计数据失败");
+            \Log::warning($clientException->getMessage());
+            \Log::warning($clientException->getResponse()->getBody()->getContents());
+
+            throw $clientException;
+        }
+    }
+
+
     /**
      * 不同的实现需要重写此方法 标准的json请求使用
      * Check the array data errors, and Throw exception when the contents contains error.
