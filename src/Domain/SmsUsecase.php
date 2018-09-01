@@ -94,8 +94,8 @@ class SmsUsecase
         $code = mt_rand(1000, 9999);
 
 
-        return $this->juheSend($code, $mobile, $key);
-//        return $this->aliSend($code, $mobile, $key);
+//        return $this->juheSend($code, $mobile, $key);
+        return $this->aliSend($code, $mobile, $key);
 
     }
 
@@ -163,6 +163,11 @@ class SmsUsecase
         ]);
         if ($result) {
             Cache::put($key, $code, 5);
+
+            $subject = SubjectUtils::getSubject();
+
+            //增加主体消费的短信数量
+            $subject->increment('sms_count');
         }
 
         return response()->nocontent();

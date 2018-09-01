@@ -107,7 +107,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
             ]);
             return $content;
         } catch (ClientException $clientException) {
-            \Log::error("请求微信统计数据失败");
+            \Log::warning("请求微信统计数据失败");
             \Log::warning($clientException->getMessage());
             \Log::warning($clientException->getResponse()->getBody()->getContents());
 
