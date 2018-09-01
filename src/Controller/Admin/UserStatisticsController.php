@@ -73,18 +73,20 @@ class UserStatisticsController extends Controller
                     ->get();
 
                 //合并当月数据
-                $currentMonthData = UserCumulate::where('type', 'day')
+                $currentYearData = UserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
 
-                $results = $results->concat([
-                        [
-                            'ref_date'      => Carbon::now()->format('Y-m'),
-                            'commom_cumulate_user' => $currentMonthData->cumulate_user,
-                        ],
-                    ]
-                );
+                if ($currentYearData) {
+                    $results = $results->concat([
+                            [
+                                'ref_date'             => Carbon::now()->format('Y-m'),
+                                'commom_cumulate_user' => $currentYearData->cumulate_user,
+                            ],
+                        ]
+                    );
+                }
                 break;
             case 'year':
                 $startedCarbon = Carbon::createFromFormat("Y", $started);
@@ -102,18 +104,20 @@ class UserStatisticsController extends Controller
                     ->get();
 
                 //合并当年数据
-                $currentMonthData = UserCumulate::where('type', 'day')
+                $currentYearData = UserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
 
-                $results = $results->concat([
-                        [
-                            'ref_date'      => Carbon::now()->format('Y'),
-                            'commom_cumulate_user' => $currentMonthData->cumulate_user,
-                        ],
-                    ]
-                );
+                if ($currentYearData) {
+                    $results = $results->concat([
+                            [
+                                'ref_date'             => Carbon::now()->format('Y'),
+                                'commom_cumulate_user' => $currentYearData->cumulate_user,
+                            ],
+                        ]
+                    );
+                }
 
                 break;
         }
@@ -185,7 +189,7 @@ class UserStatisticsController extends Controller
                 if ($currentMonthData && $lastMonthData) {
                     $results = $results->concat([
                             [
-                                'ref_date' => Carbon::now()->format('Y-m'),
+                                'ref_date'        => Carbon::now()->format('Y-m'),
                                 'common_new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
                             ],
                         ]
@@ -224,7 +228,7 @@ class UserStatisticsController extends Controller
                     $newUser = $currentYearData->cumulate_user - $lastYearData->cumulate_user;
                     $results = $results->concat([
                             [
-                                'ref_date' => Carbon::now()->format('Y'),
+                                'ref_date'        => Carbon::now()->format('Y'),
                                 'common_new_user' => $newUser,
                             ],
                         ]
@@ -242,8 +246,8 @@ class UserStatisticsController extends Controller
 
     private function getSubjectId($request)
     {
-        if($request->subject_uuid){
-            return Subject::where("uuid",$request->subject_uuid)->firstOrFail()->id;
+        if ($request->subject_uuid) {
+            return Subject::where("uuid", $request->subject_uuid)->firstOrFail()->id;
         }
 
         return SubjectUtils::getSubjectId();

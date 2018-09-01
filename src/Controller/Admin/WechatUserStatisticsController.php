@@ -7,7 +7,6 @@ namespace Mallto\User\Controller\Admin;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
-use Encore\Admin\Facades\Admin;
 use Illuminate\Http\Request;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
@@ -72,18 +71,19 @@ class WechatUserStatisticsController extends Controller
                     ->get();
 
                 //合并当月数据
-                $currentMonthData = WechatUserCumulate::where('type', 'day')
+                $currentYearData = WechatUserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
-
-                $results = $results->concat([
-                        [
-                            'ref_date'      => Carbon::now()->format('Y-m'),
-                            'wechat_cumulate_user' => $currentMonthData->cumulate_user,
-                        ],
-                    ]
-                );
+                if ($currentYearData) {
+                    $results = $results->concat([
+                            [
+                                'ref_date'             => Carbon::now()->format('Y-m'),
+                                'wechat_cumulate_user' => $currentYearData->cumulate_user,
+                            ],
+                        ]
+                    );
+                }
                 break;
             case 'year':
                 $startedCarbon = Carbon::createFromFormat("Y", $started);
@@ -101,18 +101,19 @@ class WechatUserStatisticsController extends Controller
                     ->get();
 
                 //合并当年数据
-                $currentMonthData = WechatUserCumulate::where('type', 'day')
+                $currentYearData = WechatUserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
-
-                $results = $results->concat([
-                        [
-                            'ref_date'      => Carbon::now()->format('Y'),
-                            'wechat_cumulate_user' => $currentMonthData->cumulate_user,
-                        ],
-                    ]
-                );
+                if ($currentYearData) {
+                    $results = $results->concat([
+                            [
+                                'ref_date'             => Carbon::now()->format('Y'),
+                                'wechat_cumulate_user' => $currentYearData->cumulate_user,
+                            ],
+                        ]
+                    );
+                }
 
                 break;
         }
@@ -184,7 +185,7 @@ class WechatUserStatisticsController extends Controller
                 if ($currentMonthData && $lastMonthData) {
                     $results = $results->concat([
                             [
-                                'ref_date' => Carbon::now()->format('Y-m'),
+                                'ref_date'        => Carbon::now()->format('Y-m'),
                                 'wechat_new_user' => $currentMonthData->cumulate_user - $lastMonthData->cumulate_user,
                             ],
                         ]
@@ -223,7 +224,7 @@ class WechatUserStatisticsController extends Controller
                     $newUser = $currentYearData->cumulate_user - $lastYearData->cumulate_user;
                     $results = $results->concat([
                             [
-                                'ref_date' => Carbon::now()->format('Y'),
+                                'ref_date'        => Carbon::now()->format('Y'),
                                 'wechat_new_user' => $newUser,
                             ],
                         ]
@@ -242,8 +243,8 @@ class WechatUserStatisticsController extends Controller
 
     private function getSubjectId($request)
     {
-        if($request->subject_uuid){
-            return Subject::where("uuid",$request->subject_uuid)->firstOrFail()->id;
+        if ($request->subject_uuid) {
+            return Subject::where("uuid", $request->subject_uuid)->firstOrFail()->id;
         }
 
         return SubjectUtils::getSubjectId();
