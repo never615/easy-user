@@ -70,7 +70,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
     }
 
 
-    public function cumulate($uuid, $from, $to, $type='day')
+    public function cumulate($uuid, $from, $to, $type = 'day')
     {
 
         if (config("app.env") == 'production' || config("app.env") == 'staging') {
@@ -105,13 +105,20 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
                     ],
                 ],
             ]);
+
             return $content;
         } catch (ClientException $clientException) {
-            \Log::warning("请求微信统计数据失败");
-            \Log::warning($clientException->getMessage());
-            \Log::warning($clientException->getResponse()->getBody()->getContents());
+            $code = $clientException->getCode();
+            if ($code == '422') {
+                return false;
+            } else {
 
-            throw $clientException;
+                \Log::warning("请求微信统计数据失败");
+                \Log::warning($clientException->getMessage());
+                \Log::warning($clientException->getResponse()->getBody()->getContents());
+
+                throw $clientException;
+            }
         }
     }
 

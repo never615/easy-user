@@ -71,6 +71,11 @@ class WechatUserCumulateUsecase
                                 $from->copy()->format('Y-m-d'),
                                 $from->copy()->addDays(30)->format('Y-m-d')
                             );
+
+                            if ($datas1 == false) {
+                                break;
+                            }
+
                         } catch (ClientException $clientException) {
                             break;
                         }
@@ -80,7 +85,6 @@ class WechatUserCumulateUsecase
                             $from = $from->addDays(31);
                             continue;
                         }
-
 
 
                         $datas2 = $this->wechatUsecase->cumulate($subject->uuid,
