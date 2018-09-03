@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\Tool\Exception\ThirdPartException;
 use Mallto\Tool\Exception\ValidationHttpException;
 
 /**
@@ -46,7 +45,7 @@ class SmsUsecase
         $tempCode = Cache::get($key);
 
         if ($tempCode != $code) {
-            if (config("app.env") !== 'production' && $code == "000000") {
+            if (!in_array(config("app.env"), ["production", "staging"]) && $code == "000000") {
                 return true;
             } else {
                 throw  new ResourceException("验证码错误");
@@ -129,7 +128,8 @@ class SmsUsecase
         $res = json_decode($response->getBody(), true);
 
         if ($res['error_code'] != 0) {
-            $this->aliSend($code,$mobile,$key);
+            $this->aliSend($code, $mobile, $key);
+
             return true;
 
 //            throw new ThirdPartException("聚合:".$res['reason']);
