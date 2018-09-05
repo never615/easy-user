@@ -6,15 +6,17 @@
 namespace Mallto\User\Domain;
 
 use Doctrine\DBAL\Driver\DriverException;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
+use Mallto\Tool\Utils\AppUtils;
+use Mallto\Tool\Utils\TimeUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
+use Mallto\User\Jobs\UpdateWechatUserInfoJob;
 
 /**
  * 默认版的用户处理
@@ -253,7 +255,7 @@ class UserUsecaseImpl implements UserUsecase
                 $credential = $value;
             }
         }
-        $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
+        $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
 
         $userData = [
             'subject_id' => $subject->id,
@@ -383,6 +385,7 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param $user
      * @param $info
+     * @return mixed
      */
     public function updateUser($user, $info)
     {
@@ -408,20 +411,14 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 解密openid
      *
+     * @deprecated
+     *
      * @param $openid
      * @return string
      */
     public function decryptOpenid($openid)
     {
-        try {
-            $openid = urldecode($openid);
-            $openid = decrypt($openid);
-
-            return $openid;
-        } catch (DecryptException $e) {
-            \Log::error("openid解密失败:".$openid);
-            throw new ResourceException("openid无效");
-        }
+        return AppUtils::decryptOpenid($openid);
     }
 
 
@@ -456,16 +453,14 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function updateUserWechatInfo($user, $credentials, $subject)
     {
-        $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
+        //每天最多更新一次
+        $exist = UserProfile::where("user_id", $user->id)
+            ->whereDatei("updated_at", TimeUtils::getNowTime())
+            ->exists();
 
-
-        UserProfile::updateOrCreate(['user_id' => $user->id],
-            [
-                "wechat_user" => $wechatUserInfo->toArray(),
-            ]
-        );
-
-//        $this->updateOrCreateUserProfileByWechat($user, $wechatUserInfo);
+        if (!$exist) {
+            dispatch(new UpdateWechatUserInfoJob($credentials['identifier'], $user->id, $subject->uuid));
+        }
     }
 
     /**
@@ -545,14 +540,14 @@ class UserUsecaseImpl implements UserUsecase
      * 获取微信用户
      *
      * @param $openid
-     * @param $subject
+     * @param $uuid
      * @return
      */
-    protected function getWechatUserInfo($openid, $subject)
+    protected function getWechatUserInfo($openid, $uuid)
     {
         $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
 
-        $wechatUserInfo = $wechatUsecase->getUserInfo($subject->uuid,
+        $wechatUserInfo = $wechatUsecase->getUserInfo($uuid,
             $this->decryptOpenid($openid));
 
         return $wechatUserInfo;
