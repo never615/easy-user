@@ -455,7 +455,7 @@ class UserUsecaseImpl implements UserUsecase
     {
         //每天最多更新一次
         $exist = UserProfile::where("user_id", $user->id)
-            ->whereDatei("updated_at", TimeUtils::getNowTime())
+            ->whereDate("updated_at", TimeUtils::getNowTime())
             ->exists();
 
         if (!$exist) {
