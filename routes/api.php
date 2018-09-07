@@ -13,6 +13,7 @@
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
 use Illuminate\Support\Facades\Route;
 
 $attributes = [
@@ -26,7 +27,7 @@ Route::group($attributes, function ($router) {
     /**
      * 需要经过验证
      */
-    Route::group(['middleware' => ['requestCheck','owner_api']], function () {
+    Route::group(['middleware' => ['requestCheck', 'owner_api']], function () {
 
 
         //公共接口
@@ -64,7 +65,6 @@ Route::group($attributes, function ($router) {
         /**
          * 需要经过授权
          */
-//        Route::group(['middleware' => ['jwt.auth', 'jwt.refresh']], function () {
         Route::group(['middleware' => ['auth:api']], function () {
 
             Route::group(["middleware" => ["scopes:mobile-token"]], function () {
@@ -75,9 +75,7 @@ Route::group($attributes, function ($router) {
 //                Route::post("user/identifier", 'Auth\UserController@updateIdentifier');
             });
 
-            Route::group(["middleware" => ["scope:mobile-token,wechat-token,account-token"]], function () {
-                //获取用户信息
-                Route::get('user', 'Auth\UserController@show');
+            Route::group(["middleware" => ["scope:mobile-token,account-token"]], function () {
                 //更新用户信息
                 Route::patch('user', 'Auth\UserController@update');
                 //更新用户密码
@@ -89,11 +87,10 @@ Route::group($attributes, function ($router) {
 //                Route::post("user/verify_old_identifier", 'Auth\UserController@verifyOldIdentifier');
             });
 
-//            //用户
-//            //重置密码
-//            Route::post('password/reset', 'Auth\ResetPasswordController@resetByEmail');
-
-
+            Route::group(["middleware" => ["scope:mobile-token,wechat-token,account-token"]], function () {
+                //获取用户信息
+                Route::get('user', 'Auth\UserController@show');
+            });
         });
     });
 });

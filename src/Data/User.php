@@ -7,13 +7,13 @@ namespace Mallto\User\Data;
 
 
 use Carbon\Carbon;
-use Mallto\Admin\Data\Subject;
-use Mallto\Admin\Data\Traits\DynamicData;
-use Mallto\Admin\Data\Traits\SelectSource;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Mallto\Activity\Data\UserSeckill;
+use Mallto\Admin\Data\Subject;
+use Mallto\Admin\Data\Traits\DynamicData;
+use Mallto\Admin\Data\Traits\SelectSource;
 use Mallto\Dangjian\Data\Company;
 use Mallto\Dangjian\Data\Course;
 use Mallto\Dangjian\Data\PartyTag;
@@ -27,14 +27,6 @@ use Mallto\Dangjian\Data\UserExamAnswer;
 use Mallto\Dangjian\Data\UserExamRecord;
 use Mallto\Dangjian\Data\UserOnlineStudy;
 use Mallto\Dangjian\Data\UserOnlineStudyRecord;
-use Mallto\Mall\Data\Activity;
-use Mallto\Mall\Data\Member;
-use Mallto\Mall\Data\ParkingRecord;
-use Mallto\Mall\Data\PointHistory;
-use Mallto\Mall\Data\Shop;
-use Mallto\Mall\Data\ShopComment;
-use Mallto\Mall\Data\SpecialTopic;
-use Mallto\Mall\Data\Ticket;
 use Mallto\Mall\Data\UserCoupon;
 use Mallto\Tool\Domain\Traits\TagTrait;
 
@@ -42,6 +34,13 @@ class User extends Authenticatable
 {
     use Notifiable, DynamicData, HasApiTokens, SelectSource,
         \Mallto\User\Domain\Traits\UserAuthTrait, TagTrait;
+
+
+    //用户标识(状态),如:注册中(用户信息待完善),注册中(用户标签待完善),黑名单等
+    const STATUS = [
+        "normal"    => "正常用户",
+        "blacklist" => "黑名单用户",
+    ];
 
     /**
      * 支持绑定的字段
@@ -115,12 +114,6 @@ class User extends Authenticatable
     }
 
 
-    public function member()
-    {
-        return $this->hasOne(Member::class);
-    }
-
-
     public function userAuths()
     {
         return $this->hasMany(UserAuth::class);
@@ -161,20 +154,6 @@ class User extends Authenticatable
 
     //------------- 问答结束 -------------------------------
 
-    public function pointHistories()
-    {
-        return $this->hasMany(PointHistory::class);
-    }
-
-    public function tickets()
-    {
-        return $this->hasMany(Ticket::class);
-    }
-
-    public function parkingRecords()
-    {
-        return $this->hasMany(ParkingRecord::class);
-    }
 
     //------------------- 党建开始 ---------------------
 
@@ -245,29 +224,6 @@ class User extends Authenticatable
     public function subject()
     {
         return $this->belongsTo(Subject::class);
-    }
-
-
-    public function shopComments()
-    {
-        return $this->hasMany(ShopComment::class);
-    }
-
-
-    public function shops()
-    {
-        return $this->morphedByMany(Shop::class, 'userable', 'user_collections');
-    }
-
-
-    public function activities()
-    {
-        return $this->morphedByMany(Activity::class, 'userable', 'user_collections');
-    }
-
-    public function topices()
-    {
-        return $this->morphedByMany(SpecialTopic::class, 'userable', 'user_collections');
     }
 
 

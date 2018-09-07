@@ -34,6 +34,18 @@ trait OpenidCheckTrait
      */
     public function checkOpenid(Request $request, $openidKeyName = 'identifier', $checkTimes = true)
     {
+
+        //openid可以使用的次数
+        $limitTimes = 10;
+        //openid可以使用时间限制
+        $limitTime = 5;
+
+        if (in_array(config("app.env"), ["test", "integration"])) {
+            $limitTime = 240;
+            $limitTimes = 10000;
+        }
+
+
         $orginalOpenid = $request->$openidKeyName;
 //        \Log::info($orginalOpenid);
 
@@ -59,13 +71,13 @@ trait OpenidCheckTrait
             if ($checkTimes) {
                 if (Cache::has($orginalOpenid)) {
                     $times = Cache::get($orginalOpenid);
-                    if ($times >= 2) {
+                    if ($times >= $limitTimes) {
                         throw new AuthenticationException("openid已被使用");
                     } else {
-                        Cache::put($orginalOpenid, $times + 1, 5);
+                        Cache::put($orginalOpenid, $times + 1, $limitTime);
                     }
                 } else {
-                    Cache::put($orginalOpenid, 1, 5);
+                    Cache::put($orginalOpenid, 1, $limitTime);
                 }
             }
 
@@ -79,7 +91,7 @@ trait OpenidCheckTrait
 
             //检查时效性
             $minutes = (time() - $timestamp) / 60;
-            if ($minutes >= 5) {
+            if ($minutes >= $limitTime) {
                 throw new AuthenticationException("openid过期");
             }
 
@@ -130,7 +142,13 @@ trait OpenidCheckTrait
     }
 
 
-    public function decryptOpenid($openid){
+    /**
+     * @param $openid
+     * @return mixed|string
+     * @throws AuthenticationException
+     */
+    public function decryptOpenid($openid)
+    {
         try {
             $openid = decrypt($openid);
         } catch (DecryptException $decryptException) {

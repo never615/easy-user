@@ -83,6 +83,7 @@ class UserUsecaseImpl implements UserUsecase
      * token分不同的类型,即不同的作用域,比如有普通的微信令牌和绑定手机的微信用户的令牌
      *
      * @param $user
+     * @return mixed
      */
     public function addToken($user)
     {
@@ -267,6 +268,8 @@ class UserUsecaseImpl implements UserUsecase
         \DB::beginTransaction();
         try {
 
+            $userData["status"]="normal";
+
             $user = User::create($userData);
 
             $user->userAuths()->create([
@@ -275,14 +278,17 @@ class UserUsecaseImpl implements UserUsecase
                 'identifier'    => $this->decryptOpenid($identifier),
                 'credential'    => $credential,
             ]);
+
+
+
+            \DB::commit();
         } catch (DriverException $exception) {
             \DB::rollback();
             //检查用户是否已经创建成功
-            //todo
             \Log::error("DriverException");
+            \Log::warning($exception);
             throw $exception;
         }
-        \DB::commit();
 
         return $user;
     }
@@ -318,6 +324,7 @@ class UserUsecaseImpl implements UserUsecase
 
         \DB::beginTransaction();
 
+        $userData["status"]="normal";
 
         $user = User::create($userData);
 
