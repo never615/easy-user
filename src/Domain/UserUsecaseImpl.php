@@ -565,4 +565,14 @@ class UserUsecaseImpl implements UserUsecase
         UserSalt::where('id', $saltId)->update(['user_id', $user->id]);
     }
 
+    /**
+     * 检查用户状态
+     *
+     * @param $user
+     * @return mixed
+     */
+    public function checkUserStatus($user)
+    {
+        // TODO: Implement checkUserStatus() method.
+    }
 }

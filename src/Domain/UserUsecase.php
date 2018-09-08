@@ -158,7 +158,7 @@ interface UserUsecase
      * @param bool $decrypt
      * @return
      */
-    public function addIdentifier($user, $credentials,$decrypt=true);
+    public function addIdentifier($user, $credentials, $decrypt = true);
 
     /**
      * 检查用户是否有对应的凭证类型
@@ -205,5 +205,13 @@ interface UserUsecase
      * @param $user
      */
     public function createSuccess($user);
+
+    /**
+     * 检查用户状态
+     *
+     * @param $user
+     * @return mixed
+     */
+    public function checkUserStatus($user);
 
 }
