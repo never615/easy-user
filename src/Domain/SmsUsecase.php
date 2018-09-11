@@ -12,6 +12,7 @@ use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
+use Mallto\User\Jobs\SmsNotifyJob;
 
 /**
  * Created by PhpStorm.
@@ -94,8 +95,14 @@ class SmsUsecase
 
 
 //        return $this->juheSend($code, $mobile, $key);
-        return $this->aliSend($code, $mobile, $key);
 
+        dispatch(new SmsNotifyJob(
+            $code, $mobile, $key, SubjectUtils::getSubjectId()
+        ))->onQueue("high");
+
+        return response()->nocontent();
+
+//        return $this->aliSend($code, $mobile, $key);
     }
 
     /**
@@ -147,15 +154,16 @@ class SmsUsecase
     /**
      * 使用阿里云接口发送短信
      *
-     * @param $code
-     * @param $mobile
-     * @param $key
+     * @param      $code
+     * @param      $mobile
+     * @param      $key
+     * @param null $subject
      * @return mixed
      */
-    private function aliSend($code, $mobile, $key)
+    public function aliSend($code, $mobile, $key, $subject = null)
     {
 
-        $sign = SubjectUtils::getSubectConfig2("sms_sign", "墨兔");
+        $sign = SubjectUtils::getSubectConfig2("sms_sign", "墨兔", $subject);
 
         $sms = app(Sms::class);
         $result = $sms->sendSms($mobile, $sign, "SMS_141255069", [
@@ -164,7 +172,9 @@ class SmsUsecase
         if ($result) {
             Cache::put($key, $code, 5);
 
-            $subject = SubjectUtils::getSubject();
+            if (!$subject) {
+                $subject = SubjectUtils::getSubject();
+            }
 
             //增加主体消费的短信数量
             $subject->increment('sms_count');
