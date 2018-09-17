@@ -75,7 +75,7 @@ class SmsNotifyJob implements ShouldQueue
                 //todo 模板号写死,待优化
                 $result = $sms->sendSms($this->mobile, $sign, "SMS_141255069", [
                     "code" => $code,
-                ], $subject);
+                ]);
 
                 if ($result) {
                     $smsUsecase = app(SmsUsecase::class);
