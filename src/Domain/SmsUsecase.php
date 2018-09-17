@@ -5,11 +5,9 @@
 
 namespace Mallto\User\Domain;
 
-use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\SubjectUtils;
-use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
 use Mallto\User\Jobs\SmsNotifyJob;
@@ -56,18 +54,6 @@ class SmsUsecase
         return true;
     }
 
-    /**
-     * 获取验证码的cache key
-     *
-     * @param $use
-     * @param $subjectId
-     * @param $mobile
-     * @return string
-     */
-    private function getSmsCacheKey($use, $subjectId, $mobile)
-    {
-        return 'code'.$use.$subjectId.$mobile;
-    }
 
     /**
      * 发送短信验证码
@@ -76,7 +62,6 @@ class SmsUsecase
      * @param        $subjectId
      * @param string $use
      * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function sendSms($mobile, $subjectId, $use = 'register')
     {
@@ -89,98 +74,121 @@ class SmsUsecase
             throw new ValidationHttpException($validator->errors()->first());
         }
 
-        $key = $this->getSmsCacheKey($use, $subjectId, $mobile);
+        //检查一分钟内只能发送一个
+        if (Cache::has($this->getSmsSendAtCacheKey($use, $subjectId, $mobile))) {
+            throw new ResourceException("一分钟以内只能发送一次");
+        }
 
-        $code = mt_rand(1000, 9999);
 
-
-//        return $this->juheSend($code, $mobile, $key);
-
-        dispatch(new SmsNotifyJob(
-            $code, $mobile, $key, SubjectUtils::getSubjectId()
+        dispatch(new SmsNotifyJob($mobile, SubjectUtils::getSubjectId(), $use
         ))->onQueue("high");
 
         return response()->nocontent();
-
-//        return $this->aliSend($code, $mobile, $key);
     }
 
+
     /**
-     * 使用聚合接口发送短信
+     * 获取验证码的cache key
      *
-     * @param $code
+     * @param $use
+     * @param $subjectId
      * @param $mobile
-     * @param $key
-     * @return bool
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @return string
      */
-    private function juheSend($code, $mobile, $key)
+    public function getSmsCacheKey($use, $subjectId, $mobile)
     {
-        $subject = SubjectUtils::getSubject();
-        $name = $subject->name;
-        //模板id
-        $tplValue = urlencode("#code#=$code&#app#=$name");
-
-        $client = new Client();
-        $response = $client->request('GET',
-            "http://v.juhe.cn/sms/send", [
-                "query" => [
-                    "mobile"    => $mobile,
-                    "tpl_id"    => "36548",
-                    "tpl_value" => $tplValue,
-                    "key"       => "c5f32ac02366e464f51a566bb9073af0",
-                ],
-            ]);
-
-        $res = json_decode($response->getBody(), true);
-
-        if ($res['error_code'] != 0) {
-            $this->aliSend($code, $mobile, $key);
-
-            return true;
-
-//            throw new ThirdPartException("聚合:".$res['reason']);
-        } else {
-            Cache::put($key, $code, 10);
-
-            //增加主体消费的短信数量
-            $subject->increment('sms_count');
-
-            return true;
-        }
+        return 'code'.$use.$subjectId.$mobile;
     }
-
 
     /**
-     * 使用阿里云接口发送短信
+     * 获取验证码发送时间 key
      *
-     * @param      $code
-     * @param      $mobile
-     * @param      $key
-     * @param null $subject
-     * @return mixed
+     * @param $use
+     * @param $subjectId
+     * @param $mobile
+     * @return string
      */
-    public function aliSend($code, $mobile, $key, $subject = null)
+    public function getSmsSendAtCacheKey($use, $subjectId, $mobile)
     {
-
-        $sign = SubjectUtils::getSubectConfig2("sms_sign", "墨兔", $subject);
-
-        $sms = app(Sms::class);
-        $result = $sms->sendSms($mobile, $sign, "SMS_141255069", [
-            "code" => $code,
-        ]);
-        if ($result) {
-            Cache::put($key, $code, 5);
-
-            if (!$subject) {
-                $subject = SubjectUtils::getSubject();
-            }
-
-            //增加主体消费的短信数量
-            $subject->increment('sms_count');
-        }
-
-        return response()->nocontent();
+        return 'code_send_at'.$use.$subjectId.$mobile;
     }
+
+//    /**
+//     * 使用聚合接口发送短信
+//     *
+//     * @param $code
+//     * @param $mobile
+//     * @param $key
+//     * @return bool
+//     * @throws \GuzzleHttp\Exception\GuzzleException
+//     */
+//    private function juheSend($code, $mobile, $key)
+//    {
+//        $subject = SubjectUtils::getSubject();
+//        $name = $subject->name;
+//        //模板id
+//        $tplValue = urlencode("#code#=$code&#app#=$name");
+//
+//        $client = new Client();
+//        $response = $client->request('GET',
+//            "http://v.juhe.cn/sms/send", [
+//                "query" => [
+//                    "mobile"    => $mobile,
+//                    "tpl_id"    => "36548",
+//                    "tpl_value" => $tplValue,
+//                    "key"       => "c5f32ac02366e464f51a566bb9073af0",
+//                ],
+//            ]);
+//
+//        $res = json_decode($response->getBody(), true);
+//
+//        if ($res['error_code'] != 0) {
+//            $this->aliSend($code, $mobile, $key);
+//
+//            return true;
+//
+////            throw new ThirdPartException("聚合:".$res['reason']);
+//        } else {
+//            Cache::put($key, $code, 10);
+//
+//            //增加主体消费的短信数量
+//            $subject->increment('sms_count');
+//
+//            return true;
+//        }
+//    }
+
+
+//    /**
+//     * 使用阿里云接口发送短信
+//     *
+//     * @param      $code
+//     * @param      $mobile
+//     * @param      $key
+//     * @param null $subject
+//     * @return mixed
+//     */
+//    public function aliSend($code, $mobile, $key, $subject = null)
+//    {
+//
+//        $sign = SubjectUtils::getSubectConfig2("sms_sign", "墨兔", $subject);
+//
+//        $sms = app(Sms::class);
+//        $result = $sms->sendSms($mobile, $sign, "SMS_141255069", [
+//            "code" => $code,
+//        ],$subject);
+//        if ($result) {
+//            Cache::put($key, $code, 5);
+//
+//            if (!$subject) {
+//                $subject = SubjectUtils::getSubject();
+//            }
+//
+//            //增加主体消费的短信数量
+//            $subject->increment('sms_count');
+//        }
+//
+//        return response()->nocontent();
+//    }
 
 }

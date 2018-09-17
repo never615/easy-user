@@ -10,7 +10,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Mallto\Admin\Data\Subject;
+use Mallto\Admin\SubjectUtils;
+use Mallto\Tool\Domain\Sms\Sms;
+use Mallto\Tool\Exception\ResourceException;
+use Mallto\Tool\Utils\TimeUtils;
 use Mallto\User\Domain\SmsUsecase;
 
 class SmsNotifyJob implements ShouldQueue
@@ -31,26 +36,24 @@ class SmsNotifyJob implements ShouldQueue
      * @var int
      */
     public $tries = 3;
-    private $code;
+
     private $mobile;
-    private $key;
     private $subjectId;
+    private $use;
 
 
     /**
      * UpdateWechatUserInfoJob constructor.
      *
-     * @param $code
      * @param $mobile
-     * @param $key
      * @param $subjectId
+     * @param $use
      */
-    public function __construct($code, $mobile, $key, $subjectId)
+    public function __construct($mobile, $subjectId, $use)
     {
-        $this->code = $code;
         $this->mobile = $mobile;
-        $this->key = $key;
         $this->subjectId = $subjectId;
+        $this->use = $use;
     }
 
 
@@ -64,11 +67,40 @@ class SmsNotifyJob implements ShouldQueue
         $subject = Subject::find($this->subjectId);
 
         if ($subject) {
-            $smsUsecase = app(SmsUsecase::class);
-            $smsUsecase->aliSend($this->code, $this->mobile, $this->key, $subject);
+            $sign = SubjectUtils::getSubectConfig2("sms_sign", "墨兔", $subject);
+            $sms = app(Sms::class);
+            $code = mt_rand(1000, 9999);
+
+            try {
+                //todo 模板号写死,待优化
+                $result = $sms->sendSms($this->mobile, $sign, "SMS_141255069", [
+                    "code" => $code,
+                ], $subject);
+
+                if ($result) {
+                    $smsUsecase = app(SmsUsecase::class);
+
+                    $key = $smsUsecase->getSmsCacheKey($this->use, $subject->id, $this->mobile);
+                    $sendAtCacheKey = $smsUsecase->getSmsSendAtCacheKey($this->use, $subject->id, $this->mobile);
+
+                    //记录验证码,用来处理验证码五分钟内有效
+                    Cache::put($key, $code, 5);
+                    //记录发送时间,用来处理一分钟之内只能请求一个验证码
+                    Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1);
+
+                    //增加主体消费的短信数量
+                    $subject->increment('sms_count');
+                }
+
+            } catch (ResourceException $exception) {
+                \Log::warning("短信验证码发送失败");
+                \Log::warning($exception);
+            }
         } else {
             \Log::error("发送短信失败,主体未找到");
         }
 
     }
+
+
 }
