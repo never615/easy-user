@@ -27,6 +27,14 @@ use Mallto\Dangjian\Data\UserExamAnswer;
 use Mallto\Dangjian\Data\UserExamRecord;
 use Mallto\Dangjian\Data\UserOnlineStudy;
 use Mallto\Dangjian\Data\UserOnlineStudyRecord;
+use Mallto\Mall\Data\Activity;
+use Mallto\Mall\Data\Member;
+use Mallto\Mall\Data\ParkingRecord;
+use Mallto\Mall\Data\PointHistory;
+use Mallto\Mall\Data\Shop;
+use Mallto\Mall\Data\ShopComment;
+use Mallto\Mall\Data\SpecialTopic;
+use Mallto\Mall\Data\Ticket;
 use Mallto\Mall\Data\UserCoupon;
 use Mallto\Tool\Domain\Traits\TagTrait;
 
@@ -244,6 +252,51 @@ class User extends Authenticatable
 
 
         return config("app.file_url_prefix").$value;
+    }
+
+    public function member()
+    {
+        return $this->hasOne(Member::class);
+    }
+
+
+
+
+    public function shopComments()
+    {
+        return $this->hasMany(ShopComment::class);
+    }
+
+
+    public function shops()
+    {
+        return $this->morphedByMany(Shop::class, 'userable', 'user_collections');
+    }
+
+
+    public function activities()
+    {
+        return $this->morphedByMany(Activity::class, 'userable', 'user_collections');
+    }
+
+    public function topices()
+    {
+        return $this->morphedByMany(SpecialTopic::class, 'userable', 'user_collections');
+    }
+
+    public function pointHistories()
+    {
+        return $this->hasMany(PointHistory::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    public function parkingRecords()
+    {
+        return $this->hasMany(ParkingRecord::class);
     }
 
     /**
