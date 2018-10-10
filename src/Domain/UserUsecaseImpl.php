@@ -147,7 +147,9 @@ class UserUsecaseImpl implements UserUsecase
         }
 
 
-        $user = $userAuth->user;
+        $user=User::where("id",$userAuth->user_id)->lockForUpdate()->first();
+
+
         if (!$user) {
             //userAuth存在,user不存在,系统异常
             \Log::error("异常:userAuth存在,user不存在,");
@@ -575,4 +577,6 @@ class UserUsecaseImpl implements UserUsecase
     {
         // TODO: Implement checkUserStatus() method.
     }
+
+
 }
