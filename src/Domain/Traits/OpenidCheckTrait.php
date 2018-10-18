@@ -57,7 +57,7 @@ trait OpenidCheckTrait
             try {
                 $openid = decrypt($orginalOpenid);
             } catch (DecryptException $decryptException) {
-                \Log::error("解析openid失败");
+                \Log::error("解析openid失败1");
                 \Log::warning($orginalOpenid);
                 throw new AuthenticationException("授权失败,openid解析失败");
             }
@@ -127,7 +127,7 @@ trait OpenidCheckTrait
             try {
                 $openid = decrypt($openid);
             } catch (DecryptException $decryptException) {
-                \Log::error("解析openid失败");
+                \Log::error("解析openid失败2");
                 \Log::warning($openid);
                 throw new AuthenticationException("授权失败,openid解析失败");
             }
@@ -157,7 +157,7 @@ trait OpenidCheckTrait
             try {
                 $openid = decrypt($openid);
             } catch (DecryptException $decryptException) {
-                \Log::error("解析openid失败");
+                \Log::error("解析openid失败3");
                 \Log::warning($openid);
                 throw new AuthenticationException("授权失败,openid解析失败");
             }
