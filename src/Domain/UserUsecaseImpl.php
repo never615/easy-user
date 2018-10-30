@@ -147,7 +147,7 @@ class UserUsecaseImpl implements UserUsecase
         }
 
 
-        $user=User::where("id",$userAuth->user_id)->lockForUpdate()->first();
+        $user = User::where("id", $userAuth->user_id)->lockForUpdate()->first();
 
 
         if (!$user) {
@@ -270,7 +270,7 @@ class UserUsecaseImpl implements UserUsecase
         \DB::beginTransaction();
         try {
 
-            $userData["status"]="normal";
+            $userData["status"] = "normal";
 
             $user = User::create($userData);
 
@@ -280,7 +280,6 @@ class UserUsecaseImpl implements UserUsecase
                 'identifier'    => $this->decryptOpenid($identifier),
                 'credential'    => $credential,
             ]);
-
 
 
             \DB::commit();
@@ -326,7 +325,7 @@ class UserUsecaseImpl implements UserUsecase
 
         \DB::beginTransaction();
 
-        $userData["status"]="normal";
+        $userData["status"] = "normal";
 
         $user = User::create($userData);
 
@@ -398,8 +397,8 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function updateUser($user, $info)
     {
-        isset($info['name']) ? $user->nickname = $info['name'] : null;
-        isset($info['avatar']) ? $user->avatar = $info['avatar'] : null;
+        $user->nickname = $info['name'] ?? null;
+        $user->avatar = $info['avatar'] ?? null;
 
         if (!$user->userProfile) {
             UserProfile::create([
@@ -408,8 +407,8 @@ class UserUsecaseImpl implements UserUsecase
             ]);
         }
 
-        $birthDay = isset($info['birthday']) ? $user->userProfile->birthday = $info['birthday'] : null;
-        $gender = isset($info['gender']) ? $user->userProfile->gender = $info['gender'] : null;
+        $user->userProfile->birthday = $info['birthday'] ?? null;
+        $user->userProfile->gender = $info['gender'] ?? null;
 
         $user->save();
         $user->userProfile->save();

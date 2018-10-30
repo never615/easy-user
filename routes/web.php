@@ -28,7 +28,7 @@ Route::group($attributes, function ($router) {
     Route::group(['prefix' => config('admin.route.prefix'), "middleware" => ["adminE"]],
         function ($router) {
             //用户
-            Route::resource('users', 'UserController', ['except' => ['create', 'store']]);
+            Route::resource('users', 'UserController');
             //解绑
             Route::get('users/{id}/unbind', 'UserController@unbind')
                 ->name("users.unbind");
