@@ -210,6 +210,7 @@ class UserUsecaseImpl implements UserUsecase
 
     /**
      * 绑定数据(如:手机,邮箱)
+     * 主要是微信注册调用
      *
      * @param $user
      * @param $bindType
@@ -318,16 +319,40 @@ class UserUsecaseImpl implements UserUsecase
             }
         }
 
-        $userData = [
-            $credentials["identityType"] => $credentials['identifier'],
-            'subject_id'                 => $subject->id,
-        ];
+        switch ($credentials["identityType"]) {
+            case "mobile":
+                $userData = [
+                    "mobile"     => $credentials['identifier'],
+                    'subject_id' => $subject->id,
+                ];
+                break;
+            case "sms":
+                $userData = [
+                    "mobile"     => $credentials['identifier'],
+                    'subject_id' => $subject->id,
+                ];
+                break;
+            default:
+                throw new ResourceException("无效的user auth类型:".$credentials["identityType"]);
+                break;
+        }
+
 
         \DB::beginTransaction();
 
         $userData["status"] = "normal";
 
         $user = User::create($userData);
+
+        if ($credentials["identityType"] == "mobile") {
+            //如果是手机绑定,均添加sms的验证方式
+            UserAuth::firstOrCreate([
+                "identifier"    => $credentials['identifier'],
+                "identity_type" => "sms",
+                "subject_id"    => $subject->id,
+                "user_id"       => $user->id,
+            ]);
+        }
 
         //保存$credential的时候再进行一次加密
         $hashCreential = \Hash::make($credential);

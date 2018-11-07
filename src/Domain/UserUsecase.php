@@ -18,6 +18,16 @@ use Mallto\User\Data\User;
  */
 interface UserUsecase
 {
+
+    //user auth类型
+    const IDENTITY_TYPE = [
+        "mobile" => "手机+密码登录",
+        "wechat" => "微信授权登录",
+//        "username" => "用户名+密码登录",
+//        "email"    => "email+密码登录",
+        "sms"    => "手机+验证码登录",
+    ];
+
     /**
      * 从请求中提取用户凭证
      *
@@ -111,6 +121,7 @@ interface UserUsecase
      * @return User
      */
     public function createUserByApp($credentials, $subject, $info = null);
+
 
     /**
      * 更新用户的微信信息
