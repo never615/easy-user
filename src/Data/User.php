@@ -239,7 +239,7 @@ class User extends Authenticatable
     {
         if (empty($value)) {
             $user = User::find($this->id);
-            if ($user->userProfile && $user->userProfile->wechat_user) {
+            if ($user && $user->userProfile && $user->userProfile->wechat_user) {
                 return $user->userProfile->wechat_user['avatar'];
             }
 
@@ -258,8 +258,6 @@ class User extends Authenticatable
     {
         return $this->hasOne(Member::class);
     }
-
-
 
 
     public function shopComments()
