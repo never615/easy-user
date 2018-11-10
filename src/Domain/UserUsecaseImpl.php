@@ -261,6 +261,7 @@ class UserUsecaseImpl implements UserUsecase
         }
         $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
 
+
         $userData = [
             'subject_id' => $subject->id,
             'nickname'   => $wechatUserInfo['nickname'],
@@ -282,7 +283,12 @@ class UserUsecaseImpl implements UserUsecase
                 'credential'    => $credential,
             ]);
 
-
+            UserProfile::updateOrCreate(['user_id' => $user->id],
+                [
+                    "wechat_user" => $wechatUserInfo->toArray(),
+                    "updated_at"  => TimeUtils::getNowTime(),
+                ]
+            );
             \DB::commit();
         } catch (DriverException $exception) {
             \DB::rollback();
@@ -486,7 +492,7 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function updateUserWechatInfo($user, $credentials, $subject)
     {
-        //每天最多更新一次
+        //每天最多更新一次微信数据
         $exist = UserProfile::where("user_id", $user->id)
             ->whereDate("updated_at", TimeUtils::getNowTime())
             ->exists();
