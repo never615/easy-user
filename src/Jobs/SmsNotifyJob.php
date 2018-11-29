@@ -93,8 +93,8 @@ class SmsNotifyJob implements ShouldQueue
                 }
 
             } catch (ResourceException $exception) {
-                \Log::warning("短信验证码发送失败");
-                \Log::warning($exception);
+//                \Log::warning("短信验证码发送失败");
+//                \Log::warning($exception);
             }
         } else {
             \Log::error("发送短信失败,主体未找到");
