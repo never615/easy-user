@@ -8,9 +8,11 @@ namespace Mallto\User\Domain;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\SubjectUtils;
+use Mallto\Mall\Data\Subject;
+use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
-use Mallto\User\Jobs\SmsNotifyJob;
+use Mallto\Tool\Utils\TimeUtils;
 
 /**
  * Created by PhpStorm.
@@ -74,14 +76,38 @@ class SmsUsecase
             throw new ValidationHttpException($validator->errors()->first());
         }
 
+        $subject = Subject::findOrFail($subjectId);
+
+        $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", "墨兔", $subject);
+        $sms = app(Sms::class);
+        $code = mt_rand(1000, 9999);
+
         //检查一分钟内只能发送一个
         if (Cache::has($this->getSmsSendAtCacheKey($use, $subjectId, $mobile))) {
             throw new ResourceException("一分钟以内只能发送一次");
         }
 
+        //todo 模板号写死,待优化
+        $result = $sms->sendSms($mobile, $sign, "SMS_141255069", [
+            "code" => $code,
+        ]);
 
-        dispatch(new SmsNotifyJob($mobile, SubjectUtils::getSubjectId(), $use
-        ))->onQueue("high");
+        if ($result) {
+            $smsUsecase = app(SmsUsecase::class);
+
+            $key = $smsUsecase->getSmsCacheKey($use, $subject->id, $mobile);
+            $sendAtCacheKey = $smsUsecase->getSmsSendAtCacheKey($use, $subject->id, $mobile);
+
+            //记录验证码,用来处理验证码五分钟内有效
+            Cache::put($key, $code, 5);
+            //记录发送时间,用来处理一分钟之内只能请求一个验证码
+            Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1);
+
+            //增加主体消费的短信数量
+            $subject->increment('sms_count');
+        }
+//        dispatch(new SmsNotifyJob($mobile, SubjectUtils::getSubjectId(), $use
+//        ))->onQueue("high");
 
         return response()->nocontent();
     }
