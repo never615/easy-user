@@ -29,7 +29,6 @@ use Mallto\Dangjian\Data\UserOnlineStudyRecord;
 use Mallto\Mall\Data\Activity;
 use Mallto\Mall\Data\Member;
 use Mallto\Mall\Data\ParkingRecord;
-use Mallto\Mall\Data\PointHistory;
 use Mallto\Mall\Data\Seckill\UserSeckill;
 use Mallto\Mall\Data\Shop;
 use Mallto\Mall\Data\ShopComment;
@@ -280,11 +279,6 @@ class User extends Authenticatable
     public function topices()
     {
         return $this->morphedByMany(SpecialTopic::class, 'userable', 'user_collections');
-    }
-
-    public function pointHistories()
-    {
-        return $this->hasMany(PointHistory::class);
     }
 
     public function tickets()
