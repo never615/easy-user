@@ -78,7 +78,7 @@ class SmsUsecase
 
         $subject = Subject::findOrFail($subjectId);
 
-        $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", "墨兔", $subject);
+        $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", $subject,"墨兔");
         $sms = app(Sms::class);
         $code = mt_rand(1000, 9999);
 
