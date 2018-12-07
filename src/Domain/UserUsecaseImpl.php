@@ -147,7 +147,7 @@ class UserUsecaseImpl implements UserUsecase
         }
 
 
-        $user = User::where("id", $userAuth->user_id)->lockForUpdate()->first();
+        $user = User::where("id", $userAuth->user_id)->first();
 
 
         if (!$user) {
