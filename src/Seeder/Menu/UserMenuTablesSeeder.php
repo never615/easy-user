@@ -20,11 +20,10 @@ class UserMenuTablesSeeder extends Seeder
      */
     public function run()
     {
-        $order = 500;
+        $order = 3;
 
         $userManagerMenu = $this->updateOrCreate(
             "user_manager", 0, $order++, "用户管理", "fa-user");
-
 
         $this->updateOrCreate(
             "users.index", $userManagerMenu->id, $order++, "用户列表", "fa-user");
