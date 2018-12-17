@@ -7,6 +7,7 @@ namespace Mallto\User\Commands;
 
 use Illuminate\Console\Command;
 use Mallto\User\Seeder\Permission\UserPermissionTablesSeeder;
+use Mallto\User\Seeder\TablesSeeder;
 
 class UpdateCommand extends Command
 {
@@ -38,7 +39,9 @@ class UpdateCommand extends Command
      */
     public function handle()
     {
-        $this->call('db:seed', ['--class' => UserPermissionTablesSeeder::class]);
+//        $this->call('db:seed', ['--class' => UserPermissionTablesSeeder::class]);
+        $this->call('db:seed', ['--class' => TablesSeeder::class]);
+
 
     }
 
