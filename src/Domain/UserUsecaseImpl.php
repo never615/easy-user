@@ -276,11 +276,14 @@ class UserUsecaseImpl implements UserUsecase
 
             $user = User::create($userData);
 
-            $user->userAuths()->create([
+            //如果userAuth没有创建则创建
+
+            UserAuth::firstOrCreate([
                 'subject_id'    => $subject->id,
                 'identity_type' => $identityType,
-                'identifier'    => $this->decryptOpenid($identifier),
+                'identifier'    => AppUtils::decryptOpenid($identifier),
                 'credential'    => $credential,
+                "user_id"       => $user->id,
             ]);
 
             UserProfile::updateOrCreate(['user_id' => $user->id],
@@ -587,7 +590,7 @@ class UserUsecaseImpl implements UserUsecase
         $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
 
         $wechatUserInfo = $wechatUsecase->getUserInfo($uuid,
-            $this->decryptOpenid($openid));
+            AppUtils::decryptOpenid($openid));
 
         return $wechatUserInfo;
     }
