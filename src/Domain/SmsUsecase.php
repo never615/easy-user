@@ -7,8 +7,8 @@ namespace Mallto\User\Domain;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
-use Mallto\Mall\Data\Subject;
 use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;

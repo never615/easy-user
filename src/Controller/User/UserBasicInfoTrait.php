@@ -6,8 +6,6 @@
 namespace Mallto\User\Controller\User;
 
 use Illuminate\Support\Facades\DB;
-use Mallto\Mall\Data\Member;
-use Mallto\Mall\Domain\MemberOperationLogUsecase;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 
@@ -141,20 +139,6 @@ EOT;
 
 
         DB::beginTransaction();
-
-        //解除会员表和用户表的关联
-        Member::where("subject_id", $user->subject_id)
-            ->where("mobile", $user->mobile)
-            ->update([
-                'user_id' => null,
-            ]);
-
-        //删除对应的会员表信息
-//        Member::where("subject_id", $user->subject_id)
-//            ->where("mobile", $user->mobile)
-//            ->delete();
-
-
         $user->mobile = null;
         $user->save();
 

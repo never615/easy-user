@@ -8,8 +8,8 @@ namespace Mallto\User\Controller\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
-use Mallto\Mall\Data\Subject;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\UserCumulate;
 
