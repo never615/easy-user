@@ -18,7 +18,7 @@ use Mallto\Tool\Exception\HttpException;
 class UserExistException extends HttpException
 {
     public function __construct(
-        $message = "用户已经注册",
+        $message = "用户已经注册,请刷新成功",
         $statusCode = "422"
     ) {
         $this->errCode = "4104";
