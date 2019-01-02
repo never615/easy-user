@@ -6,6 +6,7 @@
 namespace Mallto\User\Domain;
 
 use Doctrine\DBAL\Driver\DriverException;
+use Doctrine\DBAL\Query\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Mallto\Tool\Exception\NotFoundException;
@@ -16,6 +17,7 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
+use Mallto\User\Exceptions\UserExistException;
 use Mallto\User\Jobs\UpdateWechatUserInfoJob;
 
 /**
@@ -216,17 +218,32 @@ class UserUsecaseImpl implements UserUsecase
      * @param $bindType
      * @param $bindData
      * @return mixed
+     * @throws QueryException
      */
     public function bind($user, $bindType, $bindData)
     {
         if ($bindType == 'mobile') {
             //如果是手机绑定,均添加sms的验证方式
-            UserAuth::firstOrCreate([
-                "identifier"    => $bindData,
-                "identity_type" => "sms",
-                "subject_id"    => $user->subject_id,
-                "user_id"       => $user->id,
-            ]);
+            try {
+                UserAuth::firstOrCreate([
+                    "identifier"    => $bindData,
+                    "identity_type" => "sms",
+                    "subject_id"    => $user->subject_id,
+                    "user_id"       => $user->id,
+                ]);
+            } catch (QueryException $queryException) {
+                //检查如果已存在
+                if (UserAuth::where([
+                    "identifier"    => $bindData,
+                    "identity_type" => "sms",
+                    "subject_id"    => $user->subject_id,
+                    "user_id"       => $user->id,
+                ])->exists()) {
+                    throw new UserExistException();
+                } else {
+                    throw $queryException;
+                }
+            }
         }
 
         $user->$bindType = $bindData;

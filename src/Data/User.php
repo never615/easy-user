@@ -291,6 +291,8 @@ class User extends Authenticatable
         return $this->hasMany(ParkingRecord::class);
     }
 
+
+    //todo 移动到对应库
     /**
      * 查询用户今年的这次考试
      *

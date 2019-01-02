@@ -38,7 +38,6 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
 
 
         try {
-
             $content = $this->parseJSON('get', [
                 $baseUrl.'/api/wechat/user',
                 array_merge($requestData, [
@@ -58,7 +57,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
             return $content;
         } catch (ClientException $clientException) {
             \Log::error("请求微信用户信息失败");
-            \Log::warning($clientException->getMessage());
+            \Log::warning($clientException);
 
             $response = $clientException->getResponse()->getBody()->getContents();
             $content = json_decode($response, true);

@@ -13,13 +13,15 @@
 namespace Mallto\User\Exceptions;
 
 
-use Exception;
-use Mallto\Tool\Exception\ResourceException;
+use Mallto\Tool\Exception\HttpException;
 
-class UserExistException extends ResourceException
+class UserExistException extends HttpException
 {
-    public function __construct($message = null, $errors = null, Exception $previous = null, $headers = [], $code = 0)
-    {
-        parent::__construct($message ?: "用户已经存在", $errors, $previous, $headers, $code);
+    public function __construct(
+        $message = "用户已经注册",
+        $statusCode = "422"
+    ) {
+        $this->errCode = "4104";
+        parent::__construct($statusCode, $message);
     }
 }
