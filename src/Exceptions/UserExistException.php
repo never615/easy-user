@@ -22,6 +22,8 @@ class UserExistException extends HttpException
         $statusCode = "422"
     ) {
         $this->errCode = "4104";
+        \Log::warning("注册并发/重复提交导致报错");
+
         parent::__construct($statusCode, $message);
     }
 }

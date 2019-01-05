@@ -261,6 +261,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param null $info
      * @return User
      * @throws DriverException
+     * @throws QueryException
      */
     public function createUserByWechat($credentials, $subject, $info = null)
     {
@@ -294,14 +295,27 @@ class UserUsecaseImpl implements UserUsecase
             $user = User::create($userData);
 
             //如果userAuth没有创建则创建
-
-            UserAuth::firstOrCreate([
-                'subject_id'    => $subject->id,
-                'identity_type' => $identityType,
-                'identifier'    => AppUtils::decryptOpenid($identifier),
-                'credential'    => $credential,
-                "user_id"       => $user->id,
-            ]);
+            try {
+                UserAuth::firstOrCreate([
+                    'subject_id'    => $subject->id,
+                    'identity_type' => $identityType,
+                    'identifier'    => AppUtils::decryptOpenid($identifier),
+                    'credential'    => $credential,
+                    "user_id"       => $user->id,
+                ]);
+            } catch (QueryException $queryException) {
+                //检查如果已存在
+                if (UserAuth::where([
+                    "identifier"    => AppUtils::decryptOpenid($identifier),
+                    "identity_type" => $identityType,
+                    "subject_id"    => $subject->id,
+                    "user_id"       => $user->id,
+                ])->exists()) {
+                    throw new UserExistException();
+                } else {
+                    throw $queryException;
+                }
+            }
 
             UserProfile::updateOrCreate(['user_id' => $user->id],
                 [
