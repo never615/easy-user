@@ -6,7 +6,7 @@
 namespace Mallto\User\Domain;
 
 use Doctrine\DBAL\Driver\DriverException;
-use Doctrine\DBAL\Query\QueryException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Mallto\Tool\Exception\NotFoundException;
@@ -218,7 +218,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param $bindType
      * @param $bindData
      * @return mixed
-     * @throws QueryException
+     * @throws UniqueConstraintViolationException
      */
     public function bind($user, $bindType, $bindData)
     {
@@ -231,7 +231,7 @@ class UserUsecaseImpl implements UserUsecase
                     "subject_id"    => $user->subject_id,
                     "user_id"       => $user->id,
                 ]);
-            } catch (QueryException $queryException) {
+            } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
                 //检查如果已存在
                 if (UserAuth::where([
                     "identifier"    => $bindData,
@@ -241,7 +241,7 @@ class UserUsecaseImpl implements UserUsecase
                 ])->exists()) {
                     throw new UserExistException();
                 } else {
-                    throw $queryException;
+                    throw $uniqueConstraintViolationException;
                 }
             }
         }
@@ -260,8 +260,8 @@ class UserUsecaseImpl implements UserUsecase
      * @param      $subject
      * @param null $info
      * @return User
+     * @throws UniqueConstraintViolationException
      * @throws DriverException
-     * @throws QueryException
      */
     public function createUserByWechat($credentials, $subject, $info = null)
     {
@@ -288,49 +288,42 @@ class UserUsecaseImpl implements UserUsecase
 
 
         \DB::beginTransaction();
+
+        $userData["status"] = "normal";
+
+        $user = User::create($userData);
+
+        //如果userAuth没有创建则创建
         try {
-
-            $userData["status"] = "normal";
-
-            $user = User::create($userData);
-
-            //如果userAuth没有创建则创建
-            try {
-                UserAuth::firstOrCreate([
-                    'subject_id'    => $subject->id,
-                    'identity_type' => $identityType,
-                    'identifier'    => AppUtils::decryptOpenid($identifier),
-                    'credential'    => $credential,
-                    "user_id"       => $user->id,
-                ]);
-            } catch (QueryException $queryException) {
-                //检查如果已存在
-                if (UserAuth::where([
-                    "identifier"    => AppUtils::decryptOpenid($identifier),
-                    "identity_type" => $identityType,
-                    "subject_id"    => $subject->id,
-                    "user_id"       => $user->id,
-                ])->exists()) {
-                    throw new UserExistException();
-                } else {
-                    throw $queryException;
-                }
+            UserAuth::firstOrCreate([
+                'subject_id'    => $subject->id,
+                'identity_type' => $identityType,
+                'identifier'    => AppUtils::decryptOpenid($identifier),
+                'credential'    => $credential,
+                "user_id"       => $user->id,
+            ]);
+        } catch (UniqueConstraintViolationException $uniqueConstraintViolationException) {
+            //检查如果已存在
+            if (UserAuth::where([
+                "identifier"    => AppUtils::decryptOpenid($identifier),
+                "identity_type" => $identityType,
+                "subject_id"    => $subject->id,
+                "user_id"       => $user->id,
+            ])->exists()) {
+                throw new UserExistException();
+            } else {
+                throw $uniqueConstraintViolationException;
             }
-
-            UserProfile::updateOrCreate(['user_id' => $user->id],
-                [
-                    "wechat_user" => $wechatUserInfo->toArray(),
-                    "updated_at"  => TimeUtils::getNowTime(),
-                ]
-            );
-            \DB::commit();
-        } catch (DriverException $exception) {
-            \DB::rollback();
-            //检查用户是否已经创建成功
-            \Log::error("DriverException");
-            \Log::warning($exception);
-            throw $exception;
         }
+
+        UserProfile::updateOrCreate(['user_id' => $user->id],
+            [
+                "wechat_user" => $wechatUserInfo->toArray(),
+                "updated_at"  => TimeUtils::getNowTime(),
+            ]
+        );
+        \DB::commit();
+
 
         return $user;
     }
