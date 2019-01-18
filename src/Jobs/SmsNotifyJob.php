@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
+use Mallto\Mall\SubjectConfigConstants;
 use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\TimeUtils;
@@ -67,15 +68,17 @@ class SmsNotifyJob implements ShouldQueue
         $subject = Subject::find($this->subjectId);
 
         if ($subject) {
-            $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign",$subject, "墨兔");
+            $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", $subject, "墨兔");
             $sms = app(Sms::class);
             $code = mt_rand(1000, 9999);
 
             try {
-                //todo 模板号写死,待优化
-                $result = $sms->sendSms($this->mobile, $sign, "SMS_141255069", [
-                    "code" => $code,
-                ]);
+
+                $result = $sms->sendSms($this->mobile, $sign,
+                    SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_TEMPLATE_CODE, $subject,
+                        "SMS_141255069"), [
+                        "code" => $code,
+                    ]);
 
                 if ($result) {
                     $smsUsecase = app(SmsUsecase::class);

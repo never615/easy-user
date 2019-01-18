@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
+use Mallto\Mall\SubjectConfigConstants;
 use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
@@ -78,7 +79,7 @@ class SmsUsecase
 
         $subject = Subject::findOrFail($subjectId);
 
-        $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", $subject,"墨兔");
+        $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", $subject, "墨兔");
         $sms = app(Sms::class);
         $code = mt_rand(1000, 9999);
 
@@ -87,10 +88,11 @@ class SmsUsecase
             throw new ResourceException("一分钟以内只能发送一次");
         }
 
-        //todo 模板号写死,待优化
-        $result = $sms->sendSms($mobile, $sign, "SMS_141255069", [
-            "code" => $code,
-        ]);
+        $result = $sms->sendSms($mobile, $sign,
+            SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_TEMPLATE_CODE, $subject,
+                "SMS_141255069"), [
+                "code" => $code,
+            ]);
 
         if ($result) {
             $smsUsecase = app(SmsUsecase::class);
