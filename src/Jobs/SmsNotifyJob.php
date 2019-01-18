@@ -68,7 +68,7 @@ class SmsNotifyJob implements ShouldQueue
         $subject = Subject::find($this->subjectId);
 
         if ($subject) {
-            $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", $subject, "墨兔");
+            $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject, "墨兔");
             $sms = app(Sms::class);
             $code = mt_rand(1000, 9999);
 

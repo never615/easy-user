@@ -79,7 +79,7 @@ class SmsUsecase
 
         $subject = Subject::findOrFail($subjectId);
 
-        $sign = SubjectUtils::getDynamicKeyConfigByOwner("sms_sign", $subject, "墨兔");
+        $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject, "墨兔");
         $sms = app(Sms::class);
         $code = mt_rand(1000, 9999);
 
@@ -141,82 +141,5 @@ class SmsUsecase
         return 'code_send_at'.$use.$subjectId.$mobile;
     }
 
-//    /**
-//     * 使用聚合接口发送短信
-//     *
-//     * @param $code
-//     * @param $mobile
-//     * @param $key
-//     * @return bool
-//     * @throws \GuzzleHttp\Exception\GuzzleException
-//     */
-//    private function juheSend($code, $mobile, $key)
-//    {
-//        $subject = SubjectUtils::getSubject();
-//        $name = $subject->name;
-//        //模板id
-//        $tplValue = urlencode("#code#=$code&#app#=$name");
-//
-//        $client = new Client();
-//        $response = $client->request('GET',
-//            "http://v.juhe.cn/sms/send", [
-//                "query" => [
-//                    "mobile"    => $mobile,
-//                    "tpl_id"    => "36548",
-//                    "tpl_value" => $tplValue,
-//                    "key"       => "c5f32ac02366e464f51a566bb9073af0",
-//                ],
-//            ]);
-//
-//        $res = json_decode($response->getBody(), true);
-//
-//        if ($res['error_code'] != 0) {
-//            $this->aliSend($code, $mobile, $key);
-//
-//            return true;
-//
-////            throw new ThirdPartException("聚合:".$res['reason']);
-//        } else {
-//            Cache::put($key, $code, 10);
-//
-//            //增加主体消费的短信数量
-//            $subject->increment('sms_count');
-//
-//            return true;
-//        }
-//    }
-
-
-//    /**
-//     * 使用阿里云接口发送短信
-//     *
-//     * @param      $code
-//     * @param      $mobile
-//     * @param      $key
-//     * @param null $subject
-//     * @return mixed
-//     */
-//    public function aliSend($code, $mobile, $key, $subject = null)
-//    {
-//
-//        $sign = SubjectUtils::getSubectConfig2("sms_sign", "墨兔", $subject);
-//
-//        $sms = app(Sms::class);
-//        $result = $sms->sendSms($mobile, $sign, "SMS_141255069", [
-//            "code" => $code,
-//        ],$subject);
-//        if ($result) {
-//            Cache::put($key, $code, 5);
-//
-//            if (!$subject) {
-//                $subject = SubjectUtils::getSubject();
-//            }
-//
-//            //增加主体消费的短信数量
-//            $subject->increment('sms_count');
-//        }
-//
-//        return response()->nocontent();
-//    }
 
 }
