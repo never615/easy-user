@@ -235,16 +235,7 @@ class UserUsecaseImpl implements UserUsecase
                 // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
                 if (0 === strpos($e->getCode(), '23')) {
                     //检查如果已存在
-                    if (UserAuth::where([
-                        "identifier"    => $bindData,
-                        "identity_type" => "sms",
-                        "subject_id"    => $user->subject_id,
-                        "user_id"       => $user->id,
-                    ])->exists()) {
-                        throw new UserExistException();
-                    } else {
-                        throw $e;
-                    }
+                    throw new UserExistException();
                 } else {
                     throw $e;
                 }
@@ -311,16 +302,7 @@ class UserUsecaseImpl implements UserUsecase
             // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
             if (0 === strpos($e->getCode(), '23')) {
                 //检查如果已存在
-                if (UserAuth::where([
-                    "identifier"    => AppUtils::decryptOpenid($identifier),
-                    "identity_type" => $identityType,
-                    "subject_id"    => $subject->id,
-                    "user_id"       => $user->id,
-                ])->exists()) {
-                    throw new UserExistException();
-                } else {
-                    throw $e;
-                }
+                throw new UserExistException();
             } else {
                 throw $e;
             }
