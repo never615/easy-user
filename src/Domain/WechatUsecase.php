@@ -34,7 +34,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
             'openid' => $openid,
         ];
 
-        $sign = SignUtils::sign($requestData, '81eaaa7cd5b8aafc51aa1e5392ae25f2');
+        $sign = SignUtils::sign($requestData, config('other.mallto_app_secret'));
 
 
         try {
@@ -45,7 +45,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
                 ]),
                 [
                     'headers' => [
-                        'app-id'       => '1',
+                        'app-id'       => config("other.mallto_app_id"),
                         'REQUEST-TYPE' => 'SERVER',
                         'UUID'         => $uuid,
                         'Accept'       => 'application/json',
@@ -85,7 +85,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
             'type' => $type,
         ];
 
-        $sign = SignUtils::sign($requestData, '81eaaa7cd5b8aafc51aa1e5392ae25f2');
+        $sign = SignUtils::sign($requestData, config('other.mallto_app_secret'));
 
 
         try {
@@ -97,7 +97,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
                 ]),
                 [
                     'headers' => [
-                        'app-id'       => '1',
+                        'app-id'       => config('other.mallto_app_id'),
                         'REQUEST-TYPE' => 'SERVER',
                         'UUID'         => $uuid,
                         'Accept'       => 'application/json',

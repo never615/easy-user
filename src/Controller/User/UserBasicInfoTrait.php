@@ -127,7 +127,7 @@ EOT;
      * @param $user
      * @return bool
      */
-    private function unbindMobile($user)
+    protected function unbindMobile($user)
     {
         //检查用户是否有手机登录的方式,如果有则不能解绑手机
         $mobileAuth = $user->userAuths()
@@ -160,7 +160,7 @@ EOT;
      * @param $user
      * @return bool
      */
-    private function unbindWechat($user)
+    protected function unbindWechat($user)
     {
 
         $count = $user->userAuths()->count();
