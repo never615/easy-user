@@ -55,7 +55,6 @@ class UserController extends AdminCommonController
         $grid->mobile()->sortable();
 
         $grid->filter(function (Grid\Filter $filter) {
-//            $filter->ilike("nickname");
             $filter->ilike("mobile");
         });
 
@@ -71,10 +70,7 @@ class UserController extends AdminCommonController
         })->tab("微信信息", function ($form) {
             $this->wechatInfoForm($form);
         });
-        
-        
-        
-        
+
 
         $form->ignore(['subject_id', 'new_mobile', 'mobile_code']);
 
@@ -138,7 +134,6 @@ class UserController extends AdminCommonController
         $admin = Admin::user();
         $user->admin_user_id = $admin->id;
         $user->save();
-
 
 
         if ($result) {

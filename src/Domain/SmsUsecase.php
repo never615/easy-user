@@ -11,6 +11,7 @@ use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Mall\SubjectConfigConstants;
 use Mallto\Tool\Domain\Sms\Sms;
+use Mallto\Tool\Domain\Sms\SmsCodeUsecase;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
 use Mallto\Tool\Utils\TimeUtils;
@@ -26,6 +27,21 @@ class SmsUsecase
 
     const USE_RESET = "reset";
     const USE_REGISET = "register";
+    /**
+     * @var SmsCodeUsecase
+     */
+    private $smsCodeUsecase;
+
+    /**
+     * SmsUsecase constructor.
+     *
+     * @param SmsCodeUsecase $smsCodeUsecase
+     */
+    public function __construct(SmsCodeUsecase $smsCodeUsecase)
+    {
+        $this->smsCodeUsecase = $smsCodeUsecase;
+    }
+
 
     /**
      * 检查验证码
@@ -104,6 +120,14 @@ class SmsUsecase
             Cache::put($key, $code, 5);
             //记录发送时间,用来处理一分钟之内只能请求一个验证码
             Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1);
+
+            //添加短信发送记录
+            try {
+                $this->smsCodeUsecase->create($mobile, $code, $subjectId);
+            } catch (\Exception $e) {
+                \Log::error($e);
+            }
+
 
             //增加主体消费的短信数量
             $subject->increment('sms_count');
