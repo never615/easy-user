@@ -34,7 +34,6 @@ trait OpenidCheckTrait
      */
     public function checkOpenid(Request $request, $openidKeyName = 'identifier', $checkTimes = true)
     {
-
         //openid可以使用的次数
         $limitTimes = 10;
         //openid可以使用时间限制
@@ -86,7 +85,7 @@ trait OpenidCheckTrait
             $openid = $openids[0];
 
             if (empty($openid)) {
-                throw new ResourceException("openid为空");
+                throw new AuthenticationException("openid为空");
             }
 
             //检查时效性
