@@ -28,10 +28,11 @@ Route::group($attributes, function ($router) {
     Route::group(['prefix' => config('admin.route.prefix'), "middleware" => ["adminE_base"]],
         function ($router) {
 
-            Route::group(["namespace" => "Statistics"], function ($router) {
+            Route::group(["namespace" => "Admin\Statistics"], function ($router) {
                 //todo 主页不能没,动态权限显示内容处理
                 //统计
                 Route::get('/', 'DashboardController@dashboard')->name("dashboard");
+
                 //------------------- 数据源提供 开始 --------------------
                 //微信用户uv
                 Route::post('/statistics/users/user_uv', 'DataService\UserStatisticsController@userUv');
@@ -49,20 +50,28 @@ Route::group($attributes, function ($router) {
 
             Route::group(['middleware' => ['adminE.auto_permission']], function ($router) {  //指定auth的guard为mall
 
-
                 //用户
                 Route::resource('users', 'UserController');
                 //解绑
                 Route::get('users/{id}/unbind', 'UserController@unbind')
                     ->name("users.unbind");
 
-                //微信统计数据
-                Route::post('statistics/wechat_user/cumulate', 'Admin\WechatUserStatisticsController@cumulateUser');
-                Route::post('statistics/wechat_user/new_user', 'Admin\WechatUserStatisticsController@newUser');
+                Route::group(["namespace" => "Admin"], function ($router) {
+                    Route::group(["namespace" => "Statistics"], function ($router) {
+                        //页面热度
+                        Route::get('/statistics/pv', 'PvController@index')->name("pv.index");
 
-                //用户统计数据
-                Route::post('statistics/users/cumulate', 'Admin\UserStatisticsController@cumulateUser');
-                Route::post('statistics/users/new_user', 'Admin\UserStatisticsController@newUser');
+                        //微信统计数据
+                        Route::post('statistics/wechat_user/cumulate', 'WechatUserStatisticsController@cumulateUser');
+                        Route::post('statistics/wechat_user/new_user', 'WechatUserStatisticsController@newUser');
+
+                        //用户统计数据
+                        Route::post('statistics/users/cumulate', 'UserStatisticsController@cumulateUser');
+                        Route::post('statistics/users/new_user', 'UserStatisticsController@newUser');
+                    });
+                });
+
+
             });
         });
 

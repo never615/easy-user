@@ -3,7 +3,8 @@
  * Copyright (c) 2018. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
  */
 
-namespace Mallto\User\Controller\Admin;
+namespace Mallto\User\Controller\Admin\Statistics;
+
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
