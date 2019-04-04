@@ -236,19 +236,20 @@ class User extends Authenticatable
 
     public function getAvatarAttribute($value)
     {
-        if (empty($value)) {
-            $user = User::find($this->id);
-            if ($user && $user->userProfile && $user->userProfile->wechat_user) {
-                return $user->userProfile->wechat_user['avatar'];
+        if (request()->header("mode") === "api") {
+            if (empty($value)) {
+                $user = User::find($this->id);
+                if ($user && $user->userProfile && $user->userProfile->wechat_user) {
+                    return $user->userProfile->wechat_user['avatar'];
+                }
+
+                return null;
             }
 
-            return null;
+            if (starts_with($value, "http")) {
+                return $value;
+            }
         }
-
-        if (starts_with($value, "http")) {
-            return $value;
-        }
-
 
         return config("app.file_url_prefix").$value;
     }
@@ -293,6 +294,7 @@ class User extends Authenticatable
 
 
     //todo 移动到对应库
+
     /**
      * 查询用户今年的这次考试
      *
