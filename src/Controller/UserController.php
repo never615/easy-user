@@ -50,7 +50,16 @@ class UserController extends AdminCommonController
             return $value ? $value['nickname'] : "";
         });
         $grid->avatar()->display(function ($value) {
-            return $value;
+            if ($value) {
+                return $value;
+            } else {
+                $wechatUser = $this->userprofile->wechat_user;
+                if ($wechatUser) {
+                    return $wechatUser['avatar'];
+                } else {
+                    return null;
+                }
+            }
         })->image("", 50, 50);
         $grid->mobile()->sortable();
 

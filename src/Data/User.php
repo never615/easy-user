@@ -249,9 +249,13 @@ class User extends Authenticatable
             if (starts_with($value, "http")) {
                 return $value;
             }
+        } else {
+            if ($value) {
+                return config("app.file_url_prefix").$value;
+            } else {
+                return $value;
+            }
         }
-
-        return config("app.file_url_prefix").$value;
     }
 
     public function member()
