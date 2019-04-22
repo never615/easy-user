@@ -68,10 +68,19 @@ class UserController extends AdminCommonController
         });
 
         $grid->disableCreation();
+        $grid->actions(function (Grid\Displayers\Actions $actions) {
+            $actions->disableDelete();
+            $actions->disableView();
+        });
     }
 
     protected function formOption(Form $form)
     {
+
+        $form->tools(function(Form\Tools $tools){
+            $tools->disableDelete();
+        });
+
         $user = User::find($this->currentId);
 
         $form->tab("基本资料", function (Form $form) use ($user) {
@@ -110,11 +119,6 @@ class UserController extends AdminCommonController
         $type = Input::get("type");
 
         $user = User::findOrFail($id);
-        $member = $user->member;
-
-        if (!$member) {
-            throw new ResourceException("用户未注册会员,无法解绑");
-        }
 
 
         $result = false;
