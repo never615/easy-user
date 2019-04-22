@@ -53,7 +53,7 @@ class UserController extends AdminCommonController
             if ($value) {
                 return $value;
             } else {
-                $wechatUser = $this->userprofile->wechat_user;
+                $wechatUser = $this->userprofile->wechat_user ?? null;
                 if ($wechatUser) {
                     return $wechatUser['avatar'];
                 } else {
