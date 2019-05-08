@@ -47,6 +47,11 @@ class WechatUserCumulateUsecase
 
     public function handle()
     {
+        if (!config('other.mallto_app_id')) {
+            //如果没有配置请求开放平台所要使用的appId,则不进行后续请求
+            return;
+        }
+
         Subject::whereNotNull("uuid")
             ->chunk(10, function ($subjects) {
                 foreach ($subjects as $subject) {
