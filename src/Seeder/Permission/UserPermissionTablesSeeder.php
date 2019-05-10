@@ -13,12 +13,12 @@ class UserPermissionTablesSeeder extends Seeder
 
     use SeederMaker;
 
-    protected $order = 1000;
 
     /**
      * Run the database seeds.
      *
      * @return void
+     * @throws \Exception
      */
     public function run()
     {
