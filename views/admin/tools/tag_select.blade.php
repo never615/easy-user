@@ -15,7 +15,7 @@
 
         var selectedRows = function () {
             var selected = [];
-            $('.grid-row-checkbox:checked').each(function(){
+            $('.grid-row-checkbox:checked').each(function () {
                 selected.push($(this).data('id'));
             });
 
@@ -43,7 +43,7 @@
             }, function () {
                 doAjax("{{$url}}", "POST", {
                     _token: LA.token,
-                    ids: selectedRows(),
+                    ids: $.admin.grid.selected(),
                     tag_id: tagId
                 }, function (data) {
                     $.pjax.reload('#pjax-container');
