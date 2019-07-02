@@ -19,17 +19,17 @@ trait UserBasicInfoTrait
 {
     protected function basicInfoForm($form, $user)
     {
-        $form->display('id', 'ID');
+        $form->displayE('id', 'ID');
 
-        $form->display("nickname");
+        $form->displayE("nickname");
 
-        $form->display("avatar")->with(function ($value) {
+        $form->displayE("avatar")->with(function ($value) {
             if ($value) {
                 return "<img src='$value' style='height: 80px'/>";
             }
         });
 
-        $form->display("mobile")->rules("mobile");
+        $form->displayE("mobile")->rules("mobile");
 
 
         //解绑微信
@@ -78,8 +78,8 @@ EOT;
 
         $this->formSubject($form);
         $this->formAdminUser($form);
-        $form->display('created_at', trans('admin.created_at'));
-        $form->display('updated_at', trans('admin.updated_at'));
+        $form->displayE('created_at', trans('admin.created_at'));
+        $form->displayE('updated_at', trans('admin.updated_at'));
     }
 
 

@@ -18,13 +18,13 @@ trait WechatInfoTrait
 {
     protected function wechatInfoForm($form)
     {
-        $form->display('userprofile.wechat_user', "昵称")->with(function ($value) {
+        $form->displayE('userprofile.wechat_user', "昵称")->with(function ($value) {
             if ($value) {
                 return $value['nickname'];
             }
         });
 
-        $form->display('userprofile.wechat_user', "头像")->with(function ($value) {
+        $form->displayE('userprofile.wechat_user', "头像")->with(function ($value) {
             if ($value) {
                 $avatar = $value['avatar'];
 
@@ -32,25 +32,25 @@ trait WechatInfoTrait
             }
         });
 
-        $form->display('userprofile.wechat_user', "省份")->with(function ($value) {
+        $form->displayE('userprofile.wechat_user', "省份")->with(function ($value) {
             if ($value) {
                 return $value['province'];
             }
         });
 
-        $form->display('userprofile.wechat_user', "城市")->with(function ($value) {
+        $form->displayE('userprofile.wechat_user', "城市")->with(function ($value) {
             if ($value) {
                 return $value['city'];
             }
         });
 
-        $form->display('userprofile.wechat_user', "国家")->with(function ($value) {
+        $form->displayE('userprofile.wechat_user', "国家")->with(function ($value) {
             if ($value) {
                 return $value['country'];
             }
         });
 
-        $form->display('userprofile.wechat_user', "性别")->with(function ($value) {
+        $form->displayE('userprofile.wechat_user', "性别")->with(function ($value) {
             if ($value) {
                 $value = $value['sex'];
                 if (is_null($value)) {
@@ -62,7 +62,7 @@ trait WechatInfoTrait
         });
 
 
-        $form->display('userprofile.wechat_user', "语言")->with(function ($value) {
+        $form->displayE('userprofile.wechat_user', "语言")->with(function ($value) {
             if ($value) {
                 return $value['language'];
             }
