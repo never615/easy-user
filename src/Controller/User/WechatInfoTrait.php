@@ -6,6 +6,7 @@
 namespace Mallto\User\Controller\User;
 
 use Mallto\Admin\SelectConstants;
+use Mallto\Mall\Data\User;
 
 
 /**
@@ -16,58 +17,62 @@ use Mallto\Admin\SelectConstants;
  */
 trait WechatInfoTrait
 {
-    protected function wechatInfoForm($form)
+    protected function wechatInfoForm($form,$user)
     {
-        $form->displayE('userprofile.wechat_user', "昵称")->with(function ($value) {
-            if ($value) {
-                return $value['nickname'];
-            }
-        });
-
-        $form->displayE('userprofile.wechat_user', "头像")->with(function ($value) {
-            if ($value) {
-                $avatar = $value['avatar'];
-
-                return "<img src='$avatar' style='height: 80px'/>";
-            }
-        });
-
-        $form->displayE('userprofile.wechat_user', "省份")->with(function ($value) {
-            if ($value) {
-                return $value['province'];
-            }
-        });
-
-        $form->displayE('userprofile.wechat_user', "城市")->with(function ($value) {
-            if ($value) {
-                return $value['city'];
-            }
-        });
-
-        $form->displayE('userprofile.wechat_user', "国家")->with(function ($value) {
-            if ($value) {
-                return $value['country'];
-            }
-        });
-
-        $form->displayE('userprofile.wechat_user', "性别")->with(function ($value) {
-            if ($value) {
-                $value = $value['sex'];
-                if (is_null($value)) {
-                    return "未知";
-                } else {
-                    return SelectConstants::GENGDER[$value];
+        $exist = $user->userAuths()->where("identity_type", "wechat")
+            ->exists();
+        if ($exist) {
+            $form->displayE('userprofile.wechat_user', "昵称")->with(function ($value) {
+                if ($value) {
+                    return $value['nickname'];
                 }
-            }
-        });
+            });
+
+            $form->displayE('userprofile.wechat_user', "头像")->with(function ($value) {
+                if ($value) {
+                    $avatar = $value['avatar'];
+
+                    return "<img src='$avatar' style='height: 80px'/>";
+                }
+            });
+
+            $form->displayE('userprofile.wechat_user', "省份")->with(function ($value) {
+                if ($value) {
+                    return $value['province'];
+                }
+            });
+
+            $form->displayE('userprofile.wechat_user', "城市")->with(function ($value) {
+                if ($value) {
+                    return $value['city'];
+                }
+            });
+
+            $form->displayE('userprofile.wechat_user', "国家")->with(function ($value) {
+                if ($value) {
+                    return $value['country'];
+                }
+            });
+
+            $form->displayE('userprofile.wechat_user', "性别")->with(function ($value) {
+                if ($value) {
+                    $value = $value['sex'];
+                    if (is_null($value)) {
+                        return "未知";
+                    } else {
+                        return SelectConstants::GENGDER[$value];
+                    }
+                }
+            });
 
 
-        $form->displayE('userprofile.wechat_user', "语言")->with(function ($value) {
-            if ($value) {
-                return $value['language'];
-            }
-        });
+            $form->displayE('userprofile.wechat_user', "语言")->with(function ($value) {
+                if ($value) {
+                    return $value['language'];
+                }
+            });
+        } else {
+            $form->html("<h2>未绑定微信</h2>");
+        }
     }
-
-
 }

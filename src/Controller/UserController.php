@@ -77,7 +77,7 @@ class UserController extends AdminCommonController
     protected function formOption(Form $form)
     {
 
-        $form->tools(function(Form\Tools $tools){
+        $form->tools(function (Form\Tools $tools) {
             $tools->disableDelete();
         });
 
@@ -121,19 +121,14 @@ class UserController extends AdminCommonController
         $user = User::findOrFail($id);
 
 
-        $result = false;
-        $description = "";
-
         switch ($type) {
             case 'wechat':
-                $description = "解绑微信";
                 $result = $this->unbindWechat($user);
                 break;
             case 'mobile':
                 if (empty($user->mobile)) {
                     throw new PermissionDeniedException("解绑失败,用户未绑定手机");
                 } else {
-                    $description = "解绑手机:".$user->mobile;
                     $result = $this->unbindMobile($user);
                 }
                 break;
@@ -147,7 +142,6 @@ class UserController extends AdminCommonController
         $admin = Admin::user();
         $user->admin_user_id = $admin->id;
         $user->save();
-
 
         if ($result) {
             $success = new MessageBag([

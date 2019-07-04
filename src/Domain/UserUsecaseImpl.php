@@ -5,6 +5,7 @@
 
 namespace Mallto\User\Domain;
 
+use Carbon\Carbon;
 use Doctrine\DBAL\Driver\DriverException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -512,8 +513,9 @@ class UserUsecaseImpl implements UserUsecase
     public function updateUserWechatInfo($user, $credentials, $subject)
     {
         //每天最多更新一次微信数据
+        //查询是否有一个小时内更新过
         $exist = UserProfile::where("user_id", $user->id)
-            ->whereDate("updated_at", TimeUtils::getNowTime())
+            ->where("updated_at", ">",Carbon::now()->addHour(-1)->toDateTimeString())
             ->exists();
 
         if (!$exist) {
