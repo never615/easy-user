@@ -8,6 +8,7 @@ namespace Mallto\User\Controller\User;
 use Illuminate\Support\Facades\DB;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
+use Mallto\Tool\Utils\AppUtils;
 
 /**
  * Created by PhpStorm.
@@ -94,22 +95,18 @@ EOT;
         $newMobile = request("new_mobile");
         $mobileCode = request("mobile_code");
 
-
-        if ($newMobile && !$mobileCode) {
-            throw new ResourceException("填写了新手机号,但是验证码为空");
-        }
-
-        if ($newMobile && $mobileCode) {
+        if ($newMobile) {
             //如果用户没有旧手机,则不允许更换
             if (!$form->model()->mobile) {
                 throw new ResourceException("用户未绑定手机,无法更换");
             }
+//            $oldMobile = $form->model()->mobile;
 
-            $oldMobile = $form->model()->mobile;
-
-            //校验验证码
-            $this->smsUsecase->checkVerifyCode($newMobile, $mobileCode, 'reset',
-                $user->subject->id);
+            if (!AppUtils::isTestEnv()) {
+                //校验验证码
+                $this->smsUsecase->checkVerifyCode($newMobile, $mobileCode, 'reset',
+                    $user->subject->id);
+            }
 
 
             //更新user auth的sms方式
