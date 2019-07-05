@@ -76,7 +76,6 @@ class UserController extends AdminCommonController
 
     protected function formOption(Form $form)
     {
-
         $form->tools(function (Form\Tools $tools) {
             $tools->disableDelete();
         });
@@ -85,8 +84,8 @@ class UserController extends AdminCommonController
 
         $form->tab("基本资料", function (Form $form) use ($user) {
             $this->basicInfoForm($form, $user);
-        })->tab("微信信息", function ($form) {
-            $this->wechatInfoForm($form);
+        })->tab("微信信息", function ($form) use ($user) {
+            $this->wechatInfoForm($form, $user);
         });
 
 
