@@ -54,7 +54,16 @@ class User extends Authenticatable
      */
     const SUPPORT_BIND_TYPE = ['mobile'];
 
-
+    /**
+     * 注册来源
+     */
+    const REGISTER_FROM = [
+        "wechat"     => "微信注册",
+        "app"        => "app注册",
+        "admin"      => "管理端创建",
+        "admin_import"=>"管理端批量导入创建",
+        "third_part" => "第三方系统注册",
+    ];
     /**
      * 用户信息接口需要展示的字段
      *

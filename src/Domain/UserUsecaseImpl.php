@@ -6,7 +6,6 @@
 namespace Mallto\User\Domain;
 
 use Carbon\Carbon;
-use Doctrine\DBAL\Driver\DriverException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -257,8 +256,6 @@ class UserUsecaseImpl implements UserUsecase
      * @param      $subject
      * @param null $info
      * @return User
-     * @throws UniqueConstraintViolationException
-     * @throws DriverException
      */
     public function createUserByWechat($credentials, $subject, $info = null)
     {
@@ -323,14 +320,16 @@ class UserUsecaseImpl implements UserUsecase
 
 
     /**
-     * app注册创建用户
+     * 创建用户
      *
      * @param      $credentials
      * @param      $subject
      * @param null $info
+     * @param null $form
+     * @param null $fromAppId
      * @return User
      */
-    public function createUserByApp($credentials, $subject, $info = null)
+    public function createUser($credentials, $subject, $info = null, $form = null, $fromAppId = null)
     {
         if (empty($credentials)) {
             throw new ResourceException("异常请求:credentials为空");
@@ -367,6 +366,8 @@ class UserUsecaseImpl implements UserUsecase
         \DB::beginTransaction();
 
         $userData["status"] = "normal";
+        $userData["from"] = $form;
+        $userData["from_third_app_id"] = $fromAppId;
 
         $user = User::create($userData);
 
@@ -515,7 +516,7 @@ class UserUsecaseImpl implements UserUsecase
         //每天最多更新一次微信数据
         //查询是否有一个小时内更新过
         $exist = UserProfile::where("user_id", $user->id)
-            ->where("updated_at", ">",Carbon::now()->addHour(-1)->toDateTimeString())
+            ->where("updated_at", ">", Carbon::now()->addHour(-1)->toDateTimeString())
             ->exists();
 
         if (!$exist) {
@@ -591,7 +592,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param $info
      * @return mixed
      */
-    public function bindOtherInfo($user, $info)
+    public function bindOrCreateByOtherInfo($user, $info)
     {
 
     }

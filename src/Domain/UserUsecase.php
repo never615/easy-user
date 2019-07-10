@@ -113,14 +113,16 @@ interface UserUsecase
     public function createUserByWechat($credentials, $subject, $info = null);
 
     /**
-     * app注册创建用户
+     * 注册创建用户
      *
-     * @param      $credentials
-     * @param      $subject
-     * @param null $info
+     * @param        $credentials
+     * @param        $subject
+     * @param null   $info
+     * @param null   $from
+     * @param   null $fromAppId 第三方系统注册使用的appid
      * @return User
      */
-    public function createUserByApp($credentials, $subject, $info = null);
+    public function createUser($credentials, $subject, $info = null, $from = null, $fromAppId = null);
 
 
     /**
@@ -197,7 +199,7 @@ interface UserUsecase
      * @param $info
      * @return mixed
      */
-    public function bindOtherInfo($user, $info);
+    public function bindOrCreateByOtherInfo($user, $info);
 
     /**
      * 关联用户id和salt

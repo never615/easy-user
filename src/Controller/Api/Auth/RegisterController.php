@@ -8,9 +8,9 @@ namespace Mallto\User\Controller\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\Admin\SubjectUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserSalt;
 use Mallto\User\Domain\SmsUsecase;
@@ -50,7 +50,7 @@ class RegisterController extends Controller
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $request = $this->checkOpenid($request, 'identifier',false);
+                $request = $this->checkOpenid($request, 'identifier', false);
 
                 return $this->registerByWechat($request, $userUsecase);
                 break;
@@ -129,7 +129,7 @@ class RegisterController extends Controller
                 }
             } else {
                 //不存在,正常注册
-                $user = $userUsecase->createUserByApp($credentials, $subject);
+                $user = $userUsecase->createUser($credentials, $subject, null, "app");
 //                $userUsecase->bindSalt($user,$request->salt_Id);
             }
 
