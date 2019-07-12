@@ -8,9 +8,9 @@ namespace Mallto\User\Controller\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\Admin\SubjectUtils;
 use Mallto\User\Domain\SmsUsecase;
 use Mallto\User\Domain\UserUsecase;
 
@@ -60,10 +60,9 @@ class ResetPasswordController extends Controller
         }
 
         //查询到用户
-        $credentials = $userUsecase->transformCredentialsFromRequest($request);
-        $user = $userUsecase->retrieveByCredentials($credentials, $subject);
+        $user = $userUsecase->retrieveByRequestCredentials($request, $subject);
 
-        if(!$user){
+        if (!$user) {
             throw new NotFoundException("用户不存在");
         }
 

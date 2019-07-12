@@ -9,9 +9,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Exception\AuthorizeFailedException;
 use Mallto\Tool\Exception\NotFoundException;
-use Mallto\Admin\SubjectUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
 use Mallto\User\Domain\Traits\OpenidCheckTrait;
@@ -28,32 +28,46 @@ use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 class LoginController extends Controller
 {
 
-    use AuthValidateTrait,OpenidCheckTrait;
+    use AuthValidateTrait, OpenidCheckTrait;
+
+    /**
+     * @var UserUsecase
+     */
+    private $userUsecase;
+
+    /**
+     * LoginController constructor.
+     *
+     * @param UserUsecase $userUsecase
+     */
+    public function __construct(UserUsecase $userUsecase)
+    {
+        $this->userUsecase = $userUsecase;
+    }
+
 
     /**
      * 登录
      *
-     * @param Request     $request
-     * @param UserUsecase $userUsecase
+     * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function login(Request $request, UserUsecase $userUsecase)
+    public function login(Request $request)
     {
-
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $request= $this->checkOpenid($request,'identifier');
+                $request = $this->checkOpenid($request, 'identifier');
                 if (!empty($request->get("bind_type"))) {
-                    return $this->loginByWechatWithBinding($request, $userUsecase);
+                    return $this->loginByWechatWithBinding($request);
                 } else {
-                    return $this->loginByWechat($request, $userUsecase);
+                    return $this->loginByWechat($request);
                 }
                 break;
             case "IOS":
             case "ANDROID":
-                return $this->loginByApp($request, $userUsecase);
+                return $this->loginByApp($request);
                 break;
         }
         throw new PreconditionRequiredHttpException();
@@ -63,11 +77,10 @@ class LoginController extends Controller
     /**
      * app登录
      *
-     * @param Request     $request
-     * @param UserUsecase $userUsecase
+     * @param Request $request
      * @return User
      */
-    public function loginByApp(Request $request, UserUsecase $userUsecase)
+    public function loginByApp(Request $request)
     {
         $this->validate($request, [
             "identifier"    => "required",
@@ -78,29 +91,24 @@ class LoginController extends Controller
             "credential"    => "required",
         ]);
 
-
-        $credentials = $userUsecase->transformCredentialsFromRequest($request, true);
-        $user = $userUsecase->retrieveByCredentials($credentials, SubjectUtils::getSubject());
-
+        $user = $this->userUsecase->retrieveByRequestCredentials($request, SubjectUtils::getSubject());
 
 
         if (!$user) {
             throw new AuthorizeFailedException();
         }
 
-
-        return $userUsecase->getReturenUserInfo($user);
+        return $this->userUsecase->getReturenUserInfo($user);
     }
 
 
     /**
      * 纯微信用户登录
      *
-     * @param Request     $request
-     * @param UserUsecase $userUsecase
+     * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
-    public function loginByWechat(Request $request, UserUsecase $userUsecase)
+    public function loginByWechat(Request $request)
     {
         //请求字段验证
         //验证规则
@@ -115,21 +123,20 @@ class LoginController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //从请求中提取需要的信息
-        $credentials = $userUsecase->
-        transformCredentials("wechat", $request->identifier, $request->header('REQUEST-TYPE'));
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
 
         //检查用户是否存在
-        $user = $userUsecase->retrieveByCredentials($credentials, $subject);
+        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
 
         if (!$user) {
             //直接创建用户
-            $user = $userUsecase->createUserByWechat($credentials, $subject);
+            $user = $this->userUsecase->createUser($credentials, $subject, null, "wechat");
         }
 
         //如果是微信请求则拉取最新的用户微信信息
-        $userUsecase->updateUserWechatInfo($user, $credentials, $subject);
+        $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
 
-        $user = $userUsecase->getReturenUserInfo($user);
+        $user = $this->userUsecase->getReturenUserInfo($user);
 
         return $user;
     }
@@ -138,11 +145,10 @@ class LoginController extends Controller
     /**
      * 微信登录,用户需要绑定手机或者其他项
      *
-     * @param Request     $request
-     * @param UserUsecase $userUsecase
+     * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
-    public function loginByWechatWithBinding(Request $request, UserUsecase $userUsecase)
+    public function loginByWechatWithBinding(Request $request)
     {
         //请求字段验证
         //验证规则
@@ -164,15 +170,14 @@ class LoginController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //从请求中提取需要的信息
-        $credentials = $userUsecase->
-        transformCredentials("wechat", $request->identifier, $request->header('REQUEST-TYPE'));
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
         //检查用户是否存在
-        $user = $userUsecase->retrieveByCredentials($credentials, $subject);
+        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
 
         if ($user) {
             //检查绑定状态
             //绑定状态字段不为空且检查用户该字段不存在,则失败.抛出用户不存在.
-            if (!empty($bindType) && !$userUsecase->checkUserBindStatus($user, $bindType)) {
+            if (!empty($bindType) && !$this->userUsecase->checkUserBindStatus($user, $bindType)) {
                 throw new NotFoundException("用户不存在");
             }
         } else {
@@ -181,9 +186,9 @@ class LoginController extends Controller
         }
 
         //如果是微信请求则拉取最新的用户微信信息
-        $userUsecase->updateUserWechatInfo($user, $credentials, $subject);
+        $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
 
-        $user = $userUsecase->getReturenUserInfo($user);
+        $user = $this->userUsecase->getReturenUserInfo($user);
 
         return $user;
     }

@@ -5,19 +5,16 @@
 
 namespace Mallto\User\Domain;
 
-use Carbon\Carbon;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\AppUtils;
-use Mallto\Tool\Utils\TimeUtils;
+use Mallto\User\Data\Repository\UserAuthRepository;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
-use Mallto\User\Exceptions\UserExistException;
 use Mallto\User\Jobs\UpdateWechatUserInfoJob;
 
 /**
@@ -32,81 +29,59 @@ use Mallto\User\Jobs\UpdateWechatUserInfoJob;
  */
 class UserUsecaseImpl implements UserUsecase
 {
+    /**
+     * @var UserAuthRepository
+     */
+    private $userAuthRepository;
+
+    /**
+     * UserUsecaseImpl constructor.
+     *
+     * @param UserAuthRepository $userAuthRepository
+     */
+    public function __construct(UserAuthRepository $userAuthRepository)
+    {
+        $this->userAuthRepository = $userAuthRepository;
+    }
+
+
+    /**
+     * 根据授权标识符查询是否存在对应的用户
+     *
+     * @param Request $request
+     * @param         $subject
+     * @return User|null
+     */
+    public function retrieveByRequestCredentials(Request $request, $subject)
+    {
+        $credentials = $this->transformCredentialsFromRequest($request);
+
+        return $this->retrieveByCredentials($credentials, $subject);
+    }
+
 
     /**
      * 从请求中提取用户凭证
      *
      * @param      $request
-     * @param bool $credential
      * @return array
      */
-    public function transformCredentialsFromRequest($request, $credential = false)
+    public function transformCredentialsFromRequest($request)
     {
         $credentials = [
-            'identityType' => $request->get("identity_type"),
+            'identityType' => $request->get("identity_type") ?? "wechat",
             'identifier'   => $request->get("identifier"),
             'requestType'  => $request->header("REQUEST-TYPE"),
-        ];
+            'credential'   => $request->get('credential'),
 
-        if ($credential && $request->get('credential')) {
-            $credentials["credential"] = $request->get('credential');
-        }
+        ];
 
         return $credentials;
     }
 
 
     /**
-     * 从请求中提取用户凭证
-     *
-     * @param      $identityType
-     * @param bool $identifier
-     * @param null $requestType
-     * @param null $credential
-     * @return array
-     */
-    public function transformCredentials($identityType, $identifier, $requestType = null, $credential = null)
-    {
-        $credentials = [
-            'identityType' => $identityType,
-            'identifier'   => $identifier,
-            'requestType'  => $requestType,
-        ];
-
-        if (!empty($credential)) {
-            $credentials["credential"] = $credential;
-        }
-
-        return $credentials;
-    }
-
-    /**
-     * 给user对象添加token
-     * token分不同的类型,即不同的作用域,比如有普通的微信令牌和绑定手机的微信用户的令牌
-     *
-     * @param $user
-     * @return mixed
-     */
-    public function addToken($user)
-    {
-        if (!$user) {
-            throw new NotFoundException("用户不存在");
-        }
-
-        if (!empty($user->mobile)) {
-            $token = $user->createToken(config("app.unique"), ["mobile-token"])->accessToken;
-        } else {
-            $token = $user->createToken(config("app.unique"), ["wechat-token"])->accessToken;
-        }
-
-        $user->token = $token;
-
-        return $user;
-    }
-
-
-    /**
-     * 根据标识符检查用户是否通过验证
+     * 根据授权标识符查询是否存在对应的用户
      *
      * 1. 登录的时候需要用
      * 2. 注册的时候也可以使用来判断用户是否存在
@@ -140,17 +115,13 @@ class UserUsecaseImpl implements UserUsecase
             return null;
         }
 
-        foreach ($credentials as $key => $value) {
-            if (Str::contains($key, 'credential')) {
-                if (!\Hash::check($value, $userAuth->credential)) {
-                    return null;
-                }
+        if (isset($credentials["credential"]) && $credentials["credential"]) {
+            if (!\Hash::check($credentials["credential"], $userAuth->credential)) {
+                return null;
             }
         }
 
-
         $user = User::where("id", $userAuth->user_id)->first();
-
 
         if (!$user) {
             //userAuth存在,user不存在,系统异常
@@ -163,6 +134,29 @@ class UserUsecaseImpl implements UserUsecase
         return $user;
     }
 
+    /**
+     * 给user对象添加token
+     * token分不同的类型,即不同的作用域,比如有普通的微信令牌和绑定手机的微信用户的令牌
+     *
+     * @param $user
+     * @return mixed
+     */
+    public function addToken($user)
+    {
+        if (!$user) {
+            throw new NotFoundException("用户不存在");
+        }
+
+        if (!empty($user->mobile)) {
+            $token = $user->createToken(config("app.unique"), ["mobile-token"])->accessToken;
+        } else {
+            $token = $user->createToken(config("app.unique"), ["wechat-token"])->accessToken;
+        }
+
+        $user->token = $token;
+
+        return $user;
+    }
 
     /**
      * 检查用户的绑定状态
@@ -200,7 +194,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param $identityType
      * @return
      */
-    public function hasIdentityType($user, $identityType)
+    public function hasUserAuth($user, $identityType)
     {
         $userAuth = $user->userAuths()
             ->where("identity_type", $identityType)
@@ -218,30 +212,12 @@ class UserUsecaseImpl implements UserUsecase
      * @param $bindType
      * @param $bindData
      * @return mixed
-     * @throws UniqueConstraintViolationException
      */
     public function bind($user, $bindType, $bindData)
     {
-        if ($bindType == 'mobile') {
-            //如果是手机绑定,均添加sms的验证方式
-            try {
-                UserAuth::firstOrCreate([
-                    "identifier"    => $bindData,
-                    "identity_type" => "sms",
-                    "subject_id"    => $user->subject_id,
-                    "user_id"       => $user->id,
-                ]);
-            } catch (\PDOException $e) {
-                // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
-                if (0 === strpos($e->getCode(), '23')) {
-                    //检查如果已存在
-                    throw new UserExistException();
-                } else {
-                    throw $e;
-                }
-            }
+        if (!in_array($bindType, User::SUPPORT_BIND_TYPE)) {
+            throw new ResourceException("无效的绑定凭证:".$bindData);
         }
-
         $user->$bindType = $bindData;
         $user->save();
 
@@ -250,111 +226,41 @@ class UserUsecaseImpl implements UserUsecase
 
 
     /**
-     * 微信:创建用户
-     *
-     * @param      $credentials
-     * @param      $subject
-     * @param null $info
-     * @return User
-     */
-    public function createUserByWechat($credentials, $subject, $info = null)
-    {
-        if (empty($credentials)) {
-            throw new ResourceException("异常请求:credentials为空");
-        }
-
-        $identityType = $credentials['identityType'];
-        $identifier = $credentials['identifier'];
-        $credential = null;
-        foreach ($credentials as $key => $value) {
-            if (Str::contains($key, 'credential')) {
-                $credential = $value;
-            }
-        }
-        $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
-
-
-        $userData = [
-            'subject_id' => $subject->id,
-            'nickname'   => $wechatUserInfo['nickname'],
-//            "avatar"     => $wechatUserInfo['avatar'],
-        ];
-
-
-        \DB::beginTransaction();
-
-        $userData["status"] = "normal";
-
-        $user = User::create($userData);
-
-        //如果userAuth没有创建则创建
-        try {
-            UserAuth::firstOrCreate([
-                'subject_id'    => $subject->id,
-                'identity_type' => $identityType,
-                'identifier'    => AppUtils::decryptOpenid($identifier),
-                'credential'    => $credential,
-                "user_id"       => $user->id,
-            ]);
-        } catch (\PDOException $e) {
-            // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
-            if (0 === strpos($e->getCode(), '23')) {
-                //检查如果已存在
-                throw new UserExistException();
-            } else {
-                throw $e;
-            }
-        }
-
-        UserProfile::updateOrCreate(['user_id' => $user->id],
-            [
-                "wechat_user" => $wechatUserInfo->toArray(),
-                "updated_at"  => TimeUtils::getNowTime(),
-            ]
-        );
-        \DB::commit();
-
-
-        return $user;
-    }
-
-
-    /**
      * 创建用户
      *
-     * @param      $credentials
-     * @param      $subject
-     * @param null $info
-     * @param null $form
-     * @param null $fromAppId
+     * @param        $credentials
+     * @param        $subject
+     * @param array  $info
+     * @param string $form
+     * @param string $fromAppId 第三方注册时的appid
      * @return User
      */
-    public function createUser($credentials, $subject, $info = null, $form = null, $fromAppId = null)
-    {
+    public function createUser(
+        $credentials,
+        $subject,
+        $info = [],
+        $form = "wechat",
+        $fromAppId = null
+    ) {
         if (empty($credentials)) {
             throw new ResourceException("异常请求:credentials为空");
-        }
-
-        $identityType = $credentials['identityType'];
-        $identifier = $credentials['identifier'];
-        $credential = null;
-        foreach ($credentials as $key => $value) {
-            if (Str::contains($key, 'credential')) {
-                $credential = $value;
-            }
         }
 
         switch ($credentials["identityType"]) {
             case "mobile":
+            case "sms":
                 $userData = [
                     "mobile"     => $credentials['identifier'],
                     'subject_id' => $subject->id,
                 ];
                 break;
-            case "sms":
+            case "wechat":
+                //todo 优化获取微信信息
+                $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
                 $userData = [
-                    "mobile"     => $credentials['identifier'],
                     'subject_id' => $subject->id,
+                    'nickname'   => $wechatUserInfo['nickname'] ?? null,
+                    "avatar"     => $wechatUserInfo['avatar'] ?? null,
                 ];
                 break;
             default:
@@ -364,34 +270,65 @@ class UserUsecaseImpl implements UserUsecase
 
 
         \DB::beginTransaction();
-
         $userData["status"] = "normal";
         $userData["from"] = $form;
         $userData["from_third_app_id"] = $fromAppId;
+        $userData["is_register_gift"] = false;
 
         $user = User::create($userData);
 
-        if ($credentials["identityType"] == "mobile") {
-            //如果是手机绑定,均添加sms的验证方式
-            UserAuth::firstOrCreate([
-                "identifier"    => $credentials['identifier'],
-                "identity_type" => "sms",
-                "subject_id"    => $subject->id,
-                "user_id"       => $user->id,
-            ]);
-        }
-
-        //保存$credential的时候再进行一次加密
-        $hashCreential = \Hash::make($credential);
-
-        $user->userAuths()->create([
-            'subject_id'    => $subject->id,
-            'identity_type' => $identityType,
-            'identifier'    => $identifier,
-            'credential'    => $hashCreential,
-        ]);
+        //如果userAuth没有创建则创建
+        $this->createUserAuth($credentials, $user);
 
         \DB::commit();
+
+        return $user;
+    }
+
+
+    /**
+     * 创建用户授权信息
+     *
+     * @param $credentials
+     * @param $user
+     * @return
+     */
+    public function createUserAuth($credentials, $user)
+    {
+        $identityType = $credentials["identityType"];
+        $identifier = $credentials['identifier'];
+
+        switch ($identityType) {
+            case "wechat":
+                 $this->userAuthRepository->create(array_merge($credentials, [
+                    'identifier' => AppUtils::decryptOpenid($identifier),
+                ]), $user);
+
+                break;
+            case "mobile":
+                //如果是手机绑定,均添加sms的验证方式
+                $this->createUserAuth([
+                    "identifier"    => $identifier,
+                    "identity_type" => "sms",
+                ], $user);
+
+                 $this->userAuthRepository->create($credentials, $user);
+                break;
+            case "sms":
+                try {
+                    return $this->userAuthRepository->create($credentials, $user);
+                } catch (\Exception $exception) {
+                    \Log::error("创建用户,添加sms验证方式失败");
+                    \Log::warning($exception);
+
+                    return null;
+                }
+                break;
+            default:
+                 $this->userAuthRepository->create($credentials, $user);
+                break;
+        }
+
 
         return $user;
     }
@@ -403,40 +340,9 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param $user
      */
-    public function createSuccess($user)
+    public function registerGift($user)
     {
 
-    }
-
-    /**
-     * 增加授权方式
-     *
-     * @param      $user
-     * @param      $credentials
-     * @param bool $decrypt
-     * @return
-     */
-    public function addIdentifier($user, $credentials, $decrypt = true)
-    {
-        $hashCreential = null;
-        if (isset($credentials["credential"])) {
-            $hashCreential = \Hash::make($credentials["credential"]);
-        }
-
-
-        if ($credentials['identityType'] == 'wechat' && $decrypt) {
-            $credentials['identifier'] = decrypt($credentials['identifier']);
-        }
-
-
-        $user->userAuths()->create([
-            "identifier"    => $credentials['identifier'],
-            "identity_type" => $credentials["identityType"],
-            "credential"    => $hashCreential,
-            "subject_id"    => $user->subject_id,
-        ]);
-
-        return $user;
     }
 
 
@@ -507,19 +413,20 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 更新用户的微信信息
      *
-     * @param $user
-     * @param $credentials
-     * @param $subject
+     * @param       $user
+     * @param       $credentials
+     * @param       $subject
+     * @param array $wechatUserInfo
      */
-    public function updateUserWechatInfo($user, $credentials, $subject)
+    public function updateUserWechatInfo($user, $credentials, $subject, $wechatUserInfo = null)
     {
-        //每天最多更新一次微信数据
-        //查询是否有一个小时内更新过
-        $exist = UserProfile::where("user_id", $user->id)
-            ->where("updated_at", ">", Carbon::now()->addHour(-1)->toDateTimeString())
-            ->exists();
-
-        if (!$exist) {
+        if ($wechatUserInfo) {
+            UserProfile::updateOrCreate(['user_id' => $user->id],
+                [
+                    "wechat_user" => $wechatUserInfo ?? null,
+                ]
+            );
+        } else {
             dispatch(new UpdateWechatUserInfoJob($credentials['identifier'], $user->id, $subject->uuid));
         }
     }
@@ -535,6 +442,7 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param $appUser
      * @param $wechatUser
+     * @return mixed|null
      */
     public function mergeAccount($appUser, $wechatUser)
     {
@@ -557,33 +465,16 @@ class UserUsecaseImpl implements UserUsecase
         //2. 删除wechatUser
         $wechatUser->delete();
 
-
         //3. 合并wechatUser的授权方式到appUser
-        $appUser = $this->addIdentifier($appUser, [
+        $appUser = $this->createUserAuth([
             "identityType" => $wechatUserIdentityType,
             "identifier"   => $wechatUserIdentifier,
-        ], false);
+        ], $appUser);
 
         DB::commit();
 
         return $appUser;
     }
-
-//    /**
-//     * 更新或者创建用户的微信信息
-//     *
-//     * @param $user
-//     * @param $wechatUserInfo
-//     */
-//    private function updateOrCreateUserProfileByWechat($user, $wechatUserInfo)
-//    {
-//        UserProfile::updateOrCreate(['user_id' => $user->id],
-//            [
-//                "wechat_user" => $wechatUserInfo->toArray(),
-//            ]
-//        );
-//    }
-
 
     /**
      * 处理其他用户信息
@@ -630,5 +521,29 @@ class UserUsecaseImpl implements UserUsecase
         // TODO: Implement checkUserStatus() method.
     }
 
+
+    /**
+     * 通过手机号创建用户
+     *
+     * @param  string $from 注册来源
+     * @param         $mobile
+     * @param         $subject
+     * @param array   $userInfo
+     * @param         $memberCardId
+     * @param         $memberLevelId
+     * @param null    $appId
+     * @return \Mallto\User\Data\User
+     */
+    public function createByMobile(
+        $from,
+        $mobile,
+        $subject,
+        $userInfo = [],
+        $memberCardId = null,
+        $memberLevelId = null,
+        $appId = null
+    ) {
+        // TODO: Implement createByMobile() method.
+    }
 
 }

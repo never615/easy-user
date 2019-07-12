@@ -7,6 +7,7 @@
 namespace Mallto\User\Domain;
 
 
+use Illuminate\Http\Request;
 use Mallto\User\Data\User;
 
 
@@ -32,23 +33,19 @@ interface UserUsecase
      * 从请求中提取用户凭证
      *
      * @param      $request
-     * @param bool $credential
      * @return array
      */
-    public function transformCredentialsFromRequest($request, $credential = false);
+    public function transformCredentialsFromRequest($request);
 
 
     /**
-     * 从请求中提取用户凭证
+     * 根据授权标识符查询是否存在对应的用户
      *
-     * @param      $identityType
-     * @param bool $identifier
-     * @param null $requestType
-     * @param null $credential
-     * @return array
+     * @param Request $request
+     * @param         $subject
+     * @return User|null
      */
-    public function transformCredentials($identityType, $identifier, $requestType = null, $credential = null);
-
+    public function retrieveByRequestCredentials(Request $request, $subject);
 
     /**
      * 根据标识符检查用户是否通过验证
@@ -102,28 +99,42 @@ interface UserUsecase
     public function decryptOpenid($openid);
 
 
-    /**
-     * 微信:创建用户
-     *
-     * @param      $credentials
-     * @param      $subject
-     * @param null $info
-     * @return User
-     */
-    public function createUserByWechat($credentials, $subject, $info = null);
+//    /**
+//     * 微信:创建用户
+//     *
+//     * @param      $credentials
+//     * @param      $subject
+//     * @param null $info
+//     * @return User
+//     */
+//    public function createUserByWechat($credentials, $subject, $info = null);
 
     /**
-     * 注册创建用户
+     * 创建用户
      *
      * @param        $credentials
      * @param        $subject
-     * @param null   $info
-     * @param null   $from
-     * @param   null $fromAppId 第三方系统注册使用的appid
+     * @param array  $info
+     * @param string $form
+     * @param string $fromAppId 第三方注册时的appid
      * @return User
      */
-    public function createUser($credentials, $subject, $info = null, $from = null, $fromAppId = null);
+    public function createUser(
+        $credentials,
+        $subject,
+        $info = [],
+        $form = "wechat",
+        $fromAppId = null
+    );
 
+    /**
+     * 创建用户授权信息
+     *
+     * @param $credentials
+     * @param $user
+     * @return
+     */
+    public function createUserAuth($credentials, $user);
 
     /**
      * 更新用户的微信信息
@@ -164,21 +175,11 @@ interface UserUsecase
 
 
     /**
-     * 增加授权方式
-     *
-     * @param      $user
-     * @param      $credentials
-     * @param bool $decrypt
-     * @return
-     */
-    public function addIdentifier($user, $credentials, $decrypt = true);
-
-    /**
      * 检查用户是否有对应的凭证类型
      *
      * @param $identityType
      */
-    public function hasIdentityType($user, $identityType);
+    public function hasUserAuth($user, $identityType);
 
     /**
      * 合并用户
@@ -217,7 +218,7 @@ interface UserUsecase
      *
      * @param $user
      */
-    public function createSuccess($user);
+    public function registerGift($user);
 
     /**
      * 检查用户状态
@@ -226,5 +227,6 @@ interface UserUsecase
      * @return mixed
      */
     public function checkUserStatus($user);
+
 
 }

@@ -34,29 +34,40 @@ class RegisterController extends Controller
      * @var SmsUsecase
      */
     private $smsUsecase;
+    /**
+     * @var UserUsecase
+     */
+    private $userUsecase;
 
     /**
      * RegisterController constructor.
      *
-     * @param SmsUsecase $smsUsecase
+     * @param SmsUsecase  $smsUsecase
+     * @param UserUsecase $userUsecase
      */
-    public function __construct(SmsUsecase $smsUsecase)
+    public function __construct(SmsUsecase $smsUsecase, UserUsecase $userUsecase)
     {
         $this->smsUsecase = $smsUsecase;
+        $this->userUsecase = $userUsecase;
     }
 
-    public function register(Request $request, UserUsecase $userUsecase)
+    /**
+     * @param Request $request
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
+     * @throws \Illuminate\Auth\AuthenticationException
+     */
+    public function register(Request $request)
     {
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
                 $request = $this->checkOpenid($request, 'identifier', false);
 
-                return $this->registerByWechat($request, $userUsecase);
+                return $this->registerByWechat($request);
                 break;
             case "IOS":
             case "ANDROID":
-                return $this->registerByApp($request, $userUsecase);
+                return $this->registerByApp($request);
                 break;
         }
         throw new PreconditionRequiredHttpException();
@@ -86,11 +97,10 @@ class RegisterController extends Controller
     /**
      * app注册用户
      *
-     * @param Request     $request
-     * @param UserUsecase $userUsecase
+     * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
-    private function registerByApp(Request $request, UserUsecase $userUsecase)
+    private function registerByApp(Request $request)
     {
         //请求字段验证
         $rules = [
@@ -108,9 +118,9 @@ class RegisterController extends Controller
         $subject = SubjectUtils::getSubject();
 
         //检查用户是否存在
-        $credentials = $userUsecase->transformCredentialsFromRequest($request, true);
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
 
-        $user = $userUsecase->retrieveByCredentials($credentials, $subject);
+        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
         if ($user) {
             //使用注册凭证查询到对应的用户,表示用户已经存在了
             throw new ResourceException("用户已经存在,请直接登录");
@@ -118,22 +128,22 @@ class RegisterController extends Controller
             //使用注册凭证查询不到对应的用户
 
             //检查是否存在关联的用户(检查是否有用户已经绑定了要注册的字段:比如手机)
-            if ($bindUser = $userUsecase->isBinded($request->identity_type, $request->identifier, $subject->id)) {
+            if ($bindedUser = $this->userUsecase->isBinded($request->identity_type, $request->identifier, $subject->id)) {
                 //检查此用户是否已经有手机号密码的登录方式
-                if ($userUsecase->hasIdentityType($bindUser, "mobile")) {
-                    throw new ResourceException("手机号已经被注册:".$bindUser->mobile);
+                if ($this->userUsecase->hasUserAuth($bindedUser, "mobile")) {
+                    throw new ResourceException("手机号已经被注册:".$bindedUser->mobile);
                 } else {
                     //存在(已经在微信注册过了),关联此用户,即增加新的identifier+credential的登录方式
-                    $user = $userUsecase->addIdentifier($bindUser, $credentials);
+                    $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
 //                    $userUsecase->bindSalt($user,$request->salt_Id);
                 }
             } else {
                 //不存在,正常注册
-                $user = $userUsecase->createUser($credentials, $subject, null, "app");
+                $user = $this->userUsecase->createUser($credentials, $subject, null, "app");
 //                $userUsecase->bindSalt($user,$request->salt_Id);
             }
 
-            $user = $userUsecase->getReturenUserInfo($user);
+            $user = $this->userUsecase->getReturenUserInfo($user);
 
             return $user;
         }
@@ -153,11 +163,10 @@ class RegisterController extends Controller
      * 4. 注册人在app注册过且是纯微信用户:
      * --------------- 情况1:app那个用户没有绑定过微信,合并app用户和微信用户 情况2: app那个用户已经绑定过微信则提示
      *
-     * @param Request     $request
-     * @param UserUsecase $userUsecase
+     * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
-    private function registerByWechat(Request $request, UserUsecase $userUsecase)
+    private function registerByWechat(Request $request)
     {
         //请求字段验证
         $rules = [
@@ -182,27 +191,26 @@ class RegisterController extends Controller
         $bindType = $request->bind_type;
 
         //检查该微信用户是否已经存在
-        $credentials = $userUsecase->
-        transformCredentials("wechat", $request->identifier, $request->header('REQUEST-TYPE'));
-        $user = $userUsecase->retrieveByCredentials($credentials, $subject);
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
+        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
         if ($user) {
             //微信用户已经存在
             if (empty($user->$bindType)) {
                 //用户没有绑定对应数据
                 //继续注册流程,绑定数据
                 //检查是否存在关联的bind_data(可以是手机)用户
-                if ($bindUser = $userUsecase->isBinded($bindType, $bindData, $subject->id)) {
+                if ($bindedUser = $this->userUsecase->isBinded($bindType, $bindData, $subject->id)) {
                     //存在
-                    if ($userUsecase->hasIdentityType($bindUser, "wechat")) {
+                    if ($this->userUsecase->hasUserAuth($bindedUser, "wechat")) {
                         //存在的这个用户已经绑定了微信号,提示该手机已经被其他微信绑定
                         throw new ResourceException($bindData."已经被微信绑定");
                     } else {
                         //存在的绑定了这个手机的用户没有绑定微信号.
-                        $user = $userUsecase->mergeAccount($bindUser, $user);
+                        $user = $this->userUsecase->mergeAccount($bindedUser, $user);
                     }
                 } else {
                     //不存在关联用户:直接绑定
-                    $user = $userUsecase->bind($user, $bindType, $bindData);
+                    $user = $this->userUsecase->bind($user, $bindType, $bindData);
                 }
             } else {
                 //用户已经绑定了,则在微信注册模式下,不应该调用到该接口,抛出异常
@@ -213,29 +221,29 @@ class RegisterController extends Controller
         } else {
             //微信用户不存在
             //检查是否存在关联的identifier(可以是手机)用户
-            if ($bindUser = $userUsecase->isBinded($bindType, $bindData, $subject->id)) {
+            if ($bindedUser = $this->userUsecase->isBinded($bindType, $bindData, $subject->id)) {
                 //存在
-                if ($userUsecase->hasIdentityType($bindUser, "wechat")) {
+                if ($this->userUsecase->hasUserAuth($bindedUser, "wechat")) {
                     //存在的这个用户已经绑定了微信号,提示该手机已经被其他微信绑定
                     throw new ResourceException($bindData."已经被微信绑定");
                 } else {
                     //存在的绑定了这个手机的用户没有绑定微信号,关联手机和微信
-                    $user = $userUsecase->addIdentifier($bindUser, $credentials);
+                    $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
                 }
             } else {
                 //不存在关联用户,继续下一步
                 //开始创建用户
-                $user = $userUsecase->createUserByWechat($credentials, $subject);
+                $user = $this->userUsecase->createUser($credentials, $subject, null, "wechat");
                 //绑定
-                $user = $userUsecase->bind($user, $bindType, $bindData);
+                $user = $this->userUsecase->bind($user, $bindType, $bindData);
             }
         }
 
 
         //更新用户微信信息
-        $userUsecase->updateUserWechatInfo($user, $credentials, $subject);
+        $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
 
-        $user = $userUsecase->getReturenUserInfo($user);
+        $user = $this->userUsecase->getReturenUserInfo($user);
 
         return $user;
     }

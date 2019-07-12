@@ -15,12 +15,15 @@ namespace Mallto\User\Exceptions;
 
 use Mallto\Tool\Exception\HttpException;
 
-class UserExistException extends HttpException
+class UserAuthExistException extends HttpException
 {
     public function __construct(
         $message = "用户已经注册成功,请刷新重试",
-        $statusCode = 422
+        $statusCode = "422"
     ) {
-        parent::__construct($statusCode, $message, 4104);
+        $this->errCode = "4104";
+        \Log::warning("注册并发/重复提交导致报错");
+
+        parent::__construct($statusCode, $message);
     }
 }
