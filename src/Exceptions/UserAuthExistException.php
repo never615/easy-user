@@ -21,9 +21,8 @@ class UserAuthExistException extends HttpException
         $message = "用户已经注册成功,请刷新重试",
         $statusCode = "422"
     ) {
-        $this->errCode = "4104";
         \Log::warning("注册并发/重复提交导致报错");
 
-        parent::__construct($statusCode, $message);
+        parent::__construct($statusCode, $message, 4104);
     }
 }
