@@ -16,11 +16,12 @@ use Mallto\User\Exceptions\UserAuthExistException;
 class UserAuthRepository implements UserAuthRepositoryInterface
 {
     /**
-     * @param $credentials
-     * @param $user
+     * @param      $credentials
+     * @param      $user
+     * @param null $subject
      * @return mixed
      */
-    public function create($credentials, $user)
+    public function create($credentials, $user, $subject = null)
     {
         $identityType = $credentials["identityType"];
         $identifier = $credentials['identifier'];
