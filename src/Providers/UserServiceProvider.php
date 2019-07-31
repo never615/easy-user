@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 use Mallto\Tool\Jobs\LogJob;
+use Mallto\User\Data\Repository\UserAuthRepository;
+use Mallto\User\Data\Repository\UserAuthRepositoryInterface;
 use Mallto\User\Domain\UserUsecase;
 use Mallto\User\Domain\UserUsecaseImpl;
 
@@ -112,6 +114,11 @@ class UserServiceProvider extends ServiceProvider
         $this->app->bind(
             UserUsecase::class,
             UserUsecaseImpl::class
+        );
+
+        $this->app->bind(
+            UserAuthRepositoryInterface::class,
+            UserAuthRepository::class
         );
     }
 

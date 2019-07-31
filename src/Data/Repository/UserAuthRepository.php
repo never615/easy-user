@@ -13,7 +13,7 @@ use Mallto\User\Exceptions\UserAuthExistException;
  * Date: 2019/7/12
  * Time: 12:06 PM
  */
-class UserAuthRepository
+class UserAuthRepository implements UserAuthRepositoryInterface
 {
     /**
      * @param $credentials
@@ -30,16 +30,15 @@ class UserAuthRepository
         $hashCreential = $credential ? \Hash::make($credential) : $credential;
 
         $exists = UserAuth::where([
-            "identifier"     => $identifier,
-            "identity_type"  => $identityType,
-            'top_subject_id' => $user->top_subject_id,
-            "subject_id"     => $user->subject_id,
-            "user_id"        => $user->id,
-            'credential'     => $credential ? $hashCreential : null,
+            "identifier"    => $identifier,
+            "identity_type" => $identityType,
+            "subject_id"    => $user->subject_id,
+            "user_id"       => $user->id,
+            'credential'    => $credential ? $hashCreential : null,
         ])->exists();
         if (!$exists) {
             try {
-                return UserAuth::create([
+                return UserAuth::updateOrCreate([
                     "identifier"    => $identifier,
                     "identity_type" => $identityType,
                     "subject_id"    => $user->subject_id,

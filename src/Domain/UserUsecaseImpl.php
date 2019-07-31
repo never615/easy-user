@@ -11,6 +11,7 @@ use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\User\Data\Repository\UserAuthRepository;
+use Mallto\User\Data\Repository\UserAuthRepositoryInterface;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
@@ -37,9 +38,9 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * UserUsecaseImpl constructor.
      *
-     * @param UserAuthRepository $userAuthRepository
+     * @param UserAuthRepositoryInterface $userAuthRepository
      */
-    public function __construct(UserAuthRepository $userAuthRepository)
+    public function __construct(UserAuthRepositoryInterface $userAuthRepository)
     {
         $this->userAuthRepository = $userAuthRepository;
     }
@@ -252,7 +253,6 @@ class UserUsecaseImpl implements UserUsecase
                 $userData = [
                     "mobile"         => $credentials['identifier'],
                     'subject_id'     => $subject->id,
-                    'top_subject_id' => $subject->id,  //todo 企业号用,后期废弃
                 ];
                 break;
             case "wechat":
@@ -260,7 +260,6 @@ class UserUsecaseImpl implements UserUsecase
                 $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
                 $userData = [
                     'subject_id'     => $subject->id,
-                    'top_subject_id' => $subject->id,   //todo 企业号用,后期废弃
                     'nickname'       => $wechatUserInfo['nickname'] ?? null,
                     "avatar"         => $wechatUserInfo['avatar'] ?? null,
                 ];
