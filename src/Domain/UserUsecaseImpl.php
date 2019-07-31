@@ -250,17 +250,19 @@ class UserUsecaseImpl implements UserUsecase
             case "mobile":
             case "sms":
                 $userData = [
-                    "mobile"     => $credentials['identifier'],
-                    'subject_id' => $subject->id,
+                    "mobile"         => $credentials['identifier'],
+                    'subject_id'     => $subject->id,
+                    'top_subject_id' => $subject->id,  //todo 企业号用,后期废弃
                 ];
                 break;
             case "wechat":
                 //todo 优化获取微信信息
                 $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
                 $userData = [
-                    'subject_id' => $subject->id,
-                    'nickname'   => $wechatUserInfo['nickname'] ?? null,
-                    "avatar"     => $wechatUserInfo['avatar'] ?? null,
+                    'subject_id'     => $subject->id,
+                    'top_subject_id' => $subject->id,   //todo 企业号用,后期废弃
+                    'nickname'       => $wechatUserInfo['nickname'] ?? null,
+                    "avatar"         => $wechatUserInfo['avatar'] ?? null,
                 ];
                 break;
             default:
@@ -300,7 +302,7 @@ class UserUsecaseImpl implements UserUsecase
 
         switch ($identityType) {
             case "wechat":
-                 $this->userAuthRepository->create(array_merge($credentials, [
+                $this->userAuthRepository->create(array_merge($credentials, [
                     'identifier' => AppUtils::decryptOpenid($identifier),
                 ]), $user);
 
@@ -312,7 +314,7 @@ class UserUsecaseImpl implements UserUsecase
                     "identity_type" => "sms",
                 ], $user);
 
-                 $this->userAuthRepository->create($credentials, $user);
+                $this->userAuthRepository->create($credentials, $user);
                 break;
             case "sms":
                 try {
@@ -325,7 +327,7 @@ class UserUsecaseImpl implements UserUsecase
                 }
                 break;
             default:
-                 $this->userAuthRepository->create($credentials, $user);
+                $this->userAuthRepository->create($credentials, $user);
                 break;
         }
 

@@ -30,11 +30,12 @@ class UserAuthRepository
         $hashCreential = $credential ? \Hash::make($credential) : $credential;
 
         $exists = UserAuth::where([
-            "identifier"    => $identifier,
-            "identity_type" => $identityType,
-            "subject_id"    => $user->subject_id,
-            "user_id"       => $user->id,
-            'credential'    => $credential ? $hashCreential : null,
+            "identifier"     => $identifier,
+            "identity_type"  => $identityType,
+            'top_subject_id' => $user->top_subject_id,
+            "subject_id"     => $user->subject_id,
+            "user_id"        => $user->id,
+            'credential'     => $credential ? $hashCreential : null,
         ])->exists();
         if (!$exists) {
             try {
