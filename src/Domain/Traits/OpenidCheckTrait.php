@@ -56,7 +56,7 @@ trait OpenidCheckTrait
             try {
                 $openid = decrypt($orginalOpenid);
             } catch (DecryptException $decryptException) {
-                \Log::error("解析openid失败1");
+                \Log::warning("解析openid失败1");
                 \Log::warning($orginalOpenid);
                 throw new AuthenticationException("授权失败,openid解析失败");
             }
