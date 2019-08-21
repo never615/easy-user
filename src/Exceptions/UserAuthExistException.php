@@ -18,10 +18,11 @@ use Mallto\Tool\Exception\HttpException;
 class UserAuthExistException extends HttpException
 {
     public function __construct(
+        $userId = null,
         $message = "用户已经注册成功,请刷新重试",
-        $statusCode = "422"
+        $statusCode = 422
     ) {
-        \Log::warning("注册并发/重复提交导致报错");
+        \Log::warning("用户授权方式已存在:".$userId);
 
         parent::__construct($statusCode, $message, 4104);
     }

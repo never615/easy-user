@@ -6,7 +6,6 @@
 namespace Mallto\User\Data\Repository;
 
 use Mallto\User\Data\UserAuth;
-use Mallto\User\Exceptions\UserAuthExistException;
 
 /**
  * User: never615 <never615.com>
@@ -50,16 +49,18 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
                 if (0 === strpos($e->getCode(), '23')) {
                     //检查如果已存在
-                    \Log::error("创建userauth失败");
+                    \Log::error("用户授权方式已存在:".$user->id);
                     \Log::warning($e);
                     \Log::warning($credentials);
-                    throw new UserAuthExistException();
+//                    throw new UserAuthExistException($user->id);
                 } else {
                     throw $e;
                 }
             }
         } else {
-            throw new UserAuthExistException();
+//            throw new UserAuthExistException($user->id);
+            \Log::error("用户授权方式已存在:".$user->id);
+            \Log::warning($credentials);
         }
     }
 }

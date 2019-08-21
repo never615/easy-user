@@ -251,17 +251,17 @@ class UserUsecaseImpl implements UserUsecase
             case "mobile":
             case "sms":
                 $userData = [
-                    "mobile"         => $credentials['identifier'],
-                    'subject_id'     => $subject->id,
+                    "mobile"     => $credentials['identifier'],
+                    'subject_id' => $subject->id,
                 ];
                 break;
             case "wechat":
                 //todo 优化获取微信信息
                 $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
                 $userData = [
-                    'subject_id'     => $subject->id,
-                    'nickname'       => $wechatUserInfo['nickname'] ?? null,
-                    "avatar"         => $wechatUserInfo['avatar'] ?? null,
+                    'subject_id' => $subject->id,
+                    'nickname'   => $wechatUserInfo['nickname'] ?? null,
+                    "avatar"     => $wechatUserInfo['avatar'] ?? null,
                 ];
                 break;
             default:
@@ -316,14 +316,7 @@ class UserUsecaseImpl implements UserUsecase
                 $this->userAuthRepository->create($credentials, $user);
                 break;
             case "sms":
-                try {
-                    return $this->userAuthRepository->create($credentials, $user);
-                } catch (\Exception $exception) {
-                    \Log::error("创建用户,添加sms验证方式失败");
-                    \Log::warning($exception);
-
-                    return null;
-                }
+                $this->userAuthRepository->create($credentials, $user);
                 break;
             default:
                 $this->userAuthRepository->create($credentials, $user);
