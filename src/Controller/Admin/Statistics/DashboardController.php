@@ -105,7 +105,7 @@ class DashboardController extends Controller
         ];
 
         $baseBox = new Box('提示',
-            view("tool::dashboard.chart_base")->with([
+            view("user::dashboard.chart_base")->with([
                 "subjects" => $subjectSelectData,
                 "helps"    => $helps,
             ]));
@@ -130,7 +130,7 @@ class DashboardController extends Controller
     {
         //累计用户
         $cumulateBox = new Box('累计用户',
-            view("tool::dashboard.user_cumulate")->with([
+            view("user::dashboard.user_cumulate")->with([
                 "subjects" => $subjectSelectData,
             ]));
         $cumulateBox->collapsable();
@@ -148,7 +148,7 @@ class DashboardController extends Controller
     private function newUser($content, $subjectSelectData)
     {
         $newUserBox = new Box('新增用户',
-            view("tool::dashboard.user_new")->with([
+            view("user::dashboard.user_new")->with([
                 "subjects" => $subjectSelectData,
             ]));
         $newUserBox->collapsable();

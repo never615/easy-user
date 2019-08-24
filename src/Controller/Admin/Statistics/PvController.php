@@ -53,7 +53,7 @@ class PvController extends Controller
         ];
 
         $baseBox = new Box('提示',
-            view("tool::dashboard.chart_base")->with([
+            view("user::dashboard.chart_base")->with([
                 "subjects" => $subjectSelectData,
                 "helps"    => $helps,
             ]));
@@ -75,7 +75,7 @@ class PvController extends Controller
     {
         //累计用户
         $box = new Box('活跃用户(uv)',
-            view("tool::dashboard.uv")->with([
+            view("user::dashboard.uv")->with([
                 "subjects" => $subjectSelectData,
             ]));
         $box->collapsable();
@@ -93,7 +93,7 @@ class PvController extends Controller
     protected function pagePvRank($content, $subjectSelectData)
     {
         $box = new Box('页面访问排名',
-            view("tool::statistics.page_pv_rank")->with([
+            view("user::statistics.page_pv_rank")->with([
                 "subjects" => $subjectSelectData,
             ]));
         $box->collapsable();
@@ -111,7 +111,7 @@ class PvController extends Controller
     protected function pagePvTrend($content, $subjectSelectData)
     {
         $box = new Box('页面访问趋势',
-            view("tool::statistics.page_pv_trend")->with([
+            view("user::statistics.page_pv_trend")->with([
                 "subjects" => $subjectSelectData,
             ]));
         $box->collapsable();

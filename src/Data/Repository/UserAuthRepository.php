@@ -61,6 +61,7 @@ class UserAuthRepository implements UserAuthRepositoryInterface
 //            throw new UserAuthExistException($user->id);
             \Log::error("用户授权方式已存在:".$user->id);
             \Log::warning($credentials);
+            \Log::warning((new \Exception()));
         }
     }
 }

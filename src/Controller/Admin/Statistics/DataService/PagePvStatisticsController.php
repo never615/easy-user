@@ -58,7 +58,6 @@ class PagePvStatisticsController extends Controller
         ]);
 
         $subject = $this->getSubject($request);
-        $subjectId = $subject->id;
 
         return PagePv::select("page_pv_manager.name", "page_pv.count as pv_count")
             ->join("page_pv_manager", "page_pv_manager.path", "page_pv.path")

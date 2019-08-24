@@ -88,7 +88,7 @@ class UserServiceProvider extends ServiceProvider
             Event::subscribe($subscriber);
         }
 
-        $this->loadViewsFrom(__DIR__.'/../../views', 'user');
+        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'user');
 
         $this->loadMigrationsFrom(__DIR__.'/../../migrations');
 
