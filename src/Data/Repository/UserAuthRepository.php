@@ -49,7 +49,7 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
                 if (0 === strpos($e->getCode(), '23')) {
                     //检查如果已存在
-                    \Log::error("用户授权方式已存在:".$user->id);
+                    \Log::error("用户授权方式已存在1:".$user->id);
                     \Log::warning($e);
                     \Log::warning($credentials);
 //                    throw new UserAuthExistException($user->id);
@@ -59,7 +59,7 @@ class UserAuthRepository implements UserAuthRepositoryInterface
             }
         } else {
 //            throw new UserAuthExistException($user->id);
-            \Log::error("用户授权方式已存在:".$user->id);
+            \Log::error("用户授权方式已存在2:".$user->id);
             \Log::warning($credentials);
             \Log::warning((new \Exception()));
         }
