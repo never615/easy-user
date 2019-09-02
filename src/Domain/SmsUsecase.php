@@ -42,7 +42,7 @@ class SmsUsecase
      * @param SmsCodeUsecase $smsCodeUsecase
      * @param Sms            $sms
      */
-    public function __construct(SmsCodeUsecase $smsCodeUsecase,Sms $sms)
+    public function __construct(SmsCodeUsecase $smsCodeUsecase, Sms $sms)
     {
         $this->smsCodeUsecase = $smsCodeUsecase;
         $this->sms = $sms;
@@ -83,6 +83,9 @@ class SmsUsecase
     /**
      * 发送短信验证码
      *
+     * 使用队列任务发送的方式的话:
+     * dispatch(new SmsNotifyJob($mobile, SubjectUtils::getSubjectId(), $use))->onQueue("high");
+     *
      * @param        $mobile
      * @param        $subjectId
      * @param string $use
@@ -122,9 +125,9 @@ class SmsUsecase
             $sendAtCacheKey = $smsUsecase->getSmsSendAtCacheKey($use, $subject->id, $mobile);
 
             //记录验证码,用来处理验证码五分钟内有效
-            Cache::put($key, $code, 5*60);
+            Cache::put($key, $code, 5 * 60);
             //记录发送时间,用来处理一分钟之内只能请求一个验证码
-            Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1*60);
+            Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1 * 60);
 
             //添加短信发送记录
             try {
@@ -137,10 +140,6 @@ class SmsUsecase
             //增加主体消费的短信数量
             $subject->increment('sms_count');
         }
-//        dispatch(new SmsNotifyJob($mobile, SubjectUtils::getSubjectId(), $use
-//        ))->onQueue("high");
-
-        return response()->nocontent();
     }
 
 
