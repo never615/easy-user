@@ -87,9 +87,9 @@ class SmsNotifyJob implements ShouldQueue
                     $sendAtCacheKey = $smsUsecase->getSmsSendAtCacheKey($this->use, $subject->id, $this->mobile);
 
                     //记录验证码,用来处理验证码五分钟内有效
-                    Cache::put($key, $code, 5);
+                    Cache::put($key, $code, 5*60);
                     //记录发送时间,用来处理一分钟之内只能请求一个验证码
-                    Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1);
+                    Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1*60);
 
                     //增加主体消费的短信数量
                     $subject->increment('sms_count');

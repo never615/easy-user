@@ -36,8 +36,8 @@ trait OpenidCheckTrait
     {
         //openid可以使用的次数
         $limitTimes = 10;
-        //openid可以使用时间限制
-        $limitTime = 5;
+        //openid可以使用时间限制/s
+        $limitTime = 5*60;
 
         if (in_array(config("app.env"), ["test", "integration"])) {
             $limitTime = 240;

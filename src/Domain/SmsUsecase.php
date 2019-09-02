@@ -31,15 +31,21 @@ class SmsUsecase
      * @var SmsCodeUsecase
      */
     private $smsCodeUsecase;
+    /**
+     * @var Sms
+     */
+    private $sms;
 
     /**
      * SmsUsecase constructor.
      *
      * @param SmsCodeUsecase $smsCodeUsecase
+     * @param Sms            $sms
      */
-    public function __construct(SmsCodeUsecase $smsCodeUsecase)
+    public function __construct(SmsCodeUsecase $smsCodeUsecase,Sms $sms)
     {
         $this->smsCodeUsecase = $smsCodeUsecase;
+        $this->sms = $sms;
     }
 
 
@@ -96,7 +102,6 @@ class SmsUsecase
         $subject = Subject::findOrFail($subjectId);
 
         $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject, "墨兔");
-        $sms = app(Sms::class);
         $code = mt_rand(1000, 9999);
 
         //检查一分钟内只能发送一个
@@ -104,7 +109,7 @@ class SmsUsecase
             throw new ResourceException("一分钟以内只能发送一次");
         }
 
-        $result = $sms->sendSms($mobile, $sign,
+        $result = $this->sms->sendSms($mobile, $sign,
             SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_TEMPLATE_CODE, $subject,
                 "SMS_141255069"), [
                 "code" => $code,
@@ -117,9 +122,9 @@ class SmsUsecase
             $sendAtCacheKey = $smsUsecase->getSmsSendAtCacheKey($use, $subject->id, $mobile);
 
             //记录验证码,用来处理验证码五分钟内有效
-            Cache::put($key, $code, 5);
+            Cache::put($key, $code, 5*60);
             //记录发送时间,用来处理一分钟之内只能请求一个验证码
-            Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1);
+            Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1*60);
 
             //添加短信发送记录
             try {
