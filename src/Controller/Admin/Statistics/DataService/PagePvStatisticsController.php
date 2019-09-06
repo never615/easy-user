@@ -59,7 +59,7 @@ class PagePvStatisticsController extends Controller
 
         $subject = $this->getSubject($request);
 
-        return PagePv::select("page_pv_manager.name", "page_pv.count as pv_count")
+        $results =  PagePv::select("page_pv_manager.name", "page_pv.count as pv_count")
             ->join("page_pv_manager", "page_pv_manager.path", "page_pv.path")
             ->where("page_pv_manager.switch", true)
             ->where("page_pv.uuid", $subject->uuid)
@@ -67,6 +67,10 @@ class PagePvStatisticsController extends Controller
             ->where("page_pv.time", $date)
             ->orderBy("page_pv.count")
             ->get();
+        if(empty($results->toArray())){
+            $results[] = ['name'=>'','pv_count'=>0];
+        }
+        return $results;
     }
 
 
