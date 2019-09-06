@@ -100,7 +100,7 @@ class UserStatisticsController extends Controller
         foreach ($results as $k => $v){
             unset($results[$k]['ids']);
             if(isset($v['count'])){
-                $results[$k]['user_count'] = $v['count'];
+                $results[$k]['uv_count'] = $v['count'];
                 unset($results[$k]['count']);
             }
         }
