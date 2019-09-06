@@ -11,6 +11,7 @@ use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Data\PagePv;
 use Mallto\Tool\Data\PagePvManager;
+use Mallto\Tool\Domain\Traits\StatisticsTraits;
 
 /**
  * Created by PhpStorm.
@@ -20,7 +21,7 @@ use Mallto\Tool\Data\PagePvManager;
  */
 class PagePvStatisticsController extends Controller
 {
-
+    use StatisticsTraits;
 
     /**
      * 返回主体下开放的page pv项
@@ -97,7 +98,7 @@ class PagePvStatisticsController extends Controller
         $subject = $this->getSubject($request);
         $subjectId = $subject->id;
 
-        return PagePv::select("time", "count as pv_count")
+        $results =  PagePv::select("time", "count as pv_count")
             ->where("uuid", $subject->uuid)
             ->where("date_type", $dateType)
             ->where("time", ">=", $startedAt)
@@ -105,6 +106,17 @@ class PagePvStatisticsController extends Controller
             ->where("path", $path)
             ->orderBy("time")
             ->get();
+
+        $results = $this->addDataIntoApipvs($results,$dateType,$startedAt,$endedAt);
+
+        foreach ($results as $k => $v){
+            unset($results[$k]['ids']);
+            if(isset($v['count'])){
+                $results[$k]['pv_count'] = $results[$k]['count'];
+                unset($results[$k]['count']);
+            }
+        }
+        return $results;
     }
 
 
