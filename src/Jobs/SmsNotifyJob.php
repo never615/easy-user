@@ -10,13 +10,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Cache;
-use Mallto\Admin\Data\Subject;
-use Mallto\Admin\SubjectUtils;
-use Mallto\Mall\SubjectConfigConstants;
-use Mallto\Tool\Domain\Sms\Sms;
-use Mallto\Tool\Exception\ResourceException;
-use Mallto\Tool\Utils\TimeUtils;
 use Mallto\User\Domain\SmsUsecase;
 
 class SmsNotifyJob implements ShouldQueue
@@ -65,45 +58,14 @@ class SmsNotifyJob implements ShouldQueue
      */
     public function handle()
     {
-        $subject = Subject::find($this->subjectId);
+        $smsUseCase = app(SmsUsecase::class);
 
-        if ($subject) {
-            $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject, "墨兔");
-            $sms = app(Sms::class);
-            $code = mt_rand(1000, 9999);
-
-            try {
-
-                $result = $sms->sendSms($this->mobile, $sign,
-                    SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_TEMPLATE_CODE, $subject,
-                        "SMS_141255069"), [
-                        "code" => $code,
-                    ]);
-
-                if ($result) {
-                    $smsUsecase = app(SmsUsecase::class);
-
-                    $key = $smsUsecase->getSmsCacheKey($this->use, $subject->id, $this->mobile);
-                    $sendAtCacheKey = $smsUsecase->getSmsSendAtCacheKey($this->use, $subject->id, $this->mobile);
-
-                    //记录验证码,用来处理验证码五分钟内有效
-                    Cache::put($key, $code, 5);
-                    //记录发送时间,用来处理一分钟之内只能请求一个验证码
-                    Cache::put($sendAtCacheKey, TimeUtils::getNowTime(), 1);
-
-                    //增加主体消费的短信数量
-                    $subject->increment('sms_count');
-                }
-
-            } catch (ResourceException $exception) {
-//                \Log::warning("短信验证码发送失败");
-//                \Log::warning($exception);
-            }
-        } else {
-            \Log::error("发送短信失败,主体未找到");
+        try {
+            $smsUseCase->sendSms($this->mobile, $this->subjectId, $this->use);
+        } catch (\Exception $exception) {
+            \Log::warning("短信验证码发送失败");
+            \Log::warning($exception->getMessage());
         }
-
     }
-
 
 }
