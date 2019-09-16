@@ -36,7 +36,7 @@ class PagePvStatisticsController extends Controller
 
         return PagePvManager::where("subject_id", $subjectId)
             ->where("switch", true)
-            ->orderBy("weight")
+            ->orderBy("weight","desc")
             ->pluck("name", "path");
     }
 
