@@ -17,7 +17,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Mallto\Tool\Exception\ResourceException;
 
 trait OpenidCheckTrait
 {
@@ -37,16 +36,15 @@ trait OpenidCheckTrait
         //openid可以使用的次数
         $limitTimes = 10;
         //openid可以使用时间限制/s
-        $limitTime = 5*60;
+        $limitTime = 5 * 60;
 
         if (in_array(config("app.env"), ["test", "integration"])) {
-            $limitTime = 240;
             $limitTimes = 10000;
+            $limitTime = 60 * 60 * 24 * 3;
         }
 
 
         $orginalOpenid = $request->$openidKeyName;
-//        \Log::info($orginalOpenid);
 
         try {
             $openid = decrypt($orginalOpenid);
@@ -67,6 +65,20 @@ trait OpenidCheckTrait
 
         //检查是否被使用过
         if (count($openids) > 1) {
+
+            $timestamp = $openids[1];
+            $openid = $openids[0];
+
+            if (empty($openid)) {
+                throw new AuthenticationException("openid为空");
+            }
+
+            //检查时效性
+            $second = time() - $timestamp;
+            if ($second >= $limitTime) {
+                throw new AuthenticationException("openid过期");
+            }
+
             if ($checkTimes) {
                 if (Cache::has($orginalOpenid)) {
                     $times = Cache::get($orginalOpenid);
@@ -78,20 +90,6 @@ trait OpenidCheckTrait
                 } else {
                     Cache::put($orginalOpenid, 1, $limitTime);
                 }
-            }
-
-
-            $timestamp = $openids[1];
-            $openid = $openids[0];
-
-            if (empty($openid)) {
-                throw new AuthenticationException("openid为空");
-            }
-
-            //检查时效性
-            $minutes = (time() - $timestamp) / 60;
-            if ($minutes >= $limitTime) {
-                throw new AuthenticationException("openid过期");
             }
 
             $inputs = $request->all();

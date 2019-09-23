@@ -58,9 +58,9 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 }
             }
         } else {
-            \Log::warning("用户授权方式已存在2:".$user->id);
-            \Log::warning($credentials);
-            \Log::warning((new \Exception()));
+//            \Log::warning("用户授权方式已存在2:".$user->id);
+//            \Log::warning($credentials);
+//            \Log::warning((new \Exception()));
         }
     }
 }
