@@ -98,7 +98,7 @@ class LoginController extends Controller
             throw new AuthorizeFailedException();
         }
 
-        return $this->userUsecase->getReturenUserInfo($user);
+        return $this->userUsecase->getReturnUserInfo($user);
     }
 
 
@@ -107,6 +107,7 @@ class LoginController extends Controller
      *
      * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function loginByWechat(Request $request)
     {
@@ -136,7 +137,7 @@ class LoginController extends Controller
         //如果是微信请求则拉取最新的用户微信信息
         $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
 
-        $user = $this->userUsecase->getReturenUserInfo($user);
+        $user = $this->userUsecase->getReturnUserInfo($user, true, true);
 
         return $user;
     }
@@ -188,7 +189,7 @@ class LoginController extends Controller
         //如果是微信请求则拉取最新的用户微信信息
         $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
 
-        $user = $this->userUsecase->getReturenUserInfo($user);
+        $user = $this->userUsecase->getReturnUserInfo($user);
 
         return $user;
     }

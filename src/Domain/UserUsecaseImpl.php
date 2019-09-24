@@ -389,9 +389,10 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param      $user
      * @param bool $addToken
+     * @param bool $wechatLogin
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User
      */
-    public function getReturenUserInfo($user, $addToken = true)
+    public function getReturnUserInfo($user, $addToken = true,$wechatLogin=false)
     {
         $user = User::with("userProfile")
             ->findOrFail($user->id);

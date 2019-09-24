@@ -153,9 +153,11 @@ interface UserUsecase
      *
      * @param      $user
      * @param bool $addToken
+     * @param bool $wechatLogin 纯微信登录
      * @return User
      */
-    public function getReturenUserInfo($user, $addToken = true);
+    public function getReturnUserInfo($user, $addToken = true,$wechatLogin=false);
+
 
     /**
      * 更新用户信息
