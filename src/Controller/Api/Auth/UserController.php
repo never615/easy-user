@@ -34,7 +34,7 @@ class UserController extends Controller
     {
         $user = Auth::guard("api")->user();
 
-        return $userUsecase->getReturenUserInfo($user, false);
+        return $userUsecase->getReturnUserInfo($user, false);
     }
 
     /**
@@ -61,7 +61,7 @@ class UserController extends Controller
 
         $userUsecase->updateUser($user, $request->only(["birthday", "gender", "name", 'avatar']));
 
-        return $userUsecase->getReturenUserInfo($user, false);
+        return $userUsecase->getReturnUserInfo($user, false);
     }
 
 
