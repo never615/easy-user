@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Data\UserUv;
+use Mallto\Tool\Domain\Traits\StatisticsTraits;
 use Mallto\Tool\Exception\ResourceException;
 
 /**
@@ -21,6 +22,7 @@ use Mallto\Tool\Exception\ResourceException;
  */
 class UserStatisticsController extends Controller
 {
+    use StatisticsTraits;
     /**
      * 用户uv
      *
@@ -94,8 +96,14 @@ class UserStatisticsController extends Controller
 
                 break;
         }
-
-
+        $results = $this->addDataIntoApipvs($results,$dateType,$started,$ended);
+        foreach ($results as $k => $v){
+            unset($results[$k]['ids']);
+            if(isset($v['count'])){
+                $results[$k]['uv_count'] = $v['count'];
+                unset($results[$k]['count']);
+            }
+        }
         return $results;
     }
 
@@ -117,6 +125,4 @@ class UserStatisticsController extends Controller
 
         return SubjectUtils::getSubject();
     }
-
-
 }
