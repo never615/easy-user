@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
+use Mallto\User\Data\User;
 use Mallto\User\Data\UserProfile;
 
 class UpdateWechatUserInfoJob implements ShouldQueue
@@ -59,24 +60,28 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      */
     public function handle()
     {
-        //查询是否有一个小时内更新过
-        $exist = UserProfile::where("user_id", $this->userId)
-            ->where("updated_at", ">", Carbon::now()->addHour(-1)->toDateTimeString())
-            ->exists();
+        $user = User::find($this->userId);
 
-        if (!$exist) {
-            $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
-            $wechatUserInfo = $wechatUsecase->getUserInfo($this->uuid,
-                AppUtils::decryptOpenid($this->openid));
+        if ($user) {
+            //查询是否有一个小时内更新过
+            $exist = UserProfile::where("user_id", $this->userId)
+                ->where("updated_at", ">", Carbon::now()->addHour(-1)->toDateTimeString())
+                ->exists();
 
-            UserProfile::updateOrCreate([
-                'user_id' => $this->userId,
-            ],
-                [
-                    "wechat_user" => $wechatUserInfo->toArray(),
-                    "updated_at"  => TimeUtils::getNowTime(),
-                ]
-            );
+            if (!$exist) {
+                $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
+                $wechatUserInfo = $wechatUsecase->getUserInfo($this->uuid,
+                    AppUtils::decryptOpenid($this->openid));
+
+                UserProfile::updateOrCreate([
+                    'user_id' => $this->userId,
+                ],
+                    [
+                        "wechat_user" => $wechatUserInfo->toArray(),
+                        "updated_at"  => TimeUtils::getNowTime(),
+                    ]
+                );
+            }
         }
     }
 }
