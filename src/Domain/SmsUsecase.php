@@ -133,7 +133,8 @@ class SmsUsecase
             try {
                 $this->smsCodeUsecase->create($mobile, $code, $subjectId);
             } catch (\Exception $e) {
-                \Log::error($e);
+                \Log::error("添加短信发送记录异常");
+                \Log::warning($e);
             }
 
 
