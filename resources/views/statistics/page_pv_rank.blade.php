@@ -114,7 +114,7 @@
                 // format: 'YYYY-MM-DD',
                 locale: '{{config("app.locale")}}',
                 // minDate: '2015-12-01',
-                maxDate: moment().format('YYYY-MM-DD')
+                maxDate: moment().add(-1, 'days').format('YYYY-MM-DD')
             };
 
             const defaultDate = moment().add(-1, 'days').format('YYYY-MM-DD');

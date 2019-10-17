@@ -123,16 +123,16 @@
                 // format: 'YYYY-MM-DD',
                 locale: '{{config("app.locale")}}',
                 // minDate: '2015-12-01',
-                maxDate: moment().format('YYYY-MM-DD')
+                maxDate: moment().add(-1, 'days').format('YYYY-MM-DD')
             };
 
             const defaultStarted = moment().add(-31, 'days').format('YYYY-MM-DD');
-            const defaultEnded = moment().format('YYYY-MM-DD');
+            const defaultEnded = moment().add(-1, 'days').format('YYYY-MM-DD');
 
             switch (type) {
                 case 'day':
                     startDate = moment().add(-31, 'days').format('YYYY-MM-DD');
-                    endDate = moment().format('YYYY-MM-DD');
+                    endDate = moment().add(-1, 'days').format('YYYY-MM-DD');
                     dateOptions.format = 'YYYY-MM-DD';
                     dateOptions.minDate = '2018-10-01';
                     break;
