@@ -115,7 +115,7 @@ class UserController extends AdminCommonController
      */
     public function unbind($id)
     {
-        $type = Input::get("type");
+        $type = \Request::input("type");
 
         $user = User::findOrFail($id);
 

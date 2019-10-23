@@ -42,10 +42,10 @@ class PublicController extends Controller
      */
     public function getMessageCode()
     {
-        $mobile = Input::get('mobile');
+        $mobile = \Request::input('mobile');
 
 
-        $use = Input::get("use", Input::get("type", "register"));
+        $use = \Request::input("use", \Request::input("type", "register"));
 
         $subjectId = SubjectUtils::getSubjectId();
 
@@ -59,7 +59,7 @@ class PublicController extends Controller
 //     */
 //    public function getMailMessageCode()
 //    {
-//        $email = Input::get('email');
+//        $email = \Request::input('email');
 //        $subjectId = SubjectUtils::getSubjectId();
 //
 //        $data['email'] = $email;
