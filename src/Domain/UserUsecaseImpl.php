@@ -290,11 +290,12 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 创建用户授权信息
      *
-     * @param $credentials
-     * @param $user
+     * @param      $credentials
+     * @param      $user
+     * @param bool $openidEncrypted
      * @return
      */
-    public function createUserAuth($credentials, $user)
+    public function createUserAuth($credentials, $user, $openidEncrypted = true)
     {
         $identityType = $credentials["identityType"];
         $identifier = $credentials['identifier'];
@@ -302,7 +303,7 @@ class UserUsecaseImpl implements UserUsecase
         switch ($identityType) {
             case "wechat":
                 $this->userAuthRepository->create(array_merge($credentials, [
-                    'identifier' => AppUtils::decryptOpenid($identifier),
+                    'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
                 ]), $user);
 
                 break;
@@ -371,10 +372,10 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 解密openid
      *
-     * @deprecated
-     *
      * @param $openid
      * @return string
+     * @deprecated
+     *
      */
     public function decryptOpenid($openid)
     {
@@ -392,7 +393,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param bool $wechatLogin
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User
      */
-    public function getReturnUserInfo($user, $addToken = true,$wechatLogin=false)
+    public function getReturnUserInfo($user, $addToken = true, $wechatLogin = false)
     {
         $user = User::with("userProfile")
             ->findOrFail($user->id);
@@ -441,7 +442,7 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function mergeAccount($appUser, $wechatUser)
     {
-        \Log::warning("mergeAccount");
+        \Log::warning('mergeAccount');
         \Log::warning($appUser);
         \Log::warning($wechatUser);
 
@@ -453,7 +454,6 @@ class UserUsecaseImpl implements UserUsecase
         $wechatUserIdentityType = $wechatUserAuth->identity_type;
         $wechatUserIdentifier = $wechatUserAuth->identifier;
 
-
         //1. 把微信用户的业务数据合并
         //目前合并只有海上世界项目会出现,海上世界的纯微信用户没有需要合并的业务,所以不需要处理
 
@@ -462,9 +462,9 @@ class UserUsecaseImpl implements UserUsecase
 
         //3. 合并wechatUser的授权方式到appUser
         $appUser = $this->createUserAuth([
-            "identityType" => $wechatUserIdentityType,
-            "identifier"   => $wechatUserIdentifier,
-        ], $appUser);
+            'identityType' => $wechatUserIdentityType,
+            'identifier'   => $wechatUserIdentifier,
+        ], $appUser, false);
 
         DB::commit();
 
@@ -520,7 +520,7 @@ class UserUsecaseImpl implements UserUsecase
     /**
      * 通过手机号创建用户
      *
-     * @param  string $from 注册来源
+     * @param string  $from 注册来源
      * @param         $mobile
      * @param         $subject
      * @param array   $userInfo
