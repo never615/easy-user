@@ -6,14 +6,10 @@
 namespace Mallto\User\Controller;
 
 
-use Encore\Admin\Facades\Admin;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\MessageBag;
 use Mallto\Admin\Controllers\Base\AdminCommonController;
-use Mallto\Tool\Exception\PermissionDeniedException;
-use Mallto\Tool\Exception\ResourceException;
+use Mallto\User\Controller\User\ActionTrait;
 use Mallto\User\Controller\User\UserBasicInfoTrait;
 use Mallto\User\Controller\User\WechatInfoTrait;
 use Mallto\User\Data\User;
@@ -21,7 +17,7 @@ use Mallto\User\Data\User;
 
 class UserController extends AdminCommonController
 {
-    use UserBasicInfoTrait, WechatInfoTrait;
+    use UserBasicInfoTrait, WechatInfoTrait, ActionTrait;
 
 
     /**
@@ -105,52 +101,4 @@ class UserController extends AdminCommonController
     }
 
 
-    /**
-     * 解绑
-     *
-     * 解绑手机和解绑微信
-     *
-     * @param $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function unbind($id)
-    {
-        $type = \Request::input("type");
-
-        $user = User::findOrFail($id);
-
-
-        switch ($type) {
-            case 'wechat':
-                $result = $this->unbindWechat($user);
-                break;
-            case 'mobile':
-                if (empty($user->mobile)) {
-                    throw new PermissionDeniedException("解绑失败,用户未绑定手机");
-                } else {
-                    $result = $this->unbindMobile($user);
-                }
-                break;
-            default:
-                throw new PermissionDeniedException("无效的请求参数");
-
-                break;
-        }
-
-        //记录操作人
-        $admin = Admin::user();
-        $user->admin_user_id = $admin->id;
-        $user->save();
-
-        if ($result) {
-            $success = new MessageBag([
-                'title' => "解绑成功",
-            ]);
-
-            return back()->with(compact('success'));
-        } else {
-            throw new ResourceException("解绑失败");
-        }
-
-    }
 }
