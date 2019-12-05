@@ -172,6 +172,7 @@ class LoginController extends Controller
 
         //从请求中提取需要的信息
         $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
+
         //检查用户是否存在
         $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
 
