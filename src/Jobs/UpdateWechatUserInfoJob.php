@@ -66,6 +66,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
             //查询是否有一个小时内更新过
             $exist = UserProfile::where("user_id", $this->userId)
                 ->where("updated_at", ">", Carbon::now()->addHour(-1)->toDateTimeString())
+                ->whereNotNull('wechat_user')
                 ->exists();
 
             if (!$exist) {
