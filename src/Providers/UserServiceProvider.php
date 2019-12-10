@@ -160,7 +160,8 @@ class UserServiceProvider extends ServiceProvider
             //用户数据统计
             $schedule->command('user:user_statistic')
                 ->onOneServer()
-                ->dailyAt("03:00")
+                ->dailyAt("02:00")
+                ->runInBackground()
                 ->name("用户统计")
                 ->withoutOverlapping()
                 ->before(function () {
@@ -173,6 +174,7 @@ class UserServiceProvider extends ServiceProvider
             //拉取微信统计数据
             $schedule->command('user:wechat_user_statistics')
                 ->onOneServer()
+                ->runInBackground()
                 ->dailyAt("08:30")
                 ->name("微信统计")
                 ->withoutOverlapping()

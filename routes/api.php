@@ -37,11 +37,11 @@ Route::group($attributes, function ($router) {
         //邮箱验证码
 //        Route::get('mail_code', 'PublicController@getMailMessageCode');
 
-        //微信登录:企业号,使用userid登录,企业号使用
-        Route::post("login_by_corp", 'Auth\WechatLoginController@loginByCorp');
-
-        //(旧)微信登录:只要是微信用户就行 (使用openid登录)
-        Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
+//        //微信登录:企业号,使用userid登录,企业号使用
+//        Route::post("login_by_corp", 'Auth\WechatLoginController@loginByCorp');
+//
+//        //(旧)微信登录:只要是微信用户就行 (使用openid登录)
+//        Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
 
 
         //登录接口
