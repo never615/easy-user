@@ -61,6 +61,7 @@ class SmsUsecase
     public function checkVerifyCode($verifyObj, $code, $use = "register", $subjectId = null)
     {
         if (!$subjectId) {
+            dd(1);
             $subjectId = SubjectUtils::getSubjectId();
         }
 
