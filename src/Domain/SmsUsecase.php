@@ -93,7 +93,8 @@ class SmsUsecase
      */
     public function sendSms($mobile, $subjectId, $use = 'register')
     {
-        if (!in_array(config('app.env'), ['production', 'staging', 'test'])) {
+        //本地环境不发验证码
+        if (config('app.env') === 'local') {
             return;
         }
 
