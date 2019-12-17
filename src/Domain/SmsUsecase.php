@@ -93,6 +93,11 @@ class SmsUsecase
      */
     public function sendSms($mobile, $subjectId, $use = 'register')
     {
+        if (!in_array(config('app.env'), ['production', 'staging', 'test'])) {
+            return;
+        }
+
+
         $data['mobile'] = $mobile;
         $validator = Validator::make($data,
             ['mobile' => ['required', 'mobile'],]
