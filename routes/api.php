@@ -24,15 +24,29 @@ $attributes = [
 
 Route::group($attributes, function ($router) {
 
-    /**
-     * 需要经过验证
-     */
-    Route::group(['middleware' => ['requestCheck', 'owner_api']], function () {
+
+    Route::group(['middleware' => ['owner_api', 'requestCheck']], function () {
+
+        Route::group([
+            'middleware' => ['authSign2'],
+            'namespace'  => "Third",
+            'prefix'     => 'tp',
+        ], function () {
+            //请求验证码
 
 
-        //公共接口
-        //短信验证码
-        Route::get('code', 'PublicController@getMessageCode');
+        });
+
+
+        /**
+         * 需要经过验证
+         */
+        Route::group(['middleware' => ['authSign_referrer']], function () {
+
+            //公共接口
+            //短信验证码
+            Route::get('code', 'PublicController@getMessageCode');
+        });
 
         //邮箱验证码
 //        Route::get('mail_code', 'PublicController@getMailMessageCode');
@@ -93,6 +107,7 @@ Route::group($attributes, function ($router) {
             });
         });
     });
+
 });
 
 

@@ -93,6 +93,12 @@ class SmsUsecase
      */
     public function sendSms($mobile, $subjectId, $use = 'register')
     {
+        //本地环境不发验证码
+        if (config('app.env') === 'local') {
+            return;
+        }
+
+
         $data['mobile'] = $mobile;
         $validator = Validator::make($data,
             ['mobile' => ['required', 'mobile'],]
