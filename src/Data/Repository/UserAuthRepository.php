@@ -14,10 +14,12 @@ use Mallto\User\Data\UserAuth;
  */
 class UserAuthRepository implements UserAuthRepositoryInterface
 {
+
     /**
      * @param      $credentials
      * @param      $user
      * @param null $subject
+     *
      * @return mixed
      */
     public function create($credentials, $user, $subject = null)
@@ -29,39 +31,48 @@ class UserAuthRepository implements UserAuthRepositoryInterface
         //保存$credential的时候再进行一次加密
         $hashCreential = $credential ? \Hash::make($credential) : $credential;
 
-        $exists = UserAuth::where([
-            "identifier"    => $identifier,
+        UserAuth::updateOrCreate([
             "identity_type" => $identityType,
             "subject_id"    => $user->subject_id,
             "user_id"       => $user->id,
-            'credential'    => $credential ? $hashCreential : null,
-        ])->exists();
-        if (!$exists) {
-            try {
-                return UserAuth::updateOrCreate([
-                    "identifier"    => $identifier,
-                    "identity_type" => $identityType,
-                    "subject_id"    => $user->subject_id,
-                    "user_id"       => $user->id,
-                    'credential'    => $credential ? $hashCreential : null,
-                ]);
-            } catch (\PDOException $e) {
-                // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
-                if (0 === strpos($e->getCode(), '23')) {
-                    //检查如果已存在
-                    \Log::warning("用户授权方式已存在1:".$user->id);
-                    \Log::warning($e);
-                    \Log::warning(new \Exception());
-                    \Log::warning($credentials);
-//                    throw new UserAuthExistException($user->id);
-                } else {
-                    throw $e;
-                }
-            }
-        } else {
-//            \Log::warning("用户授权方式已存在2:".$user->id);
-//            \Log::warning($credentials);
-//            \Log::warning((new \Exception()));
-        }
+        ], [
+            "identifier" => $identifier,
+            'credential' => $credential ? $hashCreential : null,
+        ]);
+
+//        $exists = UserAuth::where([
+//            "identifier"    => $identifier,
+//            "identity_type" => $identityType,
+//            "subject_id"    => $user->subject_id,
+//            "user_id"       => $user->id,
+//            'credential'    => $credential ? $hashCreential : null,
+//        ])->exists();
+//        if ( ! $exists) {
+//            try {
+//                return UserAuth::updateOrCreate([
+//                    "identifier"    => $identifier,
+//                    "identity_type" => $identityType,
+//                    "subject_id"    => $user->subject_id,
+//                    "user_id"       => $user->id,
+//                    'credential'    => $credential ? $hashCreential : null,
+//                ]);
+//            } catch (\PDOException $e) {
+//                // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
+//                if (0 === strpos($e->getCode(), '23')) {
+//                    //检查如果已存在
+//                    \Log::warning("用户授权方式已存在1:" . $user->id);
+//                    \Log::warning($e);
+//                    \Log::warning(new \Exception());
+//                    \Log::warning($credentials);
+////                    throw new UserAuthExistException($user->id);
+//                } else {
+//                    throw $e;
+//                }
+//            }
+//        } else {
+////            \Log::warning("用户授权方式已存在2:".$user->id);
+////            \Log::warning($credentials);
+////            \Log::warning((new \Exception()));
+//        }
     }
 }

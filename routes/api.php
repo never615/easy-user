@@ -32,7 +32,6 @@ Route::group($attributes, function ($router) {
             'namespace'  => "Third",
             'prefix'     => 'tp',
         ], function () {
-            //请求验证码
 
 
         });

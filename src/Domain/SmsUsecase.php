@@ -69,6 +69,7 @@ class SmsUsecase
         $tempCode = Cache::get($key);
 
         if ($tempCode != $code) {
+            //注意:$code == "000000" 不能写===.
             if (!in_array(config("app.env"), ["production", "staging"]) && $code == "000000") {
                 return true;
             } else {

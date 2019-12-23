@@ -5,18 +5,18 @@
 
 namespace Mallto\User\Controller;
 
-
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
+use Mallto\Admin\AdminUtils;
 use Mallto\Admin\Controllers\Base\AdminCommonController;
 use Mallto\User\Controller\User\ActionTrait;
 use Mallto\User\Controller\User\UserBasicInfoTrait;
 use Mallto\User\Controller\User\WechatInfoTrait;
 use Mallto\User\Data\User;
 
-
 class UserController extends AdminCommonController
 {
+
     use UserBasicInfoTrait, WechatInfoTrait, ActionTrait;
 
 
@@ -30,6 +30,7 @@ class UserController extends AdminCommonController
         return "用户管理";
     }
 
+
     /**
      * 获取这个模块的Model
      *
@@ -39,6 +40,7 @@ class UserController extends AdminCommonController
     {
         return User::class;
     }
+
 
     protected function gridOption(Grid $grid)
     {
@@ -65,10 +67,14 @@ class UserController extends AdminCommonController
 
         $grid->disableCreation();
         $grid->actions(function (Grid\Displayers\Actions $actions) {
-            $actions->disableDelete();
+            if ( ! AdminUtils::isOwner()) {
+                $actions->disableDelete();
+            }
+            
             $actions->disableView();
         });
     }
+
 
     protected function formOption(Form $form)
     {
@@ -84,9 +90,7 @@ class UserController extends AdminCommonController
             $this->wechatInfoForm($form, $user);
         });
 
-
-        $form->ignore(['subject_id', 'new_mobile', 'mobile_code']);
-
+        $form->ignore([ 'subject_id', 'new_mobile', 'mobile_code' ]);
 
         $form->saving(function ($form) {
 
@@ -99,6 +103,5 @@ class UserController extends AdminCommonController
         });
 
     }
-
 
 }
