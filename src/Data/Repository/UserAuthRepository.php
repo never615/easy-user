@@ -35,8 +35,8 @@ class UserAuthRepository implements UserAuthRepositoryInterface
             "identity_type" => $identityType,
             "subject_id"    => $user->subject_id,
             "user_id"       => $user->id,
+            "identifier"    => $identifier,
         ], [
-            "identifier" => $identifier,
             'credential' => $credential ? $hashCreential : null,
         ]);
 

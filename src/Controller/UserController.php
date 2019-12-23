@@ -70,7 +70,7 @@ class UserController extends AdminCommonController
             if ( ! AdminUtils::isOwner()) {
                 $actions->disableDelete();
             }
-            
+
             $actions->disableView();
         });
     }
