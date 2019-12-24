@@ -302,6 +302,8 @@ class UserUsecaseImpl implements UserUsecase
                     'mobile'     => $mobile,
                 ])->first();
                 if ($user) {
+                    \DB::commit();
+
                     return $user;
                 }
 
