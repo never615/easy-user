@@ -31,15 +31,6 @@ class UserAuthRepository implements UserAuthRepositoryInterface
         //保存$credential的时候再进行一次加密
         $hashCreential = $credential ? \Hash::make($credential) : $credential;
 
-        UserAuth::updateOrCreate([
-            "identity_type" => $identityType,
-            "subject_id"    => $user->subject_id,
-            "user_id"       => $user->id,
-            "identifier"    => $identifier,
-        ], [
-            'credential' => $credential ? $hashCreential : null,
-        ]);
-
 //        $exists = UserAuth::where([
 //            "identifier"    => $identifier,
 //            "identity_type" => $identityType,
@@ -59,12 +50,12 @@ class UserAuthRepository implements UserAuthRepositoryInterface
             ]);
         } catch (\PDOException $e) {
             // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
-            if (0 === strpos($e->getCode(), '23')) {
+            if (0 === strpos($e->getCode(), '23505')) {
                 //检查如果已存在
-                \Log::warning("用户授权方式已存在1:" . $user->id);
-                \Log::warning($e);
-                \Log::warning(new \Exception());
-                \Log::warning($credentials);
+                //\Log::warning("用户授权方式已存在1:" . $user->id);
+                //\Log::warning($e);
+                //\Log::warning(new \Exception());
+                //\Log::warning($credentials);
 //                    throw new UserAuthExistException($user->id);
             } else {
                 throw $e;
