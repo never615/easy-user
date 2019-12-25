@@ -297,12 +297,12 @@ class UserUsecaseImpl implements UserUsecase
             // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
             if (0 === strpos($e->getCode(), '23505') && $mobile) {
                 //检查如果已存在
+                DB::rollBack();
                 $user = User::where([
                     'subject_id' => $subject->id,
                     'mobile'     => $mobile,
                 ])->first();
                 if ($user) {
-                    \DB::commit();
 
                     return $user;
                 }
