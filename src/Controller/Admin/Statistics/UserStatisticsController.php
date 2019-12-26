@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Controller\Admin\Statistics;
 
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -27,6 +26,7 @@ class UserStatisticsController extends Controller
      * 用户累计数据
      *
      * @param Request $request
+     *
      * @return array
      */
     public function cumulateUser(Request $request)
@@ -34,7 +34,6 @@ class UserStatisticsController extends Controller
         $started = $request->users_cumulate_started_at;
         $ended = $request->users_cumulate_ended_at;
         $dateType = $request->users_cumulate_date_type;
-
 
         $subjectId = $this->getSubjectId($request);
 
@@ -56,7 +55,6 @@ class UserStatisticsController extends Controller
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "cumulate_user as commom_cumulate_user")
                     ->get();
-
 
                 break;
             case 'month':
@@ -123,7 +121,6 @@ class UserStatisticsController extends Controller
                 break;
         }
 
-
         return $results;
     }
 
@@ -132,6 +129,7 @@ class UserStatisticsController extends Controller
      * 用户新增数据
      *
      * @param Request $request
+     *
      * @return array
      */
     public function newUser(Request $request)
@@ -139,7 +137,6 @@ class UserStatisticsController extends Controller
         $started = $request->users_new_started_at;
         $ended = $request->users_new_ended_at;
         $dateType = $request->users_new_date_type;
-
 
         $subjectId = $this->getSubjectId($request);
 
@@ -197,7 +194,6 @@ class UserStatisticsController extends Controller
                     );
                 }
 
-
                 break;
             case 'year':
                 $startedCarbon = Carbon::createFromFormat("Y", $started);
@@ -236,10 +232,8 @@ class UserStatisticsController extends Controller
                     );
                 }
 
-
                 break;
         }
-
 
         return $results;
     }
@@ -253,6 +247,5 @@ class UserStatisticsController extends Controller
 
         return SubjectUtils::getSubjectId();
     }
-
 
 }

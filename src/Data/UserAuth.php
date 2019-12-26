@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Data;
 
-
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -16,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class UserAuth extends Model
 {
+
 //    /**
 //     * The attributes that are mass assignable.
 //     *
@@ -29,7 +29,7 @@ class UserAuth extends Model
 //    ];
 
     protected $guarded = [
-    
+
     ];
 
     /**

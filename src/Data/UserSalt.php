@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Data;
 
-
 use Illuminate\Database\Eloquent\Model;
 
 /**

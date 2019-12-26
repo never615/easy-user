@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class CreateWechatUserCumulateTable extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -30,6 +31,7 @@ class CreateWechatUserCumulateTable extends Migration
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

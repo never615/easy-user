@@ -7,10 +7,10 @@ namespace Mallto\User\Seeder;
 
 use Illuminate\Database\Seeder;
 use Mallto\User\Seeder\Menu\UserMenuTablesSeeder;
-use Mallto\User\Seeder\Permission\UserPermissionTablesSeeder;
 
 class MenuTablesSeeder extends Seeder
 {
+
     /**
      * Run the database seeds.
      *

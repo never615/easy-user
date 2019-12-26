@@ -22,11 +22,15 @@ use Mallto\Tool\Exception\ResourceException;
  */
 class UserStatisticsController extends Controller
 {
+
     use StatisticsTraits;
+
+
     /**
      * 用户uv
      *
      * @param Request $request
+     *
      * @return array
      */
     public function userUv(Request $request)
@@ -34,7 +38,6 @@ class UserStatisticsController extends Controller
         $started = $request->new_started_at;
         $ended = $request->new_ended_at;
         $dateType = $request->new_date_type;
-
 
         $subject = $this->getSubject($request);
         $subjectId = $subject->id;
@@ -67,7 +70,6 @@ class UserStatisticsController extends Controller
                     throw new ResourceException("按月查询,间隔不能超过31个月");
                 }
 
-
                 $results = UserUv::where("uuid", $subject->uuid)
                     ->where("type", $dateType)
                     ->where("time", ">=", $startedCarbon->format('Y-m'))
@@ -96,14 +98,15 @@ class UserStatisticsController extends Controller
 
                 break;
         }
-        $results = $this->addDataIntoApipvs($results,$dateType,$started,$ended);
-        foreach ($results as $k => $v){
+        $results = $this->addDataIntoApipvs($results, $dateType, $started, $ended);
+        foreach ($results as $k => $v) {
             unset($results[$k]['ids']);
-            if(isset($v['count'])){
+            if (isset($v['count'])) {
                 $results[$k]['uv_count'] = $v['count'];
                 unset($results[$k]['count']);
             }
         }
+
         return $results;
     }
 
@@ -116,6 +119,7 @@ class UserStatisticsController extends Controller
 
         return SubjectUtils::getSubjectId();
     }
+
 
     private function getSubject($request)
     {

@@ -9,6 +9,7 @@ use Illuminate\Database\Seeder;
 
 class TablesSeeder extends Seeder
 {
+
     /**
      * Run the database seeds.
      *

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class AddAdminUserIdUser extends Migration
 {
+
     /**
      * Run the migrations.
      *

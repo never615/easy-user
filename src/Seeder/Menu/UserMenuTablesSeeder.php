@@ -13,6 +13,7 @@ class UserMenuTablesSeeder extends Seeder
 
     use MenuSeederMaker;
 
+
     /**
      * Run the database seeds.
      *

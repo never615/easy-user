@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Listeners;
 
-
 use Carbon\Carbon;
 use Laravel\Passport\Events\AccessTokenCreated;
 
@@ -17,6 +16,7 @@ use Laravel\Passport\Events\AccessTokenCreated;
  */
 class RevokeOldTokens
 {
+
     /**
      * Create the event listener.
      *
@@ -26,10 +26,12 @@ class RevokeOldTokens
         //
     }
 
+
     /**
      * Handle the event.
      *
-     * @param  AccessTokenCreated $event
+     * @param AccessTokenCreated $event
+     *
      * @return void
      */
     public function handle(AccessTokenCreated $event)

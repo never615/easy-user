@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class UpdateUserProfiles3Table extends Migration
 {
+
     /**
      * Run the migrations.
      *

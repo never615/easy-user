@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Domain;
 
-
 use GuzzleHttp\Exception\ClientException;
 use Mallto\Tool\Utils\SignUtils;
 
@@ -20,6 +19,7 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
 
     protected $slug = 'open_platform';
 
+
     public function getUserInfo($uuid, $openid)
     {
         if (config("app.env") == 'production' || config("app.env") == 'staging') {
@@ -28,7 +28,6 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
             $baseUrl = "https://test-wechat.mall-to.com";
         }
 
-
         $requestData = [
             'uuid'   => $uuid,
             'openid' => $openid,
@@ -36,10 +35,9 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
 
         $sign = SignUtils::sign($requestData, config('other.mallto_app_secret'));
 
-
         try {
             $content = $this->parseJSON('get', [
-                $baseUrl.'/api/wechat/user',
+                $baseUrl . '/api/wechat/user',
                 array_merge($requestData, [
                     'sign' => $sign,
                 ]),
@@ -52,7 +50,6 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
                     ],
                 ],
             ]);
-
 
             return $content;
         } catch (ClientException $clientException) {
@@ -78,7 +75,6 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
             $baseUrl = "https://test-wechat.mall-to.com";
         }
 
-
         $requestData = [
             'from' => $from,
             'to'   => $to,
@@ -87,11 +83,10 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
 
         $sign = SignUtils::sign($requestData, config('other.mallto_app_secret'));
 
-
         try {
 
             $content = $this->parseJSON('post', [
-                $baseUrl.'/api/statistics/user/cumulate_data',
+                $baseUrl . '/api/statistics/user/cumulate_data',
                 array_merge($requestData, [
                     'sign' => $sign,
                 ]),

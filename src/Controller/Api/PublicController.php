@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Controller\Api;
 
-
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
 use Mallto\Admin\SubjectUtils;
@@ -19,10 +18,12 @@ use Mallto\User\Domain\SmsUsecase;
  */
 class PublicController extends Controller
 {
+
     /**
      * @var SmsUsecase
      */
     private $smsUsecase;
+
 
     /**
      * PublicController constructor.
@@ -43,7 +44,6 @@ class PublicController extends Controller
     public function getMessageCode()
     {
         $mobile = \Request::input('mobile');
-
 
         $use = \Request::input("use", \Request::input("type", "register"));
 
@@ -94,6 +94,5 @@ class PublicController extends Controller
 //
 //        return response()->nocontent();
 //    }
-
 
 }

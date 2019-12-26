@@ -11,7 +11,6 @@ use Mallto\User\Domain\Statistics\UserCumulateUsecase;
 class UserStatisticsCommand extends Command
 {
 
-
     /**
      * The console command name.
      *
@@ -25,6 +24,7 @@ class UserStatisticsCommand extends Command
      * @var string
      */
     protected $description = '生成用户的统计数据';
+
     /**
      * @var UserCumulateUsecase
      */
@@ -42,6 +42,7 @@ class UserStatisticsCommand extends Command
         $this->userCumulateUsecase = $userCumulateUsecase;
     }
 
+
     /**
      * Execute the console command.
      *
@@ -51,6 +52,5 @@ class UserStatisticsCommand extends Command
     {
         $this->userCumulateUsecase->handle();
     }
-
 
 }

@@ -14,7 +14,6 @@ use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Domain\SmsUsecase;
 use Mallto\User\Domain\UserUsecase;
 
-
 /**
  * 重置密码
  * Created by PhpStorm.
@@ -24,10 +23,12 @@ use Mallto\User\Domain\UserUsecase;
  */
 class ResetPasswordController extends Controller
 {
+
     /**
      * @var SmsUsecase
      */
     private $smsUsecase;
+
 
     /**
      * RegisterController constructor.
@@ -39,30 +40,31 @@ class ResetPasswordController extends Controller
         $this->smsUsecase = $smsUsecase;
     }
 
+
     public function reset(Request $request, UserUsecase $userUsecase)
     {
         $this->validate($request, [
             "identity_type" => [
                 "required",
-                Rule::in(['mobile']),
+                Rule::in([ 'mobile' ]),
             ],
             "identifier"    => 'required',
             "credential"    => 'required',
             "code"          => 'required',
         ]);
 
-
         $subject = SubjectUtils::getSubject();
 
         //校验短信验证码
-        if (!$this->smsUsecase->checkVerifyCode($request->identifier, $request->code, SmsUsecase::USE_RESET)) {
+        if ( ! $this->smsUsecase->checkVerifyCode($request->identifier, $request->code,
+            SmsUsecase::USE_RESET)) {
             throw new ResourceException("验证码错误");
         }
 
         //查询到用户
         $user = $userUsecase->retrieveByRequestCredentials($request, $subject);
 
-        if (!$user) {
+        if ( ! $user) {
             throw new NotFoundException("用户不存在");
         }
 
@@ -76,6 +78,5 @@ class ResetPasswordController extends Controller
 
         return response()->nocontent();
     }
-
 
 }

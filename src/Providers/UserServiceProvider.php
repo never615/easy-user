@@ -19,7 +19,6 @@ use Mallto\User\Domain\UserUsecaseImpl;
 class UserServiceProvider extends ServiceProvider
 {
 
-
     /**
      * The event listener mappings for the application.
      *
@@ -34,7 +33,6 @@ class UserServiceProvider extends ServiceProvider
             'Mallto\User\Listeners\PruneOldTokens',
         ],
     ];
-
 
     /**
      * The subscriber classes to register.
@@ -71,6 +69,7 @@ class UserServiceProvider extends ServiceProvider
     protected $middlewareGroups = [
     ];
 
+
     /**
      * Boot the service provider.
      *
@@ -90,10 +89,10 @@ class UserServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'user');
 
-        $this->loadMigrationsFrom(__DIR__.'/../../migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
 
-        $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
-        $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
+        $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/../../routes/api.php');
 
         $this->authBoot();
 
@@ -101,6 +100,7 @@ class UserServiceProvider extends ServiceProvider
 
 
     }
+
 
     /**
      * Register the service provider.
@@ -122,6 +122,7 @@ class UserServiceProvider extends ServiceProvider
         );
     }
 
+
     private function authBoot()
     {
         Passport::routes(null, [
@@ -130,7 +131,6 @@ class UserServiceProvider extends ServiceProvider
         //私人令牌下列设置无效
         Passport::tokensExpireIn(Carbon::now()->addDays(7));
         Passport::refreshTokensExpireIn(Carbon::now()->addDays(60));
-
 
         Passport::tokensCan([
             'mobile-token'            => 'mobile token可以访问所有需要用户绑定了手机号才能访问的接口',
@@ -152,6 +152,7 @@ class UserServiceProvider extends ServiceProvider
         return $this->listen;
     }
 
+
     private function schedule()
     {
         $this->app->booted(function () {
@@ -165,10 +166,10 @@ class UserServiceProvider extends ServiceProvider
                 ->name("用户统计")
                 ->withoutOverlapping()
                 ->before(function () {
-                    dispatch(new LogJob("logSchedule", ["slug" => "user_statistic", "status" => "start"]));
+                    dispatch(new LogJob("logSchedule", [ "slug" => "user_statistic", "status" => "start" ]));
                 })
                 ->after(function () {
-                    dispatch(new LogJob("logSchedule", ["slug" => "user_statistic", "status" => "finish"]));
+                    dispatch(new LogJob("logSchedule", [ "slug" => "user_statistic", "status" => "finish" ]));
                 });
 
             //拉取微信统计数据
@@ -179,10 +180,12 @@ class UserServiceProvider extends ServiceProvider
                 ->name("微信统计")
                 ->withoutOverlapping()
                 ->before(function () {
-                    dispatch(new LogJob("logSchedule", ["slug" => "wechat_user_statistics", "status" => "start"]));
+                    dispatch(new LogJob("logSchedule",
+                        [ "slug" => "wechat_user_statistics", "status" => "start" ]));
                 })
                 ->after(function () {
-                    dispatch(new LogJob("logSchedule", ["slug" => "wechat_user_statistics", "status" => "finish"]));
+                    dispatch(new LogJob("logSchedule",
+                        [ "slug" => "wechat_user_statistics", "status" => "finish" ]));
                 });
         });
 

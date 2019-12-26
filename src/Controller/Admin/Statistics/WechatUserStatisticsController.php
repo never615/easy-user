@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Controller\Admin\Statistics;
 
-
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -27,6 +26,7 @@ class WechatUserStatisticsController extends Controller
      * 微信用户累计数据
      *
      * @param Request $request
+     *
      * @return
      */
     public function cumulateUser(Request $request)
@@ -34,7 +34,6 @@ class WechatUserStatisticsController extends Controller
         $started = $request->users_cumulate_started_at;
         $ended = $request->users_cumulate_ended_at;
         $dateType = $request->users_cumulate_date_type;
-
 
         $subjectId = $this->getSubjectId($request);
 
@@ -127,6 +126,7 @@ class WechatUserStatisticsController extends Controller
      * 新增用户数据
      *
      * @param Request $request
+     *
      * @return array
      */
     public function newUser(Request $request)
@@ -135,7 +135,6 @@ class WechatUserStatisticsController extends Controller
         $started = $request->users_new_started_at;
         $ended = $request->users_new_ended_at;
         $dateType = $request->users_new_date_type;
-
 
         $subjectId = $this->getSubjectId($request);
 
@@ -193,7 +192,6 @@ class WechatUserStatisticsController extends Controller
                     );
                 }
 
-
                 break;
             case 'year':
                 $startedCarbon = Carbon::createFromFormat("Y", $started);
@@ -232,10 +230,8 @@ class WechatUserStatisticsController extends Controller
                     );
                 }
 
-
                 break;
         }
-
 
         return $results;
 

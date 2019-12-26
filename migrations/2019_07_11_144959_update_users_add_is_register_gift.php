@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Schema;
 
 class UpdateUsersAddIsRegisterGift extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -21,6 +22,7 @@ class UpdateUsersAddIsRegisterGift extends Migration
                 ->default("true");
         });
     }
+
 
     /**
      * Reverse the migrations.

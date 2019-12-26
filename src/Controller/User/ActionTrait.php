@@ -28,6 +28,7 @@ trait ActionTrait
      * 解绑手机和解绑微信
      *
      * @param $id
+     *
      * @return \Illuminate\Http\RedirectResponse
      */
     public function unbind($id)
@@ -40,7 +41,6 @@ trait ActionTrait
         if ($count <= 1) {
             throw new PermissionDeniedException("解绑失败,用户只有一种绑定方式,无法继续解绑");
         }
-
 
         switch ($type) {
             case 'wechat':
@@ -85,17 +85,16 @@ trait ActionTrait
 
         if ($newMobile) {
             //如果用户没有旧手机,则不允许更换
-            if (!$form->model()->mobile) {
+            if ( ! $form->model()->mobile) {
                 throw new ResourceException("用户未绑定手机,无法更换");
             }
 //            $oldMobile = $form->model()->mobile;
 
-            if (!AppUtils::isTestEnv()) {
+            if ( ! AppUtils::isTestEnv()) {
                 //校验验证码
                 $this->smsUsecase->checkVerifyCode($newMobile, $mobileCode, 'reset',
                     $user->subject->id);
             }
-
 
             //更新user auth的sms方式
             $user->userAuths()->where("identity_type", "sms")
@@ -110,6 +109,7 @@ trait ActionTrait
      * 解绑手机
      *
      * @param $user
+     *
      * @return bool
      */
     protected function unbindMobile($user)
@@ -138,6 +138,7 @@ trait ActionTrait
      * 解绑微信
      *
      * @param $user
+     *
      * @return bool
      */
     protected function unbindWechat($user)
@@ -146,7 +147,7 @@ trait ActionTrait
             ->where("identity_type", 'wechat')
             ->first();
 
-        if (!$userAuth) {
+        if ( ! $userAuth) {
             throw new PermissionDeniedException("解绑失败,用户未绑定微信");
         }
 
@@ -155,7 +156,6 @@ trait ActionTrait
             $userProfile->wechat_user = null;
             $userProfile->save();
         }
-
 
         return true;
     }

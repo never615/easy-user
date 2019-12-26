@@ -6,8 +6,6 @@
 namespace Mallto\User\Controller\User;
 
 use Mallto\Admin\SelectConstants;
-use Mallto\Mall\Data\User;
-
 
 /**
  * Created by PhpStorm.
@@ -17,7 +15,8 @@ use Mallto\Mall\Data\User;
  */
 trait WechatInfoTrait
 {
-    protected function wechatInfoForm($form,$user)
+
+    protected function wechatInfoForm($form, $user)
     {
         $exist = $user->userAuths()->where("identity_type", "wechat")
             ->exists();
@@ -64,7 +63,6 @@ trait WechatInfoTrait
                     }
                 }
             });
-
 
             $form->displayE('userprofile.wechat_user', "语言")->with(function ($value) {
                 if ($value) {

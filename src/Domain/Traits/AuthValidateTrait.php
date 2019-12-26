@@ -12,11 +12,11 @@
 
 namespace Mallto\User\Domain\Traits;
 
-
 use Symfony\Component\HttpKernel\Exception\PreconditionFailedHttpException;
 
 trait AuthValidateTrait
 {
+
     /**
      * 检查是不是微信请求
      *
@@ -28,7 +28,5 @@ trait AuthValidateTrait
             throw new PreconditionFailedHttpException(trans("errors.precondition_failed"));
         }
     }
-
-
 
 }

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class CreateUserExtrasTable extends Migration
 {
+
     /**
      * Run the migrations.
      *

@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Data;
 
-
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -39,9 +38,9 @@ use Mallto\Tool\Domain\Traits\TagTrait;
 
 class User extends Authenticatable
 {
+
     use Notifiable, DynamicData, HasApiTokens, SelectSource,
         \Mallto\User\Domain\Traits\UserAuthTrait, TagTrait;
-
 
     //用户标识(状态),如:注册中(用户信息待完善),注册中(用户标签待完善),黑名单等
     const STATUS = [
@@ -52,18 +51,19 @@ class User extends Authenticatable
     /**
      * 支持绑定的字段
      */
-    const SUPPORT_BIND_TYPE = ['mobile'];
+    const SUPPORT_BIND_TYPE = [ 'mobile' ];
 
     /**
      * 注册来源
      */
     const REGISTER_FROM = [
-        "wechat"     => "微信注册",
-        "app"        => "app注册",
-        "admin"      => "管理端创建",
-        "admin_import"=>"管理端批量导入创建",
-        "third_part" => "第三方系统注册",
+        "wechat"       => "微信注册",
+        "app"          => "app注册",
+        "admin"        => "管理端创建",
+        "admin_import" => "管理端批量导入创建",
+        "third_part"   => "第三方系统注册",
     ];
+
     /**
      * 用户信息接口需要展示的字段
      *
@@ -104,6 +104,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
     public static function selectSourceDate()
     {
         return static::dynamicData()->pluck("nickname", "id");
@@ -135,6 +136,7 @@ class User extends Authenticatable
         return $this->hasMany(UserAuth::class);
     }
 
+
     public function userCoupons()
     {
         return $this->hasMany(UserCoupon::class);
@@ -146,10 +148,12 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class);
     }
 
+
     public function userSeckills()
     {
         return $this->hasMany(UserSeckill::class);
     }
+
 
     //------------- 问答开始 -------------------------------
 
@@ -158,10 +162,12 @@ class User extends Authenticatable
         return $this->hasMany(QaQuestion::class);
     }
 
+
     public function userAnswers()
     {
         return $this->hasMany(QaAnswer::class);
     }
+
 
     public function userComments()
     {
@@ -170,7 +176,6 @@ class User extends Authenticatable
 
     //------------- 问答结束 -------------------------------
 
-
     //------------------- 党建开始 ---------------------
 
     public function userCourses()
@@ -178,20 +183,24 @@ class User extends Authenticatable
         return $this->hasMany(UserCourse::class);
     }
 
+
     public function userCourseRecords()
     {
         return $this->hasMany(UserCourseRecord::class);
     }
+
 
     public function userExams()
     {
         return $this->hasMany(UserExam::class);
     }
 
+
     public function userExamRecords()
     {
         return $this->hasMany(UserExamRecord::class);
     }
+
 
     public function userExamAnswers()
     {
@@ -204,10 +213,12 @@ class User extends Authenticatable
         return $this->hasMany(UserOnlineStudy::class);
     }
 
+
     public function userOnlineStudyRecords()
     {
         return $this->hasMany(UserOnlineStudyRecord::class);
     }
+
 
     public function courses()
     {
@@ -220,10 +231,12 @@ class User extends Authenticatable
         return $this->belongsToMany(PartyTag::class, "party_tag_users");
     }
 
+
     public function company()
     {
         return $this->belongsTo(Company::class);
     }
+
 
     public function userSalt()
     {
@@ -263,13 +276,14 @@ class User extends Authenticatable
                 if (starts_with($value, "http")) {
                     return $value;
                 } else {
-                    return config("app.file_url_prefix").$value;
+                    return config("app.file_url_prefix") . $value;
                 }
             } else {
                 return $value;
             }
         }
     }
+
 
     public function member()
     {
@@ -294,15 +308,18 @@ class User extends Authenticatable
         return $this->morphedByMany(Activity::class, 'userable', 'user_collections');
     }
 
+
     public function topices()
     {
         return $this->morphedByMany(SpecialTopic::class, 'userable', 'user_collections');
     }
 
+
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
     }
+
 
     public function parkingRecords()
     {
@@ -312,10 +329,12 @@ class User extends Authenticatable
 
     //todo 移动到对应库
 
+
     /**
      * 查询用户今年的这次考试
      *
      * @param $id
+     *
      * @return mixed
      */
     public function examThisYear($id)
@@ -326,10 +345,12 @@ class User extends Authenticatable
             ->first();
     }
 
+
     /**
      * 查询用户今年的这次学习
      *
      * @param $id
+     *
      * @return mixed
      */
     public function onlineStudyThisYear($id)
@@ -340,8 +361,6 @@ class User extends Authenticatable
             ->first();
     }
 
-
     //------------------- 党建结束 ---------------------
-
 
 }

@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Data;
 
-
 use Mallto\Admin\Data\Traits\BaseModel;
 
 /**
@@ -35,7 +34,6 @@ class UserProfile extends BaseModel
 //        'wechat_unionid',
 //    ];
 
-
     protected $hidden = [
         'wechat_nickname',
         'wechat_avatar',
@@ -56,7 +54,6 @@ class UserProfile extends BaseModel
         'wechat_user' => 'array',
         'archive'     => 'array',
     ];
-
 
     protected $guarded = [];
 

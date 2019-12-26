@@ -5,9 +5,7 @@
 
 namespace Mallto\User\Data;
 
-
 use Mallto\Admin\Data\Traits\BaseModel;
-
 
 /**
  * 用户统计数据
@@ -19,8 +17,7 @@ class UserCumulate extends BaseModel
 {
 
     protected $guarded = [
-        
-    ];
 
+    ];
 
 }

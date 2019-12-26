@@ -17,11 +17,13 @@
         <label>区间:</label>
         <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-            <input id="users_new_started_at" type="text" name="users_new_started_at" class="form-control started_at" autocomplete="off">
+            <input id="users_new_started_at" type="text" name="users_new_started_at" class="form-control started_at"
+                   autocomplete="off">
         </div>
         <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-            <input id="users_new_ended_at" type="text" name="users_new_ended_at" class="form-control ended_at" autocomplete="off">
+            <input id="users_new_ended_at" type="text" name="users_new_ended_at" class="form-control ended_at"
+                   autocomplete="off">
         </div>
     </div>
 
@@ -91,7 +93,7 @@
                     break;
                 case 'year':
                     // startDate = moment().add(-10, 'years').format('YYYY');
-                    startDate='2015';
+                    startDate = '2015';
                     endDate = moment().format('YYYY');
                     dateOptions.format = 'YYYY';
                     dateOptions.minDate = '2015-01-01';
@@ -199,7 +201,7 @@
             };
 
             chart = echarts.init(document.getElementById('users_new'), 'walden');
-            window.addEventListener('resize',() => chart.resize(),false);
+            window.addEventListener('resize', () => chart.resize(), false);
 
 
             //默认请求数据,时间纬度:天;时间范围:最近31天
@@ -257,7 +259,7 @@
                             source: renderData
                         };
                         chart.setOption(chartOption);
-                    }else{
+                    } else {
                         chart.clear();
                     }
                 })

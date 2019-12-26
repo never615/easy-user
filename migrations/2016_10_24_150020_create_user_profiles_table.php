@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class CreateUserProfilesTable extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -29,14 +30,12 @@ class CreateUserProfilesTable extends Migration
             $table->unsignedInteger('user_id')->unique();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
 
-
             //环信
 //            $table->string('easemob_id')->nullable()->comment('环信id');
 //            $table->string('easemob_username')->nullable()->comment('环信用户名');
 //            $table->string('easemob_password')->nullable()->comment('环信密码');
 
             //停车相关信息
-
 
             //用户信息
             //1.基本信息
@@ -54,13 +53,13 @@ class CreateUserProfilesTable extends Migration
             $table->json('wechat_privilege')->nullable()->comment('微信用户特权信息，json 数组，如微信沃卡用户为（chinaunicom');
             $table->string('wechat_unionid')->nullable()->comment('只有将公众号绑定到开放平台才会出现此字段');
 
-
             $table->timestamps();
             $table->softDeletes();
 
 
         });
     }
+
 
     /**
      * Reverse the migrations.

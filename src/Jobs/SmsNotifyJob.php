@@ -14,8 +14,8 @@ use Mallto\User\Domain\SmsUsecase;
 
 class SmsNotifyJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * The number of seconds the job can run before timing out.
@@ -32,7 +32,9 @@ class SmsNotifyJob implements ShouldQueue
     public $tries = 3;
 
     private $mobile;
+
     private $subjectId;
+
     private $use;
 
 

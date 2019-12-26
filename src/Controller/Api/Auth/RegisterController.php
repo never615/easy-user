@@ -19,7 +19,6 @@ use Mallto\User\Domain\Traits\OpenidCheckTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
-
 /**
  * Created by PhpStorm.
  * User: never615
@@ -28,16 +27,19 @@ use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
  */
 class RegisterController extends Controller
 {
+
     use  AuthValidateTrait, OpenidCheckTrait;
 
     /**
      * @var SmsUsecase
      */
     private $smsUsecase;
+
     /**
      * @var UserUsecase
      */
     private $userUsecase;
+
 
     /**
      * RegisterController constructor.
@@ -51,8 +53,10 @@ class RegisterController extends Controller
         $this->userUsecase = $userUsecase;
     }
 
+
     /**
      * @param Request $request
+     *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      * @throws \Illuminate\Auth\AuthenticationException
      */
@@ -98,6 +102,7 @@ class RegisterController extends Controller
      * app注册用户
      *
      * @param Request $request
+     *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
     private function registerByApp(Request $request)
@@ -107,7 +112,7 @@ class RegisterController extends Controller
             "identifier"    => "required",
             "identity_type" => [
                 "required",
-                Rule::in(['mobile']),
+                Rule::in([ 'mobile' ]),
             ],
             "credential"    => "required",
             "code"          => "required|numeric",
@@ -128,10 +133,11 @@ class RegisterController extends Controller
             //使用注册凭证查询不到对应的用户
 
             //检查是否存在关联的用户(检查是否有用户已经绑定了要注册的字段:比如手机)
-            if ($bindedUser = $this->userUsecase->isBinded($request->identity_type, $request->identifier, $subject->id)) {
+            if ($bindedUser = $this->userUsecase->isBinded($request->identity_type, $request->identifier,
+                $subject->id)) {
                 //检查此用户是否已经有手机号密码的登录方式
                 if ($this->userUsecase->hasUserAuth($bindedUser, "mobile")) {
-                    throw new ResourceException("手机号已经被注册:".$bindedUser->mobile);
+                    throw new ResourceException("手机号已经被注册:" . $bindedUser->mobile);
                 } else {
                     //存在(已经在微信注册过了),关联此用户,即增加新的identifier+credential的登录方式
                     $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
@@ -164,6 +170,7 @@ class RegisterController extends Controller
      * --------------- 情况1:app那个用户没有绑定过微信,合并app用户和微信用户 情况2: app那个用户已经绑定过微信则提示
      *
      * @param Request $request
+     *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      */
     private function registerByWechat(Request $request)
@@ -203,7 +210,7 @@ class RegisterController extends Controller
                     //存在
                     if ($this->userUsecase->hasUserAuth($bindedUser, "wechat")) {
                         //存在的这个用户已经绑定了微信号,提示该手机已经被其他微信绑定
-                        throw new ResourceException($bindData."已经被微信绑定");
+                        throw new ResourceException($bindData . "已经被微信绑定");
                     } else {
                         //存在的绑定了这个手机的用户没有绑定微信号.
                         $user = $this->userUsecase->mergeAccount($bindedUser, $user);
@@ -215,8 +222,8 @@ class RegisterController extends Controller
             } else {
                 //用户已经绑定了,则在微信注册模式下,不应该调用到该接口,抛出异常
                 //因为微信是自动调用登录接口的
-                throw new PermissionDeniedException("非法调用,用户已存在,绑定的".$bindType.
-                    "是:".$bindData);
+                throw new PermissionDeniedException("非法调用,用户已存在,绑定的" . $bindType .
+                    "是:" . $bindData);
             }
         } else {
             //微信用户不存在
@@ -225,7 +232,7 @@ class RegisterController extends Controller
                 //存在
                 if ($this->userUsecase->hasUserAuth($bindedUser, "wechat")) {
                     //存在的这个用户已经绑定了微信号,提示该手机已经被其他微信绑定
-                    throw new ResourceException($bindData."已经被微信绑定");
+                    throw new ResourceException($bindData . "已经被微信绑定");
                 } else {
                     //存在的绑定了这个手机的用户没有绑定微信号,关联手机和微信
                     $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
@@ -238,7 +245,6 @@ class RegisterController extends Controller
                 $user = $this->userUsecase->bind($user, $bindType, $bindData);
             }
         }
-
 
         //更新用户微信信息
         $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
