@@ -480,7 +480,8 @@ class UserUsecaseImpl implements UserUsecase
                 ]
             );
         } else {
-            dispatch(new UpdateWechatUserInfoJob($credentials['identifier'], $user->id, $subject->uuid));
+            dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
+                $user->id, $subject->uuid))->delay(1);
         }
     }
 

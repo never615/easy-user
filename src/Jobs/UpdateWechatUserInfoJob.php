@@ -61,6 +61,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      * Execute the job.
      *
      * @return void
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function handle()
     {
