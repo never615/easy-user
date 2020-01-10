@@ -18,7 +18,6 @@ use Mallto\Admin\Data\Subject;
 use Mallto\User\Data\WechatUserCumulate;
 use Mallto\User\Domain\WechatUsecase;
 
-
 /**
  * 从微信平台拉取微信用户统计数据,保存到业务平台数据库,以便于统计展示
  *
@@ -45,9 +44,10 @@ class WechatUserCumulateUsecase
         $this->wechatUsecase = $wechatUsecase;
     }
 
+
     public function handle()
     {
-        if (!config('other.mallto_app_id')) {
+        if ( ! config('other.mallto_app_id')) {
             //如果没有配置请求开放平台所要使用的appId,则不进行后续请求
             return;
         }
@@ -69,7 +69,6 @@ class WechatUserCumulateUsecase
 //                    $from = Carbon::createFromFormat('Y-m-d', '2018-07-01');
                     $to = Carbon::now()->addDay(-1);
 
-
                     while ($to->gte($from)) {
                         try {
                             $datas1 = $this->wechatUsecase->cumulate($subject->uuid,
@@ -85,12 +84,10 @@ class WechatUserCumulateUsecase
                             break;
                         }
 
-
                         if ($datas1->count() == 0) {
                             $from = $from->addDays(31);
                             continue;
                         }
-
 
                         $datas2 = $this->wechatUsecase->cumulate($subject->uuid,
                             $from->copy()->format('Y-m'),
@@ -122,6 +119,5 @@ class WechatUserCumulateUsecase
 
 
     }
-
 
 }

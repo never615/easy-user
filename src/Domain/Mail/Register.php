@@ -11,9 +11,11 @@ use Illuminate\Queue\SerializesModels;
 
 class Register extends Mailable
 {
+
     use Queueable, SerializesModels;
 
     public $code;
+
 
     /**
      * Create a new message instance.
@@ -24,6 +26,7 @@ class Register extends Mailable
     {
         $this->code = $code;
     }
+
 
     /**
      * Build the message.

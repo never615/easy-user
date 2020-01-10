@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class UpdateUserAddFrom extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -29,6 +30,7 @@ class UpdateUserAddFrom extends Migration
                 ->comment("第三方系统注册时的app id");
         });
     }
+
 
     /**
      * Reverse the migrations.

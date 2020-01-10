@@ -12,16 +12,17 @@
 
 namespace Mallto\User\Domain\Traits;
 
-
 use Mallto\User\Data\UserAuth;
 
 trait UserAuthTrait
 {
+
     /**
      * passport 授权查找用户的方法,
      * 在Laravel\Passport\Bridge\UserRepository会调用
      *
      * @param $username
+     *
      * @return mixed
      */
     public function findForPassport($username)
@@ -33,11 +34,13 @@ trait UserAuthTrait
         return $userAuth ? $userAuth->user : null;
     }
 
+
     /**
      * passport 验证用户的方法
      * 在Laravel\Passport\Bridge\UserRepository会调用
      *
      * @param $password
+     *
      * @return bool
      */
     public function validateForPassportPasswordGrant($password)

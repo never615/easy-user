@@ -21,12 +21,15 @@ use Mallto\Tool\Domain\Traits\StatisticsTraits;
  */
 class PagePvStatisticsController extends Controller
 {
+
     use StatisticsTraits;
+
 
     /**
      * 返回主体下开放的page pv项
      *
      * @param Request $request
+     *
      * @return mixed
      */
     public function pagePaths(Request $request)
@@ -34,24 +37,24 @@ class PagePvStatisticsController extends Controller
         $subject = $this->getSubject($request);
         $subjectId = $subject->id;
 
-
         return PagePvManager::where("subject_id", $subjectId)
             ->where("switch", true)
-            ->orderBy("weight","desc")
+            ->orderBy("weight", "desc")
             ->pluck("name", "path");
     }
+
 
     /**
      * 页面pv 排名数据
      *
      * @param Request $request
+     *
      * @return
      */
     public function pagePvRank(Request $request)
     {
         $date = $request->date;
         $dateType = $request->date_type;
-
 
         $this->validate($request, [
             "date"      => "required",
@@ -60,7 +63,7 @@ class PagePvStatisticsController extends Controller
 
         $subject = $this->getSubject($request);
 
-        $results =  PagePv::select("page_pv_manager.name", "page_pv.count as pv_count")
+        $results = PagePv::select("page_pv_manager.name", "page_pv.count as pv_count")
             ->join("page_pv_manager", "page_pv_manager.path", "page_pv.path")
             ->where("page_pv_manager.switch", true)
             ->where("page_pv.uuid", $subject->uuid)
@@ -68,9 +71,10 @@ class PagePvStatisticsController extends Controller
             ->where("page_pv.time", $date)
             ->orderBy("page_pv.count")
             ->get();
-        if(empty($results->toArray())){
-            $results[] = ['name'=>'','pv_count'=>0];
+        if (empty($results->toArray())) {
+            $results[] = [ 'name' => '', 'pv_count' => 0 ];
         }
+
         return $results;
     }
 
@@ -79,6 +83,7 @@ class PagePvStatisticsController extends Controller
      * 页面pv 趋势
      *
      * @param Request $request
+     *
      * @return
      */
     public function pagePvTrend(Request $request)
@@ -98,7 +103,7 @@ class PagePvStatisticsController extends Controller
         $subject = $this->getSubject($request);
         $subjectId = $subject->id;
 
-        $results =  PagePv::select("time", "count as pv_count")
+        $results = PagePv::select("time", "count as pv_count")
             ->where("uuid", $subject->uuid)
             ->where("date_type", $dateType)
             ->where("time", ">=", $startedAt)
@@ -107,15 +112,16 @@ class PagePvStatisticsController extends Controller
             ->orderBy("time")
             ->get();
 
-        $results = $this->addDataIntoApipvs($results,$dateType,$startedAt,$endedAt);
+        $results = $this->addDataIntoApipvs($results, $dateType, $startedAt, $endedAt);
 
-        foreach ($results as $k => $v){
+        foreach ($results as $k => $v) {
             unset($results[$k]['ids']);
-            if(isset($v['count'])){
+            if (isset($v['count'])) {
                 $results[$k]['pv_count'] = $results[$k]['count'];
                 unset($results[$k]['count']);
             }
         }
+
         return $results;
     }
 
@@ -128,6 +134,5 @@ class PagePvStatisticsController extends Controller
 
         return SubjectUtils::getSubject();
     }
-
 
 }

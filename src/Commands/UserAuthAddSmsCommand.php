@@ -5,8 +5,6 @@
 
 namespace Mallto\User\Commands;
 
-
-
 use Illuminate\Console\Command;
 use Mallto\User\Data\User;
 
@@ -19,6 +17,7 @@ use Mallto\User\Data\User;
  */
 class UserAuthAddSmsCommand extends Command
 {
+
     /**
      * The console command name.
      *
@@ -46,7 +45,7 @@ class UserAuthAddSmsCommand extends Command
         $count = User::whereNotNull("mobile")
             ->count();
 
-        $bar = $this->output->createProgressBar($count/100);
+        $bar = $this->output->createProgressBar($count / 100);
 
         User::whereNotNull("mobile")
             ->chunk(100, function ($users) use ($bar) {

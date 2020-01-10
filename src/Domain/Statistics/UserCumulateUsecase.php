@@ -17,7 +17,6 @@ use Mallto\Admin\Data\Subject;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserCumulate;
 
-
 /**
  * Class UserCumulateUsecase
  *
@@ -112,7 +111,6 @@ class UserCumulateUsecase
                             ]);
                         }
 
-
                         $from = $from->addDay();
                     }
                 }
@@ -120,6 +118,5 @@ class UserCumulateUsecase
 
 
     }
-
 
 }

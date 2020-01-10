@@ -19,29 +19,27 @@ use Illuminate\Support\Facades\Route;
 $attributes = [
     'namespace'  => 'Mallto\User\Controller\Api',
     'prefix'     => 'api',
-    'middleware' => ['api'],
+    'middleware' => [ 'api' ],
 ];
 
 Route::group($attributes, function ($router) {
 
 
-    Route::group(['middleware' => ['owner_api', 'requestCheck']], function () {
+    Route::group([ 'middleware' => [ 'owner_api', 'requestCheck' ] ], function () {
 
         Route::group([
-            'middleware' => ['authSign2'],
+            'middleware' => [ 'authSign2' ],
             'namespace'  => "Third",
             'prefix'     => 'tp',
         ], function () {
-            //请求验证码
 
 
         });
 
-
         /**
          * 需要经过验证
          */
-        Route::group(['middleware' => ['authSign_referrer']], function () {
+        Route::group([ 'middleware' => [ 'authSign_referrer' ] ], function () {
 
             //公共接口
             //短信验证码
@@ -57,7 +55,6 @@ Route::group($attributes, function ($router) {
 //        //(旧)微信登录:只要是微信用户就行 (使用openid登录)
 //        Route::post("login_by_openid", 'Auth\WechatLoginController@loginByOpenid');
 
-
         //登录接口
         Route::post("login", 'Auth\LoginController@login');
         //注册:通用注册,包含微信和app
@@ -71,25 +68,24 @@ Route::group($attributes, function ($router) {
         /**
          * 需要经过签名校验
          */
-        Route::group(['middleware' => ['authSign']], function () {
+        Route::group([ 'middleware' => [ 'authSign' ] ], function () {
 
         });
-
 
         /**
          * 需要经过授权
          */
-        Route::group(['middleware' => ['auth:api']], function () {
+        Route::group([ 'middleware' => [ 'auth:api' ] ], function () {
 
-            Route::group(["middleware" => ["scopes:mobile-token"]], function () {
+            Route::group([ "middleware" => [ "scopes:mobile-token" ] ], function () {
             });
 
-            Route::group(["middleware" => ["scopes:account-token"]], function () {
+            Route::group([ "middleware" => [ "scopes:account-token" ] ], function () {
                 //更新(重新绑定)手机/邮箱
 //                Route::post("user/identifier", 'Auth\UserController@updateIdentifier');
             });
 
-            Route::group(["middleware" => ["scope:mobile-token,account-token"]], function () {
+            Route::group([ "middleware" => [ "scope:mobile-token,account-token" ] ], function () {
                 //更新用户信息
                 Route::patch('user', 'Auth\UserController@update');
                 //更新用户密码
@@ -101,10 +97,11 @@ Route::group($attributes, function ($router) {
 //                Route::post("user/verify_old_identifier", 'Auth\UserController@verifyOldIdentifier');
             });
 
-            Route::group(["middleware" => ["scope:mobile-token,wechat-token,account-token"]], function () {
-                //获取用户信息
-                Route::get('user', 'Auth\UserController@show');
-            });
+            Route::group([ "middleware" => [ "scope:mobile-token,wechat-token,account-token" ] ],
+                function () {
+                    //获取用户信息
+                    Route::get('user', 'Auth\UserController@show');
+                });
         });
     });
 

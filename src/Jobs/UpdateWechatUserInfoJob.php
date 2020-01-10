@@ -18,8 +18,8 @@ use Mallto\User\Data\UserProfile;
 
 class UpdateWechatUserInfoJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * The number of seconds the job can run before timing out.
@@ -34,9 +34,13 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      * @var int
      */
     public $tries = 3;
+
     private $openid;
+
     private $userId;
+
     private $uuid;
+
 
     /**
      * UpdateWechatUserInfoJob constructor.
@@ -57,6 +61,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      * Execute the job.
      *
      * @return void
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function handle()
     {
@@ -69,7 +74,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
                 ->whereNotNull('wechat_user')
                 ->exists();
 
-            if (!$exist) {
+            if ( ! $exist) {
                 $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
                 $wechatUserInfo = $wechatUsecase->getUserInfo($this->uuid,
                     AppUtils::decryptOpenid($this->openid));

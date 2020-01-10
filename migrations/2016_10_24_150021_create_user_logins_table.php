@@ -3,9 +3,9 @@
  * Copyright (c) 2017. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
  */
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * 用户登录记录表
@@ -13,6 +13,7 @@ use Illuminate\Database\Migrations\Migration;
  */
 class CreateUserLoginsTable extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -37,9 +38,10 @@ class CreateUserLoginsTable extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['subject_id']);
+            $table->index([ 'subject_id' ]);
         });
     }
+
 
     /**
      * Reverse the migrations.

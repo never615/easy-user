@@ -5,11 +5,6 @@
 
 namespace Mallto\User\Controller\User;
 
-use Illuminate\Support\Facades\DB;
-use Mallto\Tool\Exception\PermissionDeniedException;
-use Mallto\Tool\Exception\ResourceException;
-use Mallto\Tool\Utils\AppUtils;
-
 /**
  * Created by PhpStorm.
  * User: never615 <never615.com>
@@ -18,6 +13,7 @@ use Mallto\Tool\Utils\AppUtils;
  */
 trait UserBasicInfoTrait
 {
+
     protected function basicInfoForm($form, $user)
     {
         $form->displayE('id', 'ID');
@@ -32,12 +28,11 @@ trait UserBasicInfoTrait
 
         $form->displayE("mobile")->rules("mobile");
 
-
         //解绑微信
-        $form->html('<a href="/admin/users/'.$this->currentId.'/unbind?type=wechat" class="btn btn-primary">解绑微信</a>');
+        $form->html('<a href="/admin/users/' . $this->currentId . '/unbind?type=wechat" class="btn btn-primary">解绑微信</a>');
 
         //解绑手机
-        $form->html('<a href="/admin/users/'.$this->currentId.'/unbind?type=mobile" class="btn btn-primary">解绑手机</a>');
+        $form->html('<a href="/admin/users/' . $this->currentId . '/unbind?type=mobile" class="btn btn-primary">解绑手机</a>');
 
         $form->html('<h3>更换手机</h3>');
         $form->divider();
@@ -82,8 +77,5 @@ EOT;
         $form->displayE('created_at', trans('admin.created_at'));
         $form->displayE('updated_at', trans('admin.updated_at'));
     }
-
-
-
 
 }

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class CreateUserCumulateTable extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -31,6 +32,7 @@ class CreateUserCumulateTable extends Migration
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

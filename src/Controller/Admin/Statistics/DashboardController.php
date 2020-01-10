@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Controller\Admin\Statistics;
 
-
 use App\Http\Controllers\Controller;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
@@ -18,6 +17,7 @@ use Mallto\User\Data\WechatUserCumulate;
 
 class DashboardController extends Controller
 {
+
     public function dashboard(Request $request)
     {
         return Admin::content(function (Content $content) use ($request) {
@@ -25,7 +25,7 @@ class DashboardController extends Controller
             $content->description(" ");
 
             $user = Admin::user();
-            if (!$user->can("dashboard")) {
+            if ( ! $user->can("dashboard")) {
                 $content->description("敬请期待");
 
                 return;
@@ -45,11 +45,11 @@ class DashboardController extends Controller
             $this->topInfoBox($content, $childrenSubjectIds);
             $this->tips($content, $subjectSelectData);
 
-
             $this->newUser($content, $subjectSelectData);
             $this->cumulateUser($content, $subjectSelectData);
         });
     }
+
 
     /**
      * 顶部的info box
@@ -72,16 +72,14 @@ class DashboardController extends Controller
                 $wechatCount = $wechatCumulateUser->cumulate_user;
             }
 
-
             $row->column(3, new InfoBox('微信订阅用户', 'users', 'olive', 'admin/users',
                 $wechatCount));
             $row->column(3, new InfoBox('累计用户', 'users', 'yellow', 'admin/users',
                 $userCount));
 
-
             if ($wechatCount > 0) {
                 $row->column(3, new InfoBox('微信订阅用户转化率', 'arrow-right', 'gray', 'admin/users',
-                    number_format(($userCount / $wechatCount * 100), 2)."%"));
+                    number_format(($userCount / $wechatCount * 100), 2) . "%"));
             } else {
                 $row->column(3, new InfoBox('微信订阅用户转化率', 'arrow-right', 'gray', 'admin/users',
                     0));
@@ -110,14 +108,11 @@ class DashboardController extends Controller
                 "helps"    => $helps,
             ]));
 
-
         $baseBox->collapsable();
         $baseBox->removable();
         $baseBox->style("info");
         $content->row($baseBox);
     }
-
-
 
 
     /**
@@ -155,6 +150,5 @@ class DashboardController extends Controller
         $newUserBox->style("info");
         $content->row($newUserBox);
     }
-
 
 }

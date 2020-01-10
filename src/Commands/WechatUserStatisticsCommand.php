@@ -11,7 +11,6 @@ use Mallto\User\Domain\Statistics\WechatUserCumulateUsecase;
 class WechatUserStatisticsCommand extends Command
 {
 
-
     /**
      * The console command name.
      *
@@ -25,10 +24,12 @@ class WechatUserStatisticsCommand extends Command
      * @var string
      */
     protected $description = '获取微信用户的统计数据';
+
     /**
      * @var WechatUserCumulateUsecase
      */
     private $wechatUserCumulateUsecase;
+
 
     /**
      * WechatUserStatisticsCommand constructor.
@@ -51,6 +52,5 @@ class WechatUserStatisticsCommand extends Command
     {
         $this->wechatUserCumulateUsecase->handle();
     }
-
 
 }

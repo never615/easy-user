@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class CreateUserSaltsTable extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -30,6 +31,7 @@ class CreateUserSaltsTable extends Migration
             $table->softDeletes();
         });
     }
+
 
     /**
      * Reverse the migrations.

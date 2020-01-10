@@ -30,10 +30,12 @@ class TagSelect extends AbstractTool
     protected $options = [];
 
     protected $url;
+
     /**
      * @var
      */
     private $placeholder;
+
 
     /**
      * TagSelect constructor.
@@ -42,7 +44,7 @@ class TagSelect extends AbstractTool
      * @param        $url
      * @param string $placeholder
      */
-    public function __construct($options,$url,$placeholder = "设置标签")
+    public function __construct($options, $url, $placeholder = "设置标签")
     {
         $this->placeholder = $placeholder;
         $this->options = $options;
@@ -62,6 +64,7 @@ class TagSelect extends AbstractTool
 
         return $this;
     }
+
 
     public function options($options = [])
     {

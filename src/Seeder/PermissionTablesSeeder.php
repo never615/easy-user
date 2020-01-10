@@ -10,6 +10,7 @@ use Mallto\User\Seeder\Permission\UserPermissionTablesSeeder;
 
 class PermissionTablesSeeder extends Seeder
 {
+
     /**
      * Run the database seeds.
      *

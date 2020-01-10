@@ -12,11 +12,11 @@
 
 namespace Mallto\User\Domain\Traits;
 
-
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Mallto\Tool\Utils\AppUtils;
 
 trait OpenidCheckTrait
 {
@@ -28,6 +28,7 @@ trait OpenidCheckTrait
      * @param Request $request
      * @param string  $openidKeyName
      * @param bool    $checkTimes
+     *
      * @return mixed
      * @throws AuthenticationException
      */
@@ -38,30 +39,14 @@ trait OpenidCheckTrait
         //openid可以使用时间限制/s
         $limitTime = 60 * 60 * 4;
 
-        if (in_array(config("app.env"), ["test", "integration"])) {
+        if (in_array(config("app.env"), [ "test", "integration" ])) {
             $limitTimes = 10000;
             $limitTime = 60 * 60 * 24 * 3;
         }
 
-
         $orginalOpenid = $request->$openidKeyName;
 
-        try {
-            $openid = decrypt($orginalOpenid);
-        } catch (DecryptException $decryptException) {
-            //解析失败尝试url解码在进行解析
-            $orginalOpenid = urldecode($orginalOpenid);
-            try {
-                $openid = decrypt($orginalOpenid);
-            } catch (DecryptException $decryptException) {
-                \Log::warning("解析openid失败1");
-                \Log::warning($orginalOpenid);
-                throw new AuthenticationException("授权失败,openid解析失败");
-            }
-        }
-
-        $openids = explode("|||", $openid);
-
+        $openids = AppUtils::getOpenidFromOriginalOpenids($orginalOpenid);
 
         //检查是否被使用过
         if (count($openids) > 1) {
@@ -96,7 +81,6 @@ trait OpenidCheckTrait
 
             $inputs[$openidKeyName] = encrypt($openid);
 
-
             $request->replace($inputs);
         }
 
@@ -109,6 +93,7 @@ trait OpenidCheckTrait
      * 解析openid
      *
      * @param $openid
+     *
      * @return string
      * @throws AuthenticationException
      */
@@ -141,6 +126,7 @@ trait OpenidCheckTrait
 
     /**
      * @param $openid
+     *
      * @return mixed|string
      * @throws AuthenticationException
      */
@@ -167,6 +153,5 @@ trait OpenidCheckTrait
 
         return $openid;
     }
-
 
 }

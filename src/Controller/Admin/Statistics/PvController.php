@@ -5,7 +5,6 @@
 
 namespace Mallto\User\Controller\Admin\Statistics;
 
-
 use App\Http\Controllers\Controller;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
@@ -15,6 +14,7 @@ use Mallto\Admin\Data\Subject;
 
 class PvController extends Controller
 {
+
     public function index(Request $request)
     {
         return Admin::content(function (Content $content) use ($request) {
@@ -40,6 +40,7 @@ class PvController extends Controller
         });
     }
 
+
     /**
      * 提示信息
      *
@@ -58,12 +59,12 @@ class PvController extends Controller
                 "helps"    => $helps,
             ]));
 
-
         $baseBox->collapsable();
         $baseBox->removable();
         $baseBox->style("info");
         $content->row($baseBox);
     }
+
 
     /**
      * uv
@@ -118,6 +119,5 @@ class PvController extends Controller
         $box->style("info");
         $content->row($box);
     }
-
 
 }

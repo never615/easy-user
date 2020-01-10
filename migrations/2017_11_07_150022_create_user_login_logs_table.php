@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class CreateUserLoginLogsTable extends Migration
 {
+
     /**
      * Run the migrations.
      *

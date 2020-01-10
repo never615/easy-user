@@ -15,6 +15,7 @@ use Laravel\Passport\Events\RefreshTokenCreated;
  */
 class PruneOldTokens
 {
+
     /**
      * Create the event listener.
      *
@@ -24,10 +25,12 @@ class PruneOldTokens
         //
     }
 
+
     /**
      * Handle the event.
      *
-     * @param  RefreshTokenCreated $event
+     * @param RefreshTokenCreated $event
+     *
      * @return void
      */
     public function handle(RefreshTokenCreated $event)

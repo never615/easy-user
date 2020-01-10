@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class AddUniqueUserAuthsTable extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -21,7 +22,7 @@ class AddUniqueUserAuthsTable extends Migration
     public function up()
     {
         Schema::table('user_auths', function (Blueprint $table) {
-            $table->unique(["subject_id", "identity_type", "identifier"]);
+            $table->unique([ "subject_id", "identity_type", "identifier" ]);
         });
     }
 
@@ -34,7 +35,7 @@ class AddUniqueUserAuthsTable extends Migration
     public function down()
     {
         Schema::table('user_auths', function (Blueprint $table) {
-            $table->dropUnique(["subject_id", "identity_type", "identifier"]);
+            $table->dropUnique([ "subject_id", "identity_type", "identifier" ]);
         });
     }
 }

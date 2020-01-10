@@ -12,12 +12,14 @@ namespace Mallto\User\Data\Repository;
  */
 interface UserAuthRepositoryInterface
 {
+
     /**
      * @param      $credentials
      * @param      $user
      * @param null $subject
+     *
      * @return mixed
      */
-    public function create($credentials, $user,$subject=null);
+    public function create($credentials, $user, $subject = null);
 
 }

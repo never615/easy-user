@@ -7,9 +7,9 @@ namespace Mallto\User\Data;
 
 use Mallto\Admin\Data\Traits\BaseModel;
 
-
 class WechatUserCumulate extends BaseModel
 {
+
     protected $guarded = [];
 
 }

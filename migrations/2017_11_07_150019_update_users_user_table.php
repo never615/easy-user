@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class UpdateUsersUserTable extends Migration
 {
+
     /**
      * Run the migrations.
      *

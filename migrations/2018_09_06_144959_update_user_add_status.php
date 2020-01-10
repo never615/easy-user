@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class UpdateUserAddStatus extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -26,6 +27,7 @@ class UpdateUserAddStatus extends Migration
                 ->comment("用户状态标识");
         });
     }
+
 
     /**
      * Reverse the migrations.

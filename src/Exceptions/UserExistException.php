@@ -12,11 +12,11 @@
 
 namespace Mallto\User\Exceptions;
 
-
 use Mallto\Tool\Exception\HttpException;
 
 class UserExistException extends HttpException
 {
+
     public function __construct(
         $message = "用户已经注册成功,请刷新重试",
         $statusCode = 422

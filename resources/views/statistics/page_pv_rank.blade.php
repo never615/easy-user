@@ -14,7 +14,8 @@
             <label>时间:</label>
             <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input id="page_pv_rank_date" type="text" name="date" class="form-control started_at" autocomplete="off">
+                <input id="page_pv_rank_date" type="text" name="date" class="form-control started_at"
+                       autocomplete="off">
             </div>
         </div>
         <button id="page_pv_rank_submit" type="submit" class="btn btn-primary">提交</button>
@@ -96,7 +97,7 @@
                             source: renderData
                         };
                         chart.setOption(chartOption);
-                    }else{
+                    } else {
                         chart.clear();
                     }
                 })

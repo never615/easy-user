@@ -27,14 +27,17 @@ class SmsUsecase
 
     const USE_RESET = "reset";
     const USE_REGISET = "register";
+
     /**
      * @var SmsCodeUsecase
      */
     private $smsCodeUsecase;
+
     /**
      * @var Sms
      */
     private $sms;
+
 
     /**
      * SmsUsecase constructor.
@@ -56,11 +59,12 @@ class SmsUsecase
      * @param        $code
      * @param string $use
      * @param null   $subjectId
+     *
      * @return bool
      */
     public function checkVerifyCode($verifyObj, $code, $use = "register", $subjectId = null)
     {
-        if (!$subjectId) {
+        if ( ! $subjectId) {
             $subjectId = SubjectUtils::getSubjectId();
         }
 
@@ -69,7 +73,8 @@ class SmsUsecase
         $tempCode = Cache::get($key);
 
         if ($tempCode != $code) {
-            if (!in_array(config("app.env"), ["production", "staging"]) && $code == "000000") {
+            //注意:$code == "000000" 不能写===.
+            if ( ! in_array(config("app.env"), [ "production", "staging" ]) && $code == "000000") {
                 return true;
             } else {
                 throw  new ResourceException("验证码错误");
@@ -89,6 +94,7 @@ class SmsUsecase
      * @param        $mobile
      * @param        $subjectId
      * @param string $use
+     *
      * @return mixed
      */
     public function sendSms($mobile, $subjectId, $use = 'register')
@@ -98,10 +104,9 @@ class SmsUsecase
             return;
         }
 
-
         $data['mobile'] = $mobile;
         $validator = Validator::make($data,
-            ['mobile' => ['required', 'mobile'],]
+            [ 'mobile' => [ 'required', 'mobile' ], ]
         );
 
         if ($validator->fails()) {
@@ -143,7 +148,6 @@ class SmsUsecase
                 \Log::warning($e);
             }
 
-
             //增加主体消费的短信数量
             $subject->increment('sms_count');
         }
@@ -156,12 +160,14 @@ class SmsUsecase
      * @param $use
      * @param $subjectId
      * @param $mobile
+     *
      * @return string
      */
     public function getSmsCacheKey($use, $subjectId, $mobile)
     {
-        return 'code'.$use.$subjectId.$mobile;
+        return 'code' . $use . $subjectId . $mobile;
     }
+
 
     /**
      * 获取验证码发送时间 key
@@ -169,12 +175,12 @@ class SmsUsecase
      * @param $use
      * @param $subjectId
      * @param $mobile
+     *
      * @return string
      */
     public function getSmsSendAtCacheKey($use, $subjectId, $mobile)
     {
-        return 'code_send_at'.$use.$subjectId.$mobile;
+        return 'code_send_at' . $use . $subjectId . $mobile;
     }
-
 
 }
