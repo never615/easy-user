@@ -27,6 +27,7 @@ use Mallto\Dangjian\Data\UserOnlineStudy;
 use Mallto\Dangjian\Data\UserOnlineStudyRecord;
 use Mallto\Mall\Data\Activity;
 use Mallto\Mall\Data\Member;
+use Mallto\Mall\Data\Order\Order;
 use Mallto\Mall\Data\ParkingRecord;
 use Mallto\Mall\Data\Seckill\UserSeckill;
 use Mallto\Mall\Data\Shop;
@@ -290,6 +291,11 @@ class User extends Authenticatable
         return $this->hasOne(Member::class);
     }
 
+    //用户关联订单
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 
     public function shopComments()
     {
