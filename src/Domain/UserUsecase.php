@@ -127,6 +127,7 @@ interface UserUsecase
      * @param array  $info
      * @param string $form
      * @param string $fromAppId 第三方注册时的appid
+     * @param string $fromId    推广码注册的对应from来源id
      *
      * @return User
      */
@@ -135,7 +136,8 @@ interface UserUsecase
         $subject,
         $info = [],
         $form = "wechat",
-        $fromAppId = null
+        $fromAppId = null,
+        $fromId = null
     );
 
 

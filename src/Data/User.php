@@ -63,6 +63,8 @@ class User extends Authenticatable
         "admin"        => "管理端创建",
         "admin_import" => "管理端批量导入创建",
         "third_part"   => "第三方系统注册",
+        'shop'         => '店铺推广码注册',
+        'activity'     => '活动推广码注册',
     ];
 
     /**
@@ -291,11 +293,13 @@ class User extends Authenticatable
         return $this->hasOne(Member::class);
     }
 
+
     //用户关联订单
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
+
 
     public function shopComments()
     {

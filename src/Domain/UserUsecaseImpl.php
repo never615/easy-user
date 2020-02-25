@@ -246,6 +246,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param array  $info
      * @param string $form
      * @param string $fromAppId 第三方注册时的appid
+     * @param string $fromId    推广码注册的对应from来源id
      *
      * @return User
      */
@@ -254,7 +255,8 @@ class UserUsecaseImpl implements UserUsecase
         $subject,
         $info = [],
         $form = "wechat",
-        $fromAppId = null
+        $fromAppId = null,
+        $fromId = null
     ) {
         if (empty($credentials)) {
             throw new ResourceException("异常请求:credentials为空");
@@ -289,6 +291,7 @@ class UserUsecaseImpl implements UserUsecase
         $userData["status"] = "normal";
         $userData["from"] = $form;
         $userData["from_third_app_id"] = $fromAppId;
+        $userData["from_id"] = $fromId;
         $userData["is_register_gift"] = false;
 
         try {
