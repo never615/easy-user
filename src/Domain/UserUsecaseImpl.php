@@ -288,6 +288,7 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         \DB::beginTransaction();
+
         $userData["status"] = "normal";
         $userData["from"] = $form;
         $userData["from_third_app_id"] = $fromAppId;
@@ -314,7 +315,9 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         //如果userAuth没有创建则创建
-        $this->createUserAuth($credentials, $user);
+        $userAuth = $this->createUserAuth($credentials, $user);
+
+        $user = $userAuth->user;
 
         \DB::commit();
 

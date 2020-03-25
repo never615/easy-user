@@ -58,6 +58,15 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 //\Log::warning(new \Exception());
                 //\Log::warning($credentials);
                 //throw new UserAuthExistException($user->id);
+                $userAuth = UserAuth::where([
+                    "identifier"    => $identifier,
+                    "identity_type" => $identityType,
+                    "subject_id"    => $user->subject_id,
+                    'credential'    => $credential ? $hashCreential : null,
+                ])->first();
+                if ($userAuth) {
+                    return $userAuth;
+                }
                 throw new UserAuthExistException($user->id);
             } else {
                 throw $e;

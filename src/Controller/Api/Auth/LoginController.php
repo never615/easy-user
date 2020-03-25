@@ -16,7 +16,6 @@ use Mallto\User\Data\User;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
 use Mallto\User\Domain\Traits\OpenidCheckTrait;
 use Mallto\User\Domain\UserUsecase;
-use Mallto\User\Exceptions\UserAuthExistException;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
 /**
@@ -135,14 +134,14 @@ class LoginController extends Controller
 
         if ( ! $user) {
             //直接创建用户
-            try {
-                $user = $this->userUsecase->createUser($credentials, $subject, null, "wechat");
-            } catch (UserAuthExistException $userAuthExistException) {
-                $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
-                if ( ! $user) {
-                    throw $userAuthExistException;
-                }
-            }
+            //try {
+            $user = $this->userUsecase->createUser($credentials, $subject, null, "wechat");
+            //} catch (UserAuthExistException $userAuthExistException) {
+            //    $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
+            //    if ( ! $user) {
+            //        throw $userAuthExistException;
+            //    }
+            //}
         }
 
         //如果是微信请求则拉取最新的用户微信信息
