@@ -6,6 +6,7 @@
 namespace Mallto\User\Data\Repository;
 
 use Mallto\User\Data\UserAuth;
+use Mallto\User\Exceptions\UserAuthExistException;
 
 /**
  * User: never615 <never615.com>
@@ -56,7 +57,8 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 //\Log::warning($e);
                 //\Log::warning(new \Exception());
                 //\Log::warning($credentials);
-//                    throw new UserAuthExistException($user->id);
+                //throw new UserAuthExistException($user->id);
+                throw new UserAuthExistException($user->id);
             } else {
                 throw $e;
             }

@@ -53,6 +53,7 @@ class LoginController extends Controller
      *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      * @throws \Illuminate\Auth\AuthenticationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function login(Request $request)
     {

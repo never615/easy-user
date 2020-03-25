@@ -5,6 +5,7 @@
 
 namespace Mallto\User\Domain;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Mallto\Tool\Exception\NotFoundException;
@@ -16,6 +17,7 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
+use Mallto\User\Exceptions\UserAuthExistException;
 use Mallto\User\Jobs\UpdateWechatUserInfoJob;
 
 /**
@@ -248,6 +250,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param string $fromAppId 第三方注册时的appid
      *
      * @return User
+     * @throws AuthenticationException
      */
     public function createUser(
         $credentials,
@@ -312,7 +315,7 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         //如果userAuth没有创建则创建
-        $this->createUserAuth($credentials, $user);
+            $this->createUserAuth($credentials, $user);
 
         \DB::commit();
 

@@ -19,10 +19,10 @@ class UserAuthExistException extends HttpException
 
     public function __construct(
         $userId = null,
-        $message = "用户已经注册成功,请刷新重试",
-        $statusCode = 422
+        $message = '用户已经注册成功,请刷新重试',
+        $statusCode = 401
     ) {
-        \Log::warning("用户授权方式已存在:" . $userId);
+        //\Log::warning('用户授权方式已存在:' . $userId);
 
         parent::__construct($statusCode, $message, 4104);
     }
