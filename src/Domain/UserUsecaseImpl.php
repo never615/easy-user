@@ -17,6 +17,7 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
+use Mallto\User\Exceptions\UserAuthExistException;
 use Mallto\User\Jobs\UpdateWechatUserInfoJob;
 
 /**
@@ -315,9 +316,13 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         //如果userAuth没有创建则创建
-        $userAuth = $this->createUserAuth($credentials, $user);
-
-        $user = $userAuth->user;
+        try {
+            $userAuth = $this->createUserAuth($credentials, $user);
+        } catch (UserAuthExistException $userAuthExistException) {
+            DB::rollBack();
+            $userAuth = $userAuthExistException->getUserAuth();
+            $user = $userAuth->user;
+        }
 
         \DB::commit();
 

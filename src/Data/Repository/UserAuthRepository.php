@@ -67,7 +67,7 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 if ($userAuth) {
                     return $userAuth;
                 }
-                throw new UserAuthExistException($user->id);
+                throw new UserAuthExistException($userAuth);
             } else {
                 throw $e;
             }
