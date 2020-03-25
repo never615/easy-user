@@ -318,13 +318,15 @@ class UserUsecaseImpl implements UserUsecase
         //如果userAuth没有创建则创建
         try {
             $userAuth = $this->createUserAuth($credentials, $user);
-            \DB::commit();
+            DB::commit();
         } catch (UserAuthExistException $userAuthExistException) {
             DB::rollBack();
-            $userAuth = $userAuthExistException->getUserAuth();
-            $user = $userAuth->user;
-        }
+            $user = $this->retrieveByCredentials($credentials, $subject);
+            if ( ! $user) {
+                throw $userAuthExistException;
+            }
 
+        }
 
         return $user;
     }

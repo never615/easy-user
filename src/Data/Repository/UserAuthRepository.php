@@ -5,6 +5,7 @@
 
 namespace Mallto\User\Data\Repository;
 
+use Illuminate\Support\Facades\DB;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Exceptions\UserAuthExistException;
 
@@ -58,16 +59,24 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 //\Log::warning(new \Exception());
                 //\Log::warning($credentials);
                 //throw new UserAuthExistException($user->id);
-                $userAuth = UserAuth::where([
-                    "identifier"    => $identifier,
-                    "identity_type" => $identityType,
-                    "subject_id"    => $user->subject_id,
-                    'credential'    => $credential ? $hashCreential : null,
-                ])->first();
-                if ($userAuth) {
-                    return $userAuth;
-                }
-                throw new UserAuthExistException($userAuth);
+
+                //事务中发生了该异常,则必须先结束事务,才能进行其他数据库操作
+                //if (DB::transactionLevel() > 0) {
+                //    DB::rollBack();
+                //}
+                //
+                //$userAuth = UserAuth::where([
+                //    "identifier"    => $identifier,
+                //    "identity_type" => $identityType,
+                //    "subject_id"    => $user->subject_id,
+                //    'credential'    => $credential ? $hashCreential : null,
+                //])->first();
+                //if ($userAuth) {
+                //    \Log::debug($userAuth);
+                //
+                //    return $userAuth;
+                //}
+                throw new UserAuthExistException();
             } else {
                 throw $e;
             }
