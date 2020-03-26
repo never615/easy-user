@@ -79,14 +79,23 @@ class UpdateWechatUserInfoJob implements ShouldQueue
                 $wechatUserInfo = $wechatUsecase->getUserInfo($this->uuid,
                     AppUtils::decryptOpenid($this->openid));
 
-                UserProfile::updateOrCreate([
-                    'user_id' => $this->userId,
-                ],
-                    [
-                        "wechat_user" => $wechatUserInfo->toArray(),
-                        "updated_at"  => TimeUtils::getNowTime(),
-                    ]
-                );
+                try {
+                    UserProfile::updateOrCreate([
+                        'user_id' => $this->userId,
+                    ],
+                        [
+                            "wechat_user" => $wechatUserInfo->toArray(),
+                            "updated_at"  => TimeUtils::getNowTime(),
+                        ]
+                    );
+                } catch (\PDOException $e) {
+                    // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
+                    if (0 === strpos($e->getCode(), '23505')) {
+                        //已经存在了,忽略该异常
+                    } else {
+                        throw $e;
+                    }
+                }
             }
         }
     }
