@@ -276,7 +276,7 @@ class UserUsecaseImpl implements UserUsecase
                 break;
             case "wechat":
                 //todo 优化获取微信信息
-                $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
+                $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
                 $userData = [
                     'subject_id' => $subject->id,
                     'nickname'   => $wechatUserInfo['nickname'] ?? null,
@@ -493,7 +493,7 @@ class UserUsecaseImpl implements UserUsecase
             );
         } else {
             dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
-                $user->id, $subject->uuid))->delay(1);
+                $user->id, $subject))->delay(1);
         }
     }
 
@@ -568,18 +568,20 @@ class UserUsecaseImpl implements UserUsecase
      * 获取微信用户
      *
      * @param $openid
-     * @param $uuid
+     * @param $subject
      *
      * @return
+     * @throws AuthenticationException
      */
     protected
     function getWechatUserInfo(
         $openid,
-        $uuid
+        $subject
     ) {
+        //$uuid = $subject->uuid;
         $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
 
-        $wechatUserInfo = $wechatUsecase->getUserInfo($uuid,
+        $wechatUserInfo = $wechatUsecase->getUserInfo($subject,
             AppUtils::decryptOpenid($openid));
 
         return $wechatUserInfo;

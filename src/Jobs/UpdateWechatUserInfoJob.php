@@ -15,6 +15,7 @@ use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserProfile;
+use Mallto\User\Domain\WechatUsecase;
 
 class UpdateWechatUserInfoJob implements ShouldQueue
 {
@@ -39,7 +40,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
 
     private $userId;
 
-    private $uuid;
+    private $subject;
 
 
     /**
@@ -49,11 +50,11 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      * @param $userId
      * @param $uuid
      */
-    public function __construct($openid, $userId, $uuid)
+    public function __construct($openid, $userId, $subject)
     {
         $this->openid = $openid;
         $this->userId = $userId;
-        $this->uuid = $uuid;
+        $this->subject = $subject;
     }
 
 
@@ -63,7 +64,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      * @return void
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function handle()
+    public function handle(WechatUsecase $wechatUsecase)
     {
         $user = User::find($this->userId);
 
@@ -75,8 +76,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
                 ->exists();
 
             if ( ! $exist) {
-                $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
-                $wechatUserInfo = $wechatUsecase->getUserInfo($this->uuid,
+                $wechatUserInfo = $wechatUsecase->getUserInfo($this->subject,
                     AppUtils::decryptOpenid($this->openid));
 
                 try {
