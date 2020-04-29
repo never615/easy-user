@@ -20,10 +20,8 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
     protected $slug = 'open_platform';
 
 
-    public function getUserInfo($subject, $openid)
+    public function getUserInfo($uuid, $openid)
     {
-        $uuid = $subject->wechat_uuid ?? $subject->uuid;
-
         if (config("app.env") == 'production' || config("app.env") == 'staging') {
             $baseUrl = "https://wechat.mall-to.com";
         } else {

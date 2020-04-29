@@ -76,7 +76,8 @@ class UpdateWechatUserInfoJob implements ShouldQueue
                 ->exists();
 
             if ( ! $exist) {
-                $wechatUserInfo = $wechatUsecase->getUserInfo($this->subject,
+                $wechatUserInfo = $wechatUsecase->getUserInfo(
+                    $this->subject->wechat_uuid ?? $this->subject->uuid,
                     AppUtils::decryptOpenid($this->openid));
 
                 try {
