@@ -14,6 +14,7 @@ use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Domain\Sms\SmsCodeUsecase;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
+use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
 
 /**
@@ -74,7 +75,7 @@ class SmsUsecase
 
         if ($tempCode != $code) {
             //注意:$code == "000000" 不能写===.
-            if ( ! in_array(config("app.env"), [ "production", "staging" ]) && $code == "000000") {
+            if ( ! AppUtils::isProduction() && $code == "000000") {
                 return true;
             } else {
                 throw  new ResourceException("验证码错误");

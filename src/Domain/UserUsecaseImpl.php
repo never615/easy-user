@@ -5,6 +5,7 @@
 
 namespace Mallto\User\Domain;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Mallto\Tool\Exception\NotFoundException;
@@ -16,6 +17,7 @@ use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
+use Mallto\User\Exceptions\UserAuthExistException;
 use Mallto\User\Jobs\UpdateWechatUserInfoJob;
 
 /**
@@ -249,6 +251,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param string $fromId    推广码注册的对应from来源id
      *
      * @return User
+     * @throws AuthenticationException
      */
     public function createUser(
         $credentials,
@@ -275,7 +278,7 @@ class UserUsecaseImpl implements UserUsecase
                 break;
             case "wechat":
                 //todo 优化获取微信信息
-                $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject->uuid);
+                $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
                 $userData = [
                     'subject_id' => $subject->id,
                     'nickname'   => $wechatUserInfo['nickname'] ?? null,
@@ -288,6 +291,7 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         \DB::beginTransaction();
+
         $userData["status"] = "normal";
         $userData["from"] = $form;
         $userData["from_third_app_id"] = $fromAppId;
@@ -315,9 +319,17 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         //如果userAuth没有创建则创建
-        $this->createUserAuth($credentials, $user);
+        try {
+            $userAuth = $this->createUserAuth($credentials, $user);
+            DB::commit();
+        } catch (UserAuthExistException $userAuthExistException) {
+            DB::rollBack();
+            $user = $this->retrieveByCredentials($credentials, $subject);
+            if ( ! $user) {
+                throw $userAuthExistException;
+            }
 
-        \DB::commit();
+        }
 
         return $user;
     }
@@ -484,7 +496,7 @@ class UserUsecaseImpl implements UserUsecase
             );
         } else {
             dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
-                $user->id, $subject->uuid))->delay(1);
+                $user->id, $subject))->delay(1);
         }
     }
 
@@ -559,18 +571,21 @@ class UserUsecaseImpl implements UserUsecase
      * 获取微信用户
      *
      * @param $openid
-     * @param $uuid
+     * @param $subject
      *
      * @return
+     * @throws AuthenticationException
      */
     protected
     function getWechatUserInfo(
         $openid,
-        $uuid
+        $subject
     ) {
+        //$uuid = $subject->uuid;
         $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
 
-        $wechatUserInfo = $wechatUsecase->getUserInfo($uuid,
+        $wechatUserInfo = $wechatUsecase->getUserInfo(
+            $subject->wechat_uuid ?? $subject->uuid,
             AppUtils::decryptOpenid($openid));
 
         return $wechatUserInfo;

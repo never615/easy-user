@@ -53,6 +53,7 @@ class LoginController extends Controller
      *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
      * @throws \Illuminate\Auth\AuthenticationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function login(Request $request)
     {
@@ -182,11 +183,11 @@ class LoginController extends Controller
             //检查绑定状态
             //绑定状态字段不为空且检查用户该字段不存在,则失败.抛出用户不存在.
             if ( ! empty($bindType) && ! $this->userUsecase->checkUserBindStatus($user, $bindType)) {
-                throw new NotFoundException("用户不存在");
+                throw new NotFoundException('不存在绑定了该' . $bindType . '的用户');
             }
         } else {
             //绑定登录模式下用户不存在,则需要去注册
-            throw new NotFoundException("用户不存在");
+            throw new NotFoundException('用户不存在');
         }
 
         //如果是微信请求则拉取最新的用户微信信息

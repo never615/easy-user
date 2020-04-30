@@ -15,6 +15,7 @@ use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserProfile;
+use Mallto\User\Domain\WechatUsecase;
 
 class UpdateWechatUserInfoJob implements ShouldQueue
 {
@@ -39,7 +40,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
 
     private $userId;
 
-    private $uuid;
+    private $subject;
 
 
     /**
@@ -49,11 +50,11 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      * @param $userId
      * @param $uuid
      */
-    public function __construct($openid, $userId, $uuid)
+    public function __construct($openid, $userId, $subject)
     {
         $this->openid = $openid;
         $this->userId = $userId;
-        $this->uuid = $uuid;
+        $this->subject = $subject;
     }
 
 
@@ -63,7 +64,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      * @return void
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function handle()
+    public function handle(WechatUsecase $wechatUsecase)
     {
         $user = User::find($this->userId);
 
@@ -75,18 +76,27 @@ class UpdateWechatUserInfoJob implements ShouldQueue
                 ->exists();
 
             if ( ! $exist) {
-                $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
-                $wechatUserInfo = $wechatUsecase->getUserInfo($this->uuid,
+                $wechatUserInfo = $wechatUsecase->getUserInfo(
+                    $this->subject->wechat_uuid ?? $this->subject->uuid,
                     AppUtils::decryptOpenid($this->openid));
 
-                UserProfile::updateOrCreate([
-                    'user_id' => $this->userId,
-                ],
-                    [
-                        "wechat_user" => $wechatUserInfo->toArray(),
-                        "updated_at"  => TimeUtils::getNowTime(),
-                    ]
-                );
+                try {
+                    UserProfile::updateOrCreate([
+                        'user_id' => $this->userId,
+                    ],
+                        [
+                            "wechat_user" => $wechatUserInfo->toArray(),
+                            "updated_at"  => TimeUtils::getNowTime(),
+                        ]
+                    );
+                } catch (\PDOException $e) {
+                    // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
+                    if (0 === strpos($e->getCode(), '23505')) {
+                        //已经存在了,忽略该异常
+                    } else {
+                        throw $e;
+                    }
+                }
             }
         }
     }

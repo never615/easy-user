@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\MessageBag;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
+use Mallto\Tool\Utils\AppUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserProfile;
+use Mallto\User\Domain\SmsUsecase;
 
 /**
  * User: never615 <never615.com>
@@ -90,10 +92,21 @@ trait ActionTrait
             }
 //            $oldMobile = $form->model()->mobile;
 
-            if ( ! AppUtils::isTestEnv()) {
+            if (AppUtils::isProduction()) {
+                $smsUsecase = app(SmsUsecase::class);
+
                 //校验验证码
-                $this->smsUsecase->checkVerifyCode($newMobile, $mobileCode, 'reset',
+                $smsUsecase->checkVerifyCode($newMobile, $mobileCode, 'reset',
                     $user->subject->id);
+            }
+
+            //检查手机唯一性
+            $tempUser = User::where("subject_id", $user->subject_id)
+                ->where("mobile", $newMobile)
+                ->first();
+
+            if ($tempUser) {
+                throw new ResourceException($newMobile . "已被其他会员注册");
             }
 
             //更新user auth的sms方式
