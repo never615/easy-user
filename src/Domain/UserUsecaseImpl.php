@@ -264,24 +264,25 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         $mobile = null;
+        $userData = [
+            'subject_id' => $subject->id,
+        ];
         switch ($credentials["identityType"]) {
             case "mobile":
             case "sms":
                 $userData = [
-                    "mobile"     => $credentials['identifier'],
-                    'subject_id' => $subject->id,
+                    "mobile" => $credentials['identifier'],
                 ];
 
                 $mobile = $credentials['identifier'];
                 break;
             case "wechat":
-                //todo 优化获取微信信息
-                $wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
-                $userData = [
-                    'subject_id' => $subject->id,
-                    'nickname'   => $wechatUserInfo['nickname'] ?? null,
-                    "avatar"     => $wechatUserInfo['avatar'] ?? null,
-                ];
+                //不实时获取设置微信信息
+                //$wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
+                //$userData = [
+                //    'nickname'   => $wechatUserInfo['nickname'] ?? null,
+                //    "avatar"     => $wechatUserInfo['avatar'] ?? null,
+                //];
                 break;
             default:
                 throw new ResourceException("无效的user auth类型:" . $credentials["identityType"]);
@@ -325,7 +326,10 @@ class UserUsecaseImpl implements UserUsecase
             if ( ! $user) {
                 throw $userAuthExistException;
             }
+        }
 
+        if ($credentials['identityType'] === 'wechat') {
+            $this->updateUserWechatInfo($user, $credentials, $subject);
         }
 
         return $user;

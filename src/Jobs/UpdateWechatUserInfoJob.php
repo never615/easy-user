@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Redis;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
 use Mallto\User\Data\User;
@@ -22,13 +23,19 @@ class UpdateWechatUserInfoJob implements ShouldQueue
 
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-
     /**
      * The number of times the job may be attempted.
      *
      * @var int
      */
     public $tries = 2;
+
+    ///**
+    // * 任务被处理之前的延迟时间（秒）
+    // *
+    // * @var int
+    // */
+    //public $delay = 60;
 
     private $openid;
 
@@ -57,15 +64,29 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      *
      * @return void
      * @throws \Illuminate\Auth\AuthenticationException
+     * @throws \Illuminate\Contracts\Redis\LimiterTimeoutException
      */
     public function handle(WechatUsecase $wechatUsecase)
+    {
+        Redis::funnel('update_wechat_info_' . $this->userId)
+            ->limit(1)
+            ->then(function () use ($wechatUsecase) {
+                $this->updateInfo($wechatUsecase);
+            }, function () {
+                // Could not obtain lock...
+
+            });
+    }
+
+
+    private function updateInfo($wechatUsecase)
     {
         $user = User::find($this->userId);
 
         if ($user) {
-            //查询是否有一个小时内更新过
+            //查询是否一天内更新过
             $exist = UserProfile::where("user_id", $this->userId)
-                ->where("updated_at", ">", Carbon::now()->addHour(-1)->toDateTimeString())
+                ->where("updated_at", ">", Carbon::now()->addDays(-1)->toDateTimeString())
                 ->whereNotNull('wechat_user')
                 ->exists();
 
