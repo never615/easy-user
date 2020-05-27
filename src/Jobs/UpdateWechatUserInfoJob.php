@@ -68,14 +68,18 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      */
     public function handle(WechatUsecase $wechatUsecase)
     {
-        Redis::funnel('update_wechat_info_' . $this->userId)
-            ->limit(1)
-            ->then(function () use ($wechatUsecase) {
-                $this->updateInfo($wechatUsecase);
-            }, function () {
-                // Could not obtain lock...
+        if (config('queue.default') === 'redis') {
+            Redis::funnel('update_wechat_info_' . $this->userId)
+                ->limit(1)
+                ->then(function () use ($wechatUsecase) {
+                    $this->updateInfo($wechatUsecase);
+                }, function () {
+                    // Could not obtain lock...
 
-            });
+                });
+        } else {
+            $this->updateInfo($wechatUsecase);
+        }
     }
 
 
