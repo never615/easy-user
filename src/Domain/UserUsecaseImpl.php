@@ -271,7 +271,8 @@ class UserUsecaseImpl implements UserUsecase
             case "mobile":
             case "sms":
                 $userData = [
-                    "mobile" => $credentials['identifier'],
+                    'mobile'     => $credentials['identifier'],
+                    'subject_id' => $subject->id,
                 ];
 
                 $mobile = $credentials['identifier'];
