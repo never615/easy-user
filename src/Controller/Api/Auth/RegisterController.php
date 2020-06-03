@@ -245,13 +245,13 @@ class RegisterController extends Controller
                 //如果为推广码注册的用户
                 if ($form && $formId) {
                     //开始创建用户
-                    $user = $this->userUsecase->createUser($credentials, $subject, null, $form, $formId);
+                    $user = $this->userUsecase->createUser($credentials, $subject, null, $form,null, $formId);
                     //绑定
                     $user = $this->userUsecase->bind($user, $bindType, $bindData);
                 }else {
                     //不存在关联用户,继续下一步
                     //开始创建用户
-                    $user = $this->userUsecase->createUser($credentials, $subject, null, "wechat");
+                    $user = $this->userUsecase->createUser($credentials, $subject, null, 'wechat');
                     //绑定
                     $user = $this->userUsecase->bind($user, $bindType, $bindData);
                 }
