@@ -30,20 +30,13 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      */
     public $tries = 2;
 
+
     ///**
-    // * 任务被处理之前的延迟时间（秒）
+    // * The number of seconds to wait before retrying the job.
     // *
     // * @var int
     // */
-    //public $delay = 60;
-
-
-    /**
-     * The number of seconds to wait before retrying the job.
-     *
-     * @var int
-     */
-    public $retryAfter = 60;
+    //public $retryAfter = 60;
 
     private $openid;
 
@@ -73,7 +66,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      */
     public function retryUntil()
     {
-        return now()->addSeconds(60);
+        return now()->addSeconds(120);
     }
 
     /**

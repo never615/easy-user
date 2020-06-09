@@ -570,29 +570,29 @@ class UserUsecaseImpl implements UserUsecase
     }
 
 
-    /**
-     * 获取微信用户
-     *
-     * @param $openid
-     * @param $subject
-     *
-     * @return
-     * @throws AuthenticationException
-     */
-    protected
-    function getWechatUserInfo(
-        $openid,
-        $subject
-    ) {
-        //$uuid = $subject->uuid;
-        $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
-
-        $wechatUserInfo = $wechatUsecase->getUserInfo(
-            $subject->wechat_uuid ?? $subject->uuid,
-            AppUtils::decryptOpenid($openid));
-
-        return $wechatUserInfo;
-    }
+    ///**
+    // * 获取微信用户
+    // *
+    // * @param $openid
+    // * @param $subject
+    // *
+    // * @return
+    // * @throws AuthenticationException
+    // */
+    //protected
+    //function getWechatUserInfo(
+    //    $openid,
+    //    $subject
+    //) {
+    //    //$uuid = $subject->uuid;
+    //    $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
+    //
+    //    $wechatUserInfo = $wechatUsecase->getUserInfo(
+    //        $subject->wechat_uuid ?? $subject->uuid,
+    //        AppUtils::decryptOpenid($openid));
+    //
+    //    return $wechatUserInfo;
+    //}
 
 
     public
