@@ -37,6 +37,14 @@ class UpdateWechatUserInfoJob implements ShouldQueue
     // */
     //public $delay = 60;
 
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $retryAfter = 60;
+
     private $openid;
 
     private $userId;

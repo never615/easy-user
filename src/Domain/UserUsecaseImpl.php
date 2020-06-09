@@ -7,6 +7,7 @@ namespace Mallto\User\Domain;
 
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
@@ -498,7 +499,7 @@ class UserUsecaseImpl implements UserUsecase
             );
         } else {
             dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
-                $user->id, $subject))->delay(1);
+                $user->id, $subject))->delay(Carbon::now()->addMinutes(1));
         }
     }
 
