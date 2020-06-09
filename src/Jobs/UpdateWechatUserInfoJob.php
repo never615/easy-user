@@ -30,12 +30,12 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      */
     public $tries = 2;
 
-    /**
-     * 任务被处理之前的延迟时间（秒）
-     *
-     * @var int
-     */
-    public $delay = 60;
+    ///**
+    // * 任务被处理之前的延迟时间（秒）
+    // *
+    // * @var int
+    // */
+    //public $delay = 60;
 
     private $openid;
 
