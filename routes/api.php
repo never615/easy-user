@@ -37,7 +37,7 @@ Route::group($attributes, function ($router) {
         });
 
         /**
-         * 需要经过验证
+         * 需要经过验证:可以通过签名或者referrer验证
          */
         Route::group([ 'middleware' => [ 'authSign_referrer' ] ], function () {
 
