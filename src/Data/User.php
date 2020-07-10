@@ -63,8 +63,24 @@ class User extends Authenticatable
         "admin"        => "管理端创建",
         "admin_import" => "管理端批量导入创建",
         "third_part"   => "第三方系统注册",
-        'shop'         => '店铺推广码注册',
-        'activity'     => '活动推广码注册',
+    ];
+
+    const REGISTER_ORIGIN = [
+        'member'      => '会员中心',
+        'upgrade'     => '会员升级',
+        'information' => '会员信息',
+        'code'        => '会员码',
+        'package'     => '我的卡包',
+        'discount'    => '精选优惠',
+        'activity'    => '活动资讯',
+        'brand'       => '品牌列表',
+        'point'       => '自助积分',
+        'records'     => '积分记录',
+        'store'       => '积分商城',
+        'parking'     => '停车主页',
+        'car_search'  => '反向寻车',
+        'kill'        => '秒杀列表',
+        'photo'       => '小票列表',
     ];
 
     /**
