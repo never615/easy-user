@@ -27,6 +27,7 @@ use Mallto\Dangjian\Data\UserOnlineStudy;
 use Mallto\Dangjian\Data\UserOnlineStudyRecord;
 use Mallto\Mall\Data\Activity;
 use Mallto\Mall\Data\Member;
+use Mallto\Mall\Data\Order\Order;
 use Mallto\Mall\Data\ParkingRecord;
 use Mallto\Mall\Data\Seckill\UserSeckill;
 use Mallto\Mall\Data\Shop;
@@ -62,6 +63,25 @@ class User extends Authenticatable
         "admin"        => "管理端创建",
         "admin_import" => "管理端批量导入创建",
         "third_part"   => "第三方系统注册",
+        'qrcode'       => "二维码注册",
+    ];
+
+    const REGISTER_ORIGIN = [
+        'member'      => '会员中心',
+        'upgrade'     => '会员升级',
+        'information' => '会员信息',
+        'code'        => '会员码',
+        'package'     => '我的卡包',
+        'discount'    => '精选优惠',
+        'activity'    => '活动资讯',
+        'brand'       => '品牌列表',
+        'point'       => '自助积分',
+        'records'     => '积分记录',
+        'store'       => '积分商城',
+        'parking'     => '停车主页',
+        'car_search'  => '反向寻车',
+        'kill'        => '秒杀列表',
+        'photo'       => '小票列表',
     ];
 
     /**
@@ -288,6 +308,13 @@ class User extends Authenticatable
     public function member()
     {
         return $this->hasOne(Member::class);
+    }
+
+
+    //用户关联订单
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 
 

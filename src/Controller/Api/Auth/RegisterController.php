@@ -184,6 +184,7 @@ class RegisterController extends Controller
                 Rule::in(User::SUPPORT_BIND_TYPE),
             ],
             "code"       => "required|numeric",
+            'origin_id'  => 'nullable|numeric',
         ];
 
         $this->validate($request, $rules);
@@ -238,9 +239,13 @@ class RegisterController extends Controller
                     $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
                 }
             } else {
+                $origin = $request->origin ?? null;
+                $originId = $request->origin_id ?? null;
+
                 //不存在关联用户,继续下一步
                 //开始创建用户
-                $user = $this->userUsecase->createUser($credentials, $subject, null, "wechat");
+                $user = $this->userUsecase->createUser($credentials, $subject, null, 'wechat', null, $origin,
+                    $originId);
                 //绑定
                 $user = $this->userUsecase->bind($user, $bindType, $bindData);
             }
