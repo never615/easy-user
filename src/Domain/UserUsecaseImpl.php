@@ -260,8 +260,8 @@ class UserUsecaseImpl implements UserUsecase
         $info = [],
         $form = "wechat",
         $fromAppId = null,
-        $origin = null,
-        $originId = null
+        $userAbleType = null,
+        $userAbleId = null
     ) {
         if (empty($credentials)) {
             throw new ResourceException("异常请求:credentials为空");
@@ -299,8 +299,8 @@ class UserUsecaseImpl implements UserUsecase
         $userData["status"] = "normal";
         $userData["from"] = $form;
         $userData["from_third_app_id"] = $fromAppId;
-        $userData["origin"] = $origin;
-        $userData["origin_id"] = $originId;
+        $userData['userable_type'] = $userAbleType;
+        $userData['userable_id'] = $userAbleId;
         $userData["is_register_gift"] = false;
 
         try {
