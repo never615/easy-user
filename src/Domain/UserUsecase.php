@@ -137,8 +137,8 @@ interface UserUsecase
         $info = [],
         $form = "wechat",
         $fromAppId = null,
-        $origin = null,
-        $originId = null
+        $userAbleType = null,
+        $userAbleId = null
     );
 
 
