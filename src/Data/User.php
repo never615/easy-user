@@ -68,7 +68,7 @@ class User extends Authenticatable
 
     const REGISTER_ORIGIN = [
         'activity' => '活动资讯',
-        'store'    => '积分商城',
+        //'store'    => '积分商城',
         'shop'     => '店铺',
     ];
 
