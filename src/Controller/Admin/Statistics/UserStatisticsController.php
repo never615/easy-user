@@ -54,6 +54,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "cumulate_user as commom_cumulate_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
 
                 break;
@@ -69,6 +70,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "cumulate_user as commom_cumulate_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
 
                 //合并当月数据
@@ -100,6 +102,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", "<=", $endedCarbon->format("Y"))
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "cumulate_user as commom_cumulate_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
 
                 //合并当年数据
@@ -157,6 +160,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "new_user as common_new_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
                 break;
             case 'month':
@@ -171,6 +175,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "new_user as common_new_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
 
                 //合并当月数据
@@ -208,6 +213,7 @@ class UserStatisticsController extends Controller
                     ->where("ref_date", "<=", $endedCarbon->format("Y"))
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "new_user as common_new_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
 
                 //合并当年数据
