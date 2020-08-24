@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
+use Mallto\Tool\Domain\Traits\StatisticsTraits;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\WechatUserCumulate;
 
@@ -21,6 +22,9 @@ use Mallto\User\Data\WechatUserCumulate;
  */
 class WechatUserStatisticsController extends Controller
 {
+
+    use StatisticsTraits;
+
 
     /**
      * 微信用户累计数据
@@ -105,6 +109,7 @@ class WechatUserStatisticsController extends Controller
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
                     ->first();
+
                 if ($currentYearData) {
                     $results = $results->concat([
                             [
@@ -118,7 +123,8 @@ class WechatUserStatisticsController extends Controller
                 break;
         }
 
-        return $results;
+        return $this->addDataToResult($results, $dateType, $startedCarbon, $endedCarbon,
+            'wechat_cumulate_user');
     }
 
 
@@ -131,7 +137,6 @@ class WechatUserStatisticsController extends Controller
      */
     public function newUser(Request $request)
     {
-
         $started = $request->users_new_started_at;
         $ended = $request->users_new_ended_at;
         $dateType = $request->users_new_date_type;
@@ -155,6 +160,7 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", "<=", $ended)
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "new_user as wechat_new_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
                 break;
             case 'month':
@@ -169,17 +175,20 @@ class WechatUserStatisticsController extends Controller
                     ->where("ref_date", "<=", $endedCarbon->format('Y-m'))
                     ->where("subject_id", $subjectId)
                     ->select("ref_date", "new_user as wechat_new_user")
+                    ->orderBy('ref_date', 'asc')
                     ->get();
 
                 //合并当月数据
                 $currentMonthData = WechatUserCumulate::where('type', 'day')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
+                    ->orderBy('ref_date', 'asc')
                     ->first();
 
                 $lastMonthData = WechatUserCumulate::where('type', 'month')
                     ->orderBy("ref_date", 'desc')
                     ->where("subject_id", $subjectId)
+                    ->orderBy('ref_date', 'asc')
                     ->first();
 
                 if ($currentMonthData && $lastMonthData) {
@@ -233,8 +242,7 @@ class WechatUserStatisticsController extends Controller
                 break;
         }
 
-        return $results;
-
+        return $this->addDataToResult($results, $dateType, $startedCarbon, $endedCarbon, 'wechat_new_user');
     }
 
 

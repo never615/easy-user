@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
+use Mallto\Tool\Domain\Traits\StatisticsTraits;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\UserCumulate;
 
@@ -21,6 +22,9 @@ use Mallto\User\Data\UserCumulate;
  */
 class UserStatisticsController extends Controller
 {
+
+    use StatisticsTraits;
+
 
     /**
      * 用户累计数据
@@ -124,7 +128,8 @@ class UserStatisticsController extends Controller
                 break;
         }
 
-        return $results;
+        return $this->addDataToResult($results, $dateType, $startedCarbon, $endedCarbon,
+            'commom_cumulate_user');
     }
 
 
@@ -241,7 +246,7 @@ class UserStatisticsController extends Controller
                 break;
         }
 
-        return $results;
+        return $this->addDataToResult($results, $dateType, $startedCarbon, $endedCarbon, 'common_new_user');
     }
 
 
