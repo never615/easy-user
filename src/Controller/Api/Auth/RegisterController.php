@@ -99,64 +99,6 @@ class RegisterController extends Controller
 
 
     /**
-     * app注册用户
-     *
-     * @param Request $request
-     *
-     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
-     */
-    private function registerByApp(Request $request)
-    {
-        //请求字段验证
-        $rules = [
-            "identifier"    => "required",
-            "identity_type" => [
-                "required",
-                Rule::in([ 'mobile' ]),
-            ],
-            "credential"    => "required",
-            "code"          => "required|numeric",
-        ];
-
-        $this->validate($request, $rules);
-        $this->smsUsecase->checkVerifyCode($request->identifier, $request->code);
-        $subject = SubjectUtils::getSubject();
-
-        //检查用户是否存在
-        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
-
-        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
-        if ($user) {
-            //使用注册凭证查询到对应的用户,表示用户已经存在了
-            throw new ResourceException("用户已经存在,请直接登录");
-        } else {
-            //使用注册凭证查询不到对应的用户
-
-            //检查是否存在关联的用户(检查是否有用户已经绑定了要注册的字段:比如手机)
-            if ($bindedUser = $this->userUsecase->isBinded($request->identity_type, $request->identifier,
-                $subject->id)) {
-                //检查此用户是否已经有手机号密码的登录方式
-                if ($this->userUsecase->hasUserAuth($bindedUser, "mobile")) {
-                    throw new ResourceException("手机号已经被注册:" . $bindedUser->mobile);
-                } else {
-                    //存在(已经在微信注册过了),关联此用户,即增加新的identifier+credential的登录方式
-                    $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
-//                    $userUsecase->bindSalt($user,$request->salt_Id);
-                }
-            } else {
-                //不存在,正常注册
-                $user = $this->userUsecase->createUser($credentials, $subject, null, "app");
-//                $userUsecase->bindSalt($user,$request->salt_Id);
-            }
-
-            $user = $this->userUsecase->getReturnUserInfo($user);
-
-            return $user;
-        }
-    }
-
-
-    /**
      * 微信注册用户
      *
      * 用户有三种: 1. 纯微信用户;  2. 微信用户但是绑定了手机 3. app用户
@@ -257,6 +199,64 @@ class RegisterController extends Controller
         $user = $this->userUsecase->getReturnUserInfo($user);
 
         return $user;
+    }
+
+
+    /**
+     * app注册用户
+     *
+     * @param Request $request
+     *
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
+     */
+    private function registerByApp(Request $request)
+    {
+        //请求字段验证
+        $rules = [
+            "identifier"    => "required",
+            "identity_type" => [
+                "required",
+                Rule::in([ 'mobile' ]),
+            ],
+            "credential"    => "required",
+            "code"          => "required|numeric",
+        ];
+
+        $this->validate($request, $rules);
+        $this->smsUsecase->checkVerifyCode($request->identifier, $request->code);
+        $subject = SubjectUtils::getSubject();
+
+        //检查用户是否存在
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
+
+        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
+        if ($user) {
+            //使用注册凭证查询到对应的用户,表示用户已经存在了
+            throw new ResourceException("用户已经存在,请直接登录");
+        } else {
+            //使用注册凭证查询不到对应的用户
+
+            //检查是否存在关联的用户(检查是否有用户已经绑定了要注册的字段:比如手机)
+            if ($bindedUser = $this->userUsecase->isBinded($request->identity_type, $request->identifier,
+                $subject->id)) {
+                //检查此用户是否已经有手机号密码的登录方式
+                if ($this->userUsecase->hasUserAuth($bindedUser, "mobile")) {
+                    throw new ResourceException("手机号已经被注册:" . $bindedUser->mobile);
+                } else {
+                    //存在(已经在微信注册过了),关联此用户,即增加新的identifier+credential的登录方式
+                    $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
+//                    $userUsecase->bindSalt($user,$request->salt_Id);
+                }
+            } else {
+                //不存在,正常注册
+                $user = $this->userUsecase->createUser($credentials, $subject, null, "app");
+//                $userUsecase->bindSalt($user,$request->salt_Id);
+            }
+
+            $user = $this->userUsecase->getReturnUserInfo($user);
+
+            return $user;
+        }
     }
 
 }
