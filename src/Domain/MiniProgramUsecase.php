@@ -39,7 +39,7 @@ class  MiniProgramUsecase extends AbstractAPI
         if ($localEnv === 'production' || $localEnv === 'staging') {
             $baseUrl = "https://wechat.mall-to.com";
         } else {
-            $baseUrl = "http://easy-wechat.test";
+            $baseUrl = "https://test-wechat.mall-to.com";
         }
 
         $requestData = [
