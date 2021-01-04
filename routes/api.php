@@ -27,6 +27,12 @@ Route::group($attributes, function ($router) {
 
     Route::group([ 'middleware' => [ 'owner_api', 'requestCheck' ] ], function () {
 
+        //小程序相关
+        Route::group([ 'prefix' => 'mini_program', 'namespace' => 'MiniProgram' ], function () {
+            //小程序登录
+            Route::post('oauth', 'LoginController@oauth');
+        });
+
         Route::group([
             'middleware' => [ 'authSign2' ],
             'namespace'  => "Third",
@@ -106,8 +112,3 @@ Route::group($attributes, function ($router) {
     });
 
 });
-
-
-
-
-
