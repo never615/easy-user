@@ -72,9 +72,11 @@ class  MiniProgramUsecase extends AbstractAPI
             \Log::warning("请求微信授权失败");
             \Log::warning($clientException->getResponse()->getBody()->getContents());
             \Log::warning($clientException);
+            throw $clientException;
         } catch (\Exception $exception) {
             \Log::error("请求微信授权失败");
             \Log::error($exception);
+            throw $exception;
         }
     }
 
