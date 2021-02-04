@@ -7,6 +7,7 @@ namespace Mallto\User\Domain;
 
 use GuzzleHttp\Exception\ClientException;
 use Mallto\Tool\Domain\Net\AbstractAPI;
+use Mallto\Tool\Exception\HttpException;
 use Mallto\Tool\Utils\SignUtils;
 
 /**
@@ -70,12 +71,14 @@ class  MiniProgramUsecase extends AbstractAPI
             //这种方法能拿到异常的内容
             //$clientException->getResponse()->getBody()->getContents();
             \Log::warning("请求微信授权失败");
-            \Log::warning($clientException->getResponse()->getBody()->getContents());
+            $response = $clientException->getResponse()->getBody()->getContents();
+            $content = json_decode($response, true);
+            \Log::warning($content);
             \Log::warning($clientException);
-            throw $clientException;
+            throw new HttpException('422', '小程序授权登录失败，请稍后再试');
         } catch (\Exception $exception) {
-            \Log::error("请求微信授权失败");
-            \Log::error($exception);
+            \Log::warning("请求微信授权失败");
+            \Log::warning($exception);
             throw $exception;
         }
     }
