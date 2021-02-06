@@ -79,7 +79,7 @@ class  MiniProgramUsecase extends AbstractAPI
         } catch (\Exception $exception) {
             \Log::warning("请求微信授权失败");
             \Log::warning($exception);
-            throw $exception;
+            throw new HttpException('422', '小程序授权登录失败，请稍后再试');
         }
     }
 
