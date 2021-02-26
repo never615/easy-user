@@ -43,7 +43,7 @@ Route::group($attributes, function ($router) {
 
             //公共接口
             //短信验证码
-            Route::get('code', 'PublicController@getMessageCode');
+            Route::get('code', 'PublicController@getMessageCode')->name('tp_sms_code.index');
         });
 
         //邮箱验证码
