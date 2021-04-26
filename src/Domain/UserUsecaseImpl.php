@@ -41,13 +41,21 @@ class UserUsecaseImpl implements UserUsecase
 
 
     /**
+     * @var MergeUserUsecase
+     */
+    private $mergeUserUsecase;
+
+
+    /**
      * UserUsecaseImpl constructor.
      *
      * @param UserAuthRepositoryInterface $userAuthRepository
+     * @param MergeUserUsecase            $mergeUserUsecase
      */
-    public function __construct(UserAuthRepositoryInterface $userAuthRepository)
+    public function __construct(UserAuthRepositoryInterface $userAuthRepository,MergeUserUsecase $mergeUserUsecase)
     {
         $this->userAuthRepository = $userAuthRepository;
+        $this->mergeUserUsecase = $mergeUserUsecase;
     }
 
 
@@ -541,7 +549,12 @@ class UserUsecaseImpl implements UserUsecase
         $wechatUserIdentifier = $wechatUserAuth->identifier;
 
         //1. 把微信用户的业务数据合并
-        //目前合并只有海上世界项目会出现,海上世界的纯微信用户没有需要合并的业务,所以不需要处理
+        try {
+            $this->mergeUserUsecase->mergeUserData($appUser, $wechatUser);
+        }catch (\Exception $exception) {
+            \Log::error($exception);
+            \Log::warning('微信用户和手机号用户数据合并失败');
+        }
 
         //2. 删除wechatUser
         $wechatUser->delete();
