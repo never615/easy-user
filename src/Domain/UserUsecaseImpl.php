@@ -549,7 +549,12 @@ class UserUsecaseImpl implements UserUsecase
         $wechatUserIdentifier = $wechatUserAuth->identifier;
 
         //1. 把微信用户的业务数据合并
-        $this->mergeUserUsecase->mergeUserData($appUser, $wechatUser);
+        try {
+            $this->mergeUserUsecase->mergeUserData($appUser, $wechatUser);
+        }catch (\Exception $exception) {
+            \Log::error($exception);
+            \Log::warning('微信用户和手机号用户数据合并失败');
+        }
 
         //2. 删除wechatUser
         $wechatUser->delete();
