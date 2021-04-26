@@ -6,7 +6,6 @@
 namespace Mallto\User\Domain;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class MergeUserUsecase
 {
@@ -19,23 +18,14 @@ class MergeUserUsecase
      */
     public function mergeUserData($appUser, $wechatUser)
     {
-        //获取所有表
-        $allTables = $this->getAllTableName();
+        $allTables = $this->getHasKeyTableName('user_id');
 
-        //todo 这里如果要合并用户消费数据，会员等级那些则需要计算
-
-        //将微信用户的数据改为手机号用户
         foreach ($allTables as $table) {
-            //获取拥有user_id字段的表
-            $bool = Schema::hasColumn($table->table_name, 'user_id');
-
-            if ($bool) {
-                DB::table($table->table_name)
-                    ->where('user_id', $wechatUser->id)
-                    ->update([
-                        'user_id' => $appUser->id,
-                    ]);
-            }
+            DB::table($table->table_name)
+                ->where('user_id', $wechatUser->id)
+                ->update([
+                    'user_id' => $appUser->id,
+                ]);
         }
     }
 
@@ -48,5 +38,24 @@ class MergeUserUsecase
     protected function getAllTableName()
     {
         return DB::select("SELECT relname AS table_name FROM pg_class WHERE relkind = 'r' AND relname NOT LIKE'pg_%' AND relname NOT LIKE'sql_%'");
+    }
+
+
+    /**
+     * 获取包含key的所有表.
+     *
+     * @param $key
+     *
+     * @return array
+     */
+    protected function getHasKeyTableName($key)
+    {
+        return DB::select("select b.oid, b.relname as table_name, att.attname, b.relkind,attinhcount, atttypmod
+from pg_attribute att, pg_class b
+where b.oid = att.attrelid
+and att.attname = 'user_id'
+and attinhcount in (0)
+and b.relkind in ('r')
+order by b.relname, atttypmod;");
     }
 }
