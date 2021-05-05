@@ -21,11 +21,15 @@ class MergeUserUsecase
         $allTables = $this->getHasKeyTableName('user_id');
 
         foreach ($allTables as $table) {
-            DB::table($table->table_name)
-                ->where('user_id', $wechatUser->id)
-                ->update([
-                    'user_id' => $appUser->id,
-                ]);
+            $ignore = [ 'users', 'members' ];
+
+            if (in_array($table, $ignore)) {
+                DB::table($table->table_name)
+                    ->where('user_id', $wechatUser->id)
+                    ->update([
+                        'user_id' => $appUser->id,
+                    ]);
+            }
         }
     }
 
