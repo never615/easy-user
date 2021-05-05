@@ -21,7 +21,7 @@ class MergeUserUsecase
         $allTables = $this->getHasKeyTableName('user_id');
 
         foreach ($allTables as $table) {
-            $ignore = [ 'users', 'members' ];
+            $ignore = [ 'users', 'members', 'user_profiles' ];
 
             if ( ! in_array($table, $ignore)) {
                 DB::table($table->table_name)
