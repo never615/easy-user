@@ -23,7 +23,7 @@ class MergeUserUsecase
         foreach ($allTables as $table) {
             $ignore = [ 'users', 'members' ];
 
-            if (in_array($table, $ignore)) {
+            if ( ! in_array($table, $ignore)) {
                 DB::table($table->table_name)
                     ->where('user_id', $wechatUser->id)
                     ->update([
