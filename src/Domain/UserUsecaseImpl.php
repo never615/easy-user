@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Mallto\Tool\Exception\NotFoundException;
+use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\User\Data\Repository\UserAuthRepository;
@@ -39,7 +40,6 @@ class UserUsecaseImpl implements UserUsecase
      */
     private $userAuthRepository;
 
-
     /**
      * @var MergeUserUsecase
      */
@@ -52,8 +52,10 @@ class UserUsecaseImpl implements UserUsecase
      * @param UserAuthRepositoryInterface $userAuthRepository
      * @param MergeUserUsecase            $mergeUserUsecase
      */
-    public function __construct(UserAuthRepositoryInterface $userAuthRepository,MergeUserUsecase $mergeUserUsecase)
-    {
+    public function __construct(
+        UserAuthRepositoryInterface $userAuthRepository,
+        MergeUserUsecase $mergeUserUsecase
+    ) {
         $this->userAuthRepository = $userAuthRepository;
         $this->mergeUserUsecase = $mergeUserUsecase;
     }
@@ -163,6 +165,10 @@ class UserUsecaseImpl implements UserUsecase
     {
         if ( ! $user) {
             throw new NotFoundException("用户不存在");
+        }
+
+        if ($user->status === 'blacklist') {
+            throw new PermissionDeniedException();
         }
 
         if ( ! empty($user->mobile)) {
@@ -481,6 +487,10 @@ class UserUsecaseImpl implements UserUsecase
         $user = User::with("userProfile")
             ->findOrFail($user->id);
 
+        if ($user->status === 'blacklist') {
+            throw new PermissionDeniedException();
+        }
+
         if ($addToken) {
             $user = $this->addToken($user);
         }
@@ -551,7 +561,7 @@ class UserUsecaseImpl implements UserUsecase
         //1. 把微信用户的业务数据合并
         try {
             $this->mergeUserUsecase->mergeUserData($appUser, $wechatUser);
-        }catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             \Log::error($exception);
             \Log::warning('微信用户和手机号用户数据合并失败');
         }
