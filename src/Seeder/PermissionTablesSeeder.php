@@ -7,6 +7,7 @@ namespace Mallto\User\Seeder;
 
 use Illuminate\Database\Seeder;
 use Mallto\User\Seeder\Permission\AppSecretPermissionsSeeder;
+use Mallto\User\Seeder\Permission\StatisticsPermissionsSeeder;
 use Mallto\User\Seeder\Permission\UserPermissionTablesSeeder;
 
 class PermissionTablesSeeder extends Seeder
@@ -21,6 +22,7 @@ class PermissionTablesSeeder extends Seeder
     {
         $this->call(UserPermissionTablesSeeder::class);
         $this->call(AppSecretPermissionsSeeder::class);
+        $this->call(StatisticsPermissionsSeeder::class);
 //DummySeeder
     }
 }

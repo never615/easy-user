@@ -6,6 +6,7 @@
 namespace Mallto\User\Seeder;
 
 use Illuminate\Database\Seeder;
+use Mallto\User\Seeder\Menu\StatisticsMenusSeeder;
 use Mallto\User\Seeder\Menu\UserMenuTablesSeeder;
 
 class MenuTablesSeeder extends Seeder
@@ -19,6 +20,7 @@ class MenuTablesSeeder extends Seeder
     public function run()
     {
         $this->call(UserMenuTablesSeeder::class);
+        $this->call(StatisticsMenusSeeder::class);
 //DummySeeder
     }
 }
