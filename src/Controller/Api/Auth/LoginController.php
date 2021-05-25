@@ -74,7 +74,6 @@ class LoginController extends Controller
                 } else {
                     return $this->loginByAli($request);
                 }
-                break;
             case "IOS":
             case "ANDROID":
                 return $this->loginByApp($request);
