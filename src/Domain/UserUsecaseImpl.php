@@ -9,6 +9,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
@@ -121,6 +122,9 @@ class UserUsecaseImpl implements UserUsecase
 
         switch ($requestType) {
             case "WECHAT":
+                $identifier = $this->decryptOpenid($identifier);
+                break;
+            case "ALI":
                 $identifier = $this->decryptOpenid($identifier);
                 break;
         }
@@ -302,6 +306,8 @@ class UserUsecaseImpl implements UserUsecase
                 //    'nickname'   => $wechatUserInfo['nickname'] ?? null,
                 //    "avatar"     => $wechatUserInfo['avatar'] ?? null,
                 //];
+                break;
+            case 'ali':
                 break;
             default:
                 throw new ResourceException("无效的user auth类型:" . $credentials["identityType"]);
@@ -518,6 +524,20 @@ class UserUsecaseImpl implements UserUsecase
             UserProfile::updateOrCreate([ 'user_id' => $user->id ],
                 [
                     "wechat_user" => $wechatUserInfo ?? null,
+                ]
+            );
+        } else {
+            dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
+                $user->id, $subject))->delay(Carbon::now()->addMinutes(1));
+        }
+    }
+
+    public function updateUserAliInfo($user, $credentials, $subject, $aliUserInfo = null)
+    {
+        if ($aliUserInfo) {
+            UserProfile::updateOrCreate([ 'user_id' => $user->id ],
+                [
+                    "ali_user" => $aliUserInfo ?? null,
                 ]
             );
         } else {

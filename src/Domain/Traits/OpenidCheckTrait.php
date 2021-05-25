@@ -154,4 +154,71 @@ trait OpenidCheckTrait
         return $openid;
     }
 
+
+    /**
+     * 校验openid
+     * 并且把request中的openid参数替换成不包含时间戳的参数
+     *
+     * @param Request $request
+     * @param string  $openidKeyName
+     * @param bool    $checkTimes
+     *
+     * @return mixed
+     * @throws AuthenticationException
+     */
+    public function checkUserId(Request $request, $openidKeyName = 'identifier', $checkTimes = true)
+    {
+        //openid可以使用的次数
+        $limitTimes = 10;
+        //openid可以使用时间限制/s
+        $limitTime = 60 * 60 * 4;
+
+        if (in_array(config("app.env"), [ "test", "integration" ])) {
+            $limitTimes = 10000;
+            $limitTime = 60 * 60 * 24 * 3;
+        }
+
+        $orginalOpenid = $request->$openidKeyName;
+
+        $openids = AppUtils::getOpenidFromOriginalOpenids($orginalOpenid);
+
+        //检查是否被使用过
+        if (count($openids) > 1) {
+
+            $timestamp = $openids[1];
+            $openid = $openids[0];
+
+            if (empty($openid)) {
+                throw new AuthenticationException("openid为空");
+            }
+
+            //检查时效性
+            $second = time() - $timestamp;
+            if ($second >= $limitTime) {
+                throw new AuthenticationException("openid过期");
+            }
+
+            if ($checkTimes) {
+                if (Cache::has($orginalOpenid)) {
+                    $times = Cache::get($orginalOpenid);
+                    if ($times >= $limitTimes) {
+                        throw new AuthenticationException("openid已被使用");
+                    } else {
+                        Cache::put($orginalOpenid, $times + 1, $limitTime);
+                    }
+                } else {
+                    Cache::put($orginalOpenid, 1, $limitTime);
+                }
+            }
+
+            $inputs = $request->all();
+
+            $inputs[$openidKeyName] = encrypt($openid);
+
+            $request->replace($inputs);
+        }
+
+        return $request;
+
+    }
 }
