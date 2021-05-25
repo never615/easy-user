@@ -29,4 +29,15 @@ trait AuthValidateTrait
         }
     }
 
+    /**
+     * 检查是不是支付宝请求
+     *
+     * @param $request
+     */
+    protected function isAliRequest($request)
+    {
+        if ($request->header("REQUEST-TYPE") != "ALI") {
+            throw new PreconditionFailedHttpException(trans("errors.precondition_failed"));
+        }
+    }
 }
