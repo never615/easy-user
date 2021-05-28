@@ -7,6 +7,7 @@ namespace Mallto\User\Controller\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Exception\PermissionDeniedException;
@@ -68,7 +69,13 @@ class RegisterController extends Controller
                 $request = $this->checkOpenid($request, 'identifier', false);
 
                 return $this->registerByWechat($request);
-                break;
+            case "ALI":
+                //校验identifier(实际就是加密过得openid),确保只使用了一次
+                $request = $this->checkOpenid($request, 'identifier', false);
+
+                $request->input('identity_type', 'ali');
+
+                return $this->registerByAli($request);
             case "IOS":
             case "ANDROID":
                 return $this->registerByApp($request);
@@ -199,6 +206,129 @@ class RegisterController extends Controller
         $user = $this->userUsecase->getReturnUserInfo($user);
 
         return $user;
+    }
+
+
+    /**
+     * @param Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
+    private function registerByAli(Request $request)
+    {
+        //请求字段验证
+        //验证规则
+        $rules = [];
+        $rules = array_merge($rules, [
+            "identifier"  => "required",
+            'bind_data'   => "required",
+            "bind_type"   => [
+                "required",
+                Rule::in([ 'mobile' ]),
+            ],
+            "code"        => "required|numeric",
+            'userable_id' => 'nullable|numeric',
+        ]);
+        $this->validate($request, $rules);
+
+        $this->smsUsecase->checkVerifyCode($request->bind_data, $request->code);
+
+        $subject = SubjectUtils::getSubject();
+
+        $bindData = $request->bind_data;
+        $bindType = $request->bind_type;
+
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
+
+        $aliUser = $this->userUsecase->retrieveByCredentials($credentials, $subject);
+
+        $registerGift = null;
+
+        if ($aliUser) {
+            //微信用户已经存在
+
+            //检查用户是否注册到一半
+            $this->userUsecase->checkUserStatus($aliUser);
+
+            if ($aliUser->$bindType) {
+                //todo 优化,返回用户
+                \Log::warning("注册成功重复,请求:" . $aliUser->id);
+                \Log::warning(new \Exception());
+
+                throw new ResourceException("已经注册成功,若页面无跳转请刷新重试或重新打开页面");
+            }
+        }
+
+        //检查是否存在关联的bind_data(如手机)的用户
+        if ($bindedUser = $this->userUsecase->isBinded($bindType, $bindData, $subject->id)) {
+            //存在关联的bind_data(如手机)的用户
+            if ($this->userUsecase->hasUserAuth($bindedUser, "ali")) {
+                //$bindedUser已绑定微信
+                throw new ResourceException($bindData . "已经被其他微信绑定");
+            } else {
+                //$bindedUser未绑定微信
+                if ($aliUser) {
+                    //合并账户
+                    $user = $this->userUsecase->mergeAccount($bindedUser, $aliUser);
+                } else {
+                    //存在的这个用户没有绑定了微信号,关联手机和微信
+                    $user = $this->userUsecase->createUserAuth($credentials, $bindedUser);
+                }
+            }
+        } else {
+            //不存在关联的bind_data(如手机)的用户
+            DB::beginTransaction();
+            $userAbleType = $request->userable_type ?? false;
+            $userAbleId = $request->userable_id ?? false;
+            $channel = $request->channel ?? 'ali';
+
+            if ( ! $aliUser) {
+                if ($userAbleId && $userAbleType) {
+                    //开始创建用户
+                    $wechatUser = $this->userUsecase->createUser($credentials, $subject, null, $channel, null,
+                        $userAbleType, $userAbleId);
+                } else {
+                    $wechatUser = $this->userUsecase->createUser($credentials, $subject, null, $channel);
+                }
+
+            }
+
+            $user = $this->userUsecase->bind($wechatUser, $bindType, $bindData);
+
+//            //如果用户填写了名字,则检查是否是否有性别和生日(兼容旧花园城)
+//            if ($request->name) {
+//                //旧的注册页面逻辑,手机号和会员信息一起提交
+//                $this->validate($request, [
+//                    "name"     => "required",
+//                    "gender"   => "required",
+//                    "birthday" => "required",
+//                ]);
+//            }
+
+            //注册会员
+            [ $user, $member, $isNewMember ] = $this->userUsecase->bindOrCreateByOtherInfo($user,
+                array_merge([
+                    $bindType => $bindData,
+                ], $request->only([ "name", "gender", "birthday" ])));
+
+            if ($isNewMember && $user->status == 'normal') {
+                $registerGift = $this->userUsecase->registerGift($user);
+            }
+
+            DB::commit();
+        }
+
+        //更新用户微信信息
+        //$this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
+
+        $user = $this->userUsecase->getReturnUserInfo($user);
+
+        return response()->json([
+            "user"          => $user,
+            "register_gift" => $registerGift ?? null,
+        ]);
     }
 
 
