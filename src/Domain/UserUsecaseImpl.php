@@ -386,7 +386,11 @@ class UserUsecaseImpl implements UserUsecase
                 $this->userAuthRepository->create(array_merge($credentials, [
                     'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
                 ]), $user);
-
+                break;
+            case "ali":
+                $this->userAuthRepository->create(array_merge($credentials, [
+                    'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
+                ]), $user);
                 break;
             case "mobile":
                 //如果是手机绑定,均添加sms的验证方式
@@ -531,6 +535,7 @@ class UserUsecaseImpl implements UserUsecase
                 $user->id, $subject))->delay(Carbon::now()->addMinutes(1));
         }
     }
+
 
     public function updateUserAliInfo($user, $credentials, $subject, $aliUserInfo = null)
     {
