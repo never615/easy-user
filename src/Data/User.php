@@ -64,6 +64,7 @@ class User extends Authenticatable
         "admin_import" => "管理端批量导入创建",
         "third_part"   => "第三方系统注册",
         'qrcode'       => "二维码注册",
+        'ali'          => "支付宝注册",
     ];
 
     const REGISTER_ORIGIN = [
