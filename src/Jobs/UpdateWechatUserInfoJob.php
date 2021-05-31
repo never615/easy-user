@@ -59,15 +59,15 @@ class UpdateWechatUserInfoJob implements ShouldQueue
         $this->subject = $subject;
     }
 
-    /**
-     * Determine the time at which the job should timeout.
-     *
-     * @return \DateTime
-     */
-    public function retryUntil()
-    {
-        return now()->addSeconds(120);
-    }
+    ///**
+    // * Determine the time at which the job should timeout.
+    // *
+    // * @return \DateTime
+    // */
+    //public function retryUntil()
+    //{
+    //    return now()->addSeconds(120);
+    //}
 
     /**
      * Execute the job.
