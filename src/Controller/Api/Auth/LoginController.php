@@ -67,6 +67,13 @@ class LoginController extends Controller
                     return $this->loginByWechat($request);
                 }
                 break;
+            case "ALI":
+                $request = $this->checkUserid($request, 'identifier');
+                if ( ! empty($request->get("bind_type"))) {
+                    return $this->loginByAliWithBinding($request);
+                } else {
+                    return $this->loginByAli($request);
+                }
             case "IOS":
             case "ANDROID":
                 return $this->loginByApp($request);
@@ -199,6 +206,11 @@ class LoginController extends Controller
     }
 
 
+    /**
+     * 退出登录
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function logout()
     {
         //删除用户token
@@ -213,6 +225,104 @@ class LoginController extends Controller
             ->delete();
 
         return response()->nocontent();
+    }
+
+
+    /**
+     * 纯支付宝用户登录
+     *
+     * @param Request $request
+     *
+     * @return User
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
+    public function loginByAli(Request $request)
+    {
+        //请求字段验证
+        //验证规则
+        $rules = [];
+        $rules = array_merge($rules, [
+            "identifier" => "required",
+        ]);
+        $this->validate($request, $rules);
+
+        $this->isAliRequest($request);
+
+        $subject = SubjectUtils::getSubject();
+
+        //从请求中提取需要的信息
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
+
+        //检查用户是否存在
+        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
+
+        if ( ! $user) {
+            //直接创建用户
+            $user = $this->userUsecase->createUser($credentials, $subject, null, 'ali');
+        }
+
+        //如果是微信请求则拉取最新的用户微信信息
+        //$this->userUsecase->updateUserAliInfo($user, $credentials, $subject);
+
+        $user = $this->userUsecase->getReturnUserInfo($user, true, true);
+
+        return $user;
+    }
+
+
+    /**
+     * 支付宝登录,用户需要绑定手机或者其他项
+     *
+     * @param Request $request
+     *
+     * @return User
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
+    public function loginByAliWithBinding(Request $request)
+    {
+        //请求字段验证
+        //验证规则
+        $rules = [];
+        $rules = array_merge($rules, [
+            "identifier" => "required",
+            "bind_type"  => [
+                'required',
+                Rule::in(User::SUPPORT_BIND_TYPE),
+            ],
+        ]);
+        $this->validate($request, $rules);
+
+        $this->isAliRequest($request);
+
+        //对于账户是否有绑定需求,如果有则需要传递该字段
+        $bindType = $request->get("bind_type");
+        $subject = SubjectUtils::getSubject();
+
+        //从请求中提取需要的信息
+        $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
+
+        //检查用户是否存在
+        $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
+
+        if ($user) {
+            //检查绑定状态
+            //绑定状态字段不为空且检查用户该字段不存在,则失败.抛出用户不存在.
+            if ( ! empty($bindType) && ! $this->userUsecase->checkUserBindStatus($user, $bindType)) {
+                throw new NotFoundException('不存在绑定了该' . $bindType . '的用户');
+            }
+        } else {
+            //绑定登录模式下用户不存在,则需要去注册
+            throw new NotFoundException('用户不存在');
+        }
+
+        //如果是微信请求则拉取最新的用户微信信息
+        //$this->userUsecase->updateUserAliInfo($user, $credentials, $subject);
+
+        $user = $this->userUsecase->getReturnUserInfo($user);
+
+        return $user;
     }
 
 }
