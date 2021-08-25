@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Mallto\Mall\Data\Member\MemberInviteRecord;
+use Mallto\Mall\Data\MemberLevel;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
@@ -325,6 +327,32 @@ class UserUsecaseImpl implements UserUsecase
 
         try {
             $user = User::create($userData);
+            if($inviter_id)
+            {
+                $userMember = User::query()
+                    ->where('id', $inviter_id)
+                    ->where('subject_id', $subject->id)
+                    ->first();
+
+                $member = $userMember->member;
+                $lowMemberLevel = MemberLevel::query()
+                    ->where('subject_id', $subject->id)
+                    ->orderBy('level', 'asc')
+                    ->first();
+                //更新邀新记录
+                MemberInviteRecord::query()->create(
+                    [
+                        'subject_id'       => $subject->id,
+                        'user_id'          => $inviter_id,
+                        'invite_user_id'   => $user->id,
+                        'username'         => $member->real_name,
+                        'mobile'           => $member->mobile,
+                        'birthday'         => $member->birthday,
+                        'sex'              => $member->sex,
+                        'member_level_ids' => ["$lowMemberLevel->id"],
+                    ]
+                );
+            }
         } catch (\PDOException $e) {
             // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
             if (0 === strpos($e->getCode(), '23505') && $mobile) {

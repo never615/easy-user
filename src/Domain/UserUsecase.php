@@ -138,7 +138,8 @@ interface UserUsecase
         $form = "wechat",
         $fromAppId = null,
         $userAbleType = null,
-        $userAbleId = null
+        $userAbleId = null,
+        $inviter_id = null
     );
 
 
