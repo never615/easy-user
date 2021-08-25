@@ -281,7 +281,8 @@ class UserUsecaseImpl implements UserUsecase
         $form = "wechat",
         $fromAppId = null,
         $userAbleType = null,
-        $userAbleId = null
+        $userAbleId = null,
+        $inviter_id = null
     ) {
         if (empty($credentials)) {
             throw new ResourceException("异常请求:credentials为空");
