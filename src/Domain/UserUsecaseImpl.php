@@ -325,6 +325,7 @@ class UserUsecaseImpl implements UserUsecase
         $userData['userable_type'] = $userAbleType;
         $userData['userable_id'] = $userAbleId;
         $userData["is_register_gift"] = false;
+        $userData["inviter_id"] = $inviter_id;
 
         try {
             $user = User::create($userData);
