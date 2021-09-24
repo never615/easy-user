@@ -175,17 +175,17 @@ class LoginController extends Controller
         $this->validate($request, $rules);
 
         $this->isWechatRequest($request);
-
+        \Log::debug(1);
         //对于账户是否有绑定需求,如果有则需要传递该字段
         $bindType = $request->get("bind_type");
         $subject = SubjectUtils::getSubject();
-
+        \Log::debug(2);
         //从请求中提取需要的信息
         $credentials = $this->userUsecase->transformCredentialsFromRequest($request);
 
         //检查用户是否存在
         $user = $this->userUsecase->retrieveByCredentials($credentials, $subject);
-
+        \Log::debug(3);
         if ($user) {
             //检查绑定状态
             //绑定状态字段不为空且检查用户该字段不存在,则失败.抛出用户不存在.
@@ -196,12 +196,12 @@ class LoginController extends Controller
             //绑定登录模式下用户不存在,则需要去注册
             throw new NotFoundException('用户不存在');
         }
-
+        \Log::debug(4);
         //如果是微信请求则拉取最新的用户微信信息
         $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
 
         $user = $this->userUsecase->getReturnUserInfo($user);
-
+        \Log::debug(5);
         return $user;
     }
 
