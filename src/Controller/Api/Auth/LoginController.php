@@ -199,9 +199,9 @@ class LoginController extends Controller
         \Log::debug(4);
         //如果是微信请求则拉取最新的用户微信信息
         $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
-
-        $user = $this->userUsecase->getReturnUserInfo($user);
         \Log::debug(5);
+        $user = $this->userUsecase->getReturnUserInfo($user);
+        \Log::debug(6);
         return $user;
     }
 
