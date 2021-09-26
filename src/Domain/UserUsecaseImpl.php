@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Mallto\Mall\Data\Member\MemberInviteNew;
 use Mallto\Mall\Data\Member\MemberInviteRecord;
 use Mallto\Mall\Data\MemberLevel;
 use Mallto\Tool\Exception\NotFoundException;
@@ -325,12 +326,10 @@ class UserUsecaseImpl implements UserUsecase
         $userData['userable_type'] = $userAbleType;
         $userData['userable_id'] = $userAbleId;
         $userData["is_register_gift"] = false;
-        $userData["inviter_id"] = $inviter_id;
 
         try {
             $user = User::create($userData);
-            if($inviter_id)
-            {
+            if ($inviter_id) {
                 $userMember = User::query()
                     ->where('id', $inviter_id)
                     ->where('subject_id', $subject->id)
@@ -341,19 +340,25 @@ class UserUsecaseImpl implements UserUsecase
                     ->where('subject_id', $subject->id)
                     ->orderBy('level', 'asc')
                     ->first();
-                //更新邀新记录
-                MemberInviteRecord::query()->create(
-                    [
-                        'subject_id'       => $subject->id,
-                        'user_id'          => $inviter_id,
-                        'invite_user_id'   => $user->id,
-                        'username'         => $member->real_name,
-                        'mobile'           => $member->mobile,
-                        'birthday'         => $member->birthday,
-                        'sex'              => $member->sex,
-                        'member_level_ids' => ["$lowMemberLevel->id"],
-                    ]
-                );
+                $memberInvite = MemberInviteNew::query()->where('subject_id',
+                    $subject_id)->where('switch',
+                    true)->first([ 'id' ]);
+                if ($memberInvite) {
+                    //更新邀新记录
+                    MemberInviteRecord::query()->create(
+                        [
+                            'subject_id'       => $subject->id,
+                            'user_id'          => $inviter_id,
+                            'invite_new_id'    => $memberInvite->id,
+                            'invite_user_id'   => $user->id,
+                            'username'         => $member->real_name,
+                            'mobile'           => $member->mobile,
+                            'birthday'         => $member->birthday,
+                            'sex'              => $member->sex,
+                            'member_level_ids' => [ "$lowMemberLevel->id" ],
+                        ]
+                    );
+                }
             }
         } catch (\PDOException $e) {
             // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
