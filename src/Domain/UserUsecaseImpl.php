@@ -341,7 +341,7 @@ class UserUsecaseImpl implements UserUsecase
                     ->orderBy('level', 'asc')
                     ->first();
                 $memberInvite = MemberInviteNew::query()->where('subject_id',
-                    $subject_id)->where('switch',
+                    $subject->id)->where('switch',
                     true)->first([ 'id' ]);
                 if ($memberInvite) {
                     //更新邀新记录
