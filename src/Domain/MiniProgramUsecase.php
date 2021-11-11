@@ -60,7 +60,7 @@ class  MiniProgramUsecase extends AbstractAPI
                     'headers' => [
                         'app-id'       => config('other.mallto_app_id'),
                         'REQUEST-TYPE' => 'SERVER',
-                        'UUID'         => '1008',
+                        'UUID'         => '1008', //用不到
                         'Accept'       => 'application/json',
                     ],
                 ],

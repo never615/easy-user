@@ -266,7 +266,7 @@ class RegisterController extends Controller
             //存在关联的bind_data(如手机)的用户
             if ($this->userUsecase->hasUserAuth($bindedUser, "ali")) {
                 //$bindedUser已绑定微信
-                throw new ResourceException($bindData . "已经被其他微信绑定");
+                throw new ResourceException($bindData . "已经被其他支付宝绑定");
             } else {
                 //$bindedUser未绑定微信
                 if ($aliUser) {
