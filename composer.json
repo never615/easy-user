@@ -13,7 +13,6 @@
         }
     ],
     "require": {
-        "smartins/passport-multiauth": "^6.0"
     },
     "autoload": {
         "psr-4": {
