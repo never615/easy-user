@@ -9,7 +9,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Mallto\Mall\Data\Member\MemberInviteNew;
 use Mallto\Mall\Data\Member\MemberInviteRecord;
 use Mallto\Mall\Data\MemberLevel;
@@ -362,6 +361,7 @@ class UserUsecaseImpl implements UserUsecase
                 }
             }
         } catch (\PDOException $e) {
+
             // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
             if (0 === strpos($e->getCode(), '23505') && $mobile) {
                 //检查如果已存在
@@ -375,6 +375,10 @@ class UserUsecaseImpl implements UserUsecase
                     return $user;
                 }
 
+                throw $e;
+            } else {
+                \Log::error($e);
+                \Log::warning($userData);
                 throw $e;
             }
         }

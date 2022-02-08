@@ -217,7 +217,8 @@ class LoginController extends Controller
         $user = Auth::guard("api")->user();
 
         $client = \DB::table("oauth_clients")
-            ->where('name', "墨兔科技 Password Grant Client")
+            ->where('name', "ilike", "%Password Grant Client%")
+            ->orderBy('id', 'desc')
             ->first();
 
         $user->tokens()

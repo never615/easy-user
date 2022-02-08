@@ -36,7 +36,7 @@ class Register extends Mailable
     public function build()
     {
         return $this->view('email.register')
-            ->subject("深圳墨兔注册");
+            ->subject("系统注册");
     }
 
 }
