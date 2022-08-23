@@ -314,7 +314,7 @@ class RegisterController extends Controller
                 ], $request->only([ "name", "gender", "birthday" ])));
 
             if ($isNewMember && $user->status == 'normal') {
-                $registerGift = $this->userUsecase->registerGift($user);
+                $registerGift = $this->userUsecase->registerComplete($user);
             }
 
             DB::commit();

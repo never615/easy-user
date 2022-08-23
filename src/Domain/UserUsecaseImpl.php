@@ -267,7 +267,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param        $credentials
      * @param        $subject
      * @param array  $info
-     * @param string $form
+     * @param string $from
      * @param string $fromAppId 第三方注册时的appid
      * @param string $fromId    推广码注册的对应from来源id
      *
@@ -278,7 +278,7 @@ class UserUsecaseImpl implements UserUsecase
         $credentials,
         $subject,
         $info = [],
-        $form = "wechat",
+        $from = "wechat",
         $fromAppId = null,
         $userAbleType = null,
         $userAbleId = null,
@@ -320,7 +320,7 @@ class UserUsecaseImpl implements UserUsecase
         \DB::beginTransaction();
 
         $userData["status"] = "normal";
-        $userData["from"] = $form;
+        $userData["from"] = $from;
         $userData["from_third_app_id"] = $fromAppId;
         $userData['userable_type'] = $userAbleType;
         $userData['userable_id'] = $userAbleId;
@@ -460,7 +460,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param $user
      */
     public
-    function registerGift(
+    function registerComplete(
         $user
     ) {
 

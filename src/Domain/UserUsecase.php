@@ -125,7 +125,7 @@ interface UserUsecase
      * @param        $credentials
      * @param        $subject
      * @param array  $info
-     * @param string $form
+     * @param string $from
      * @param string $fromAppId 第三方注册时的appid
      * @param string $fromId    推广码注册的对应from来源id
      *
@@ -135,7 +135,7 @@ interface UserUsecase
         $credentials,
         $subject,
         $info = [],
-        $form = "wechat",
+        $from = "wechat",
         $fromAppId = null,
         $userAbleType = null,
         $userAbleId = null,
@@ -245,7 +245,7 @@ interface UserUsecase
      *
      * @param $user
      */
-    public function registerGift($user);
+    public function registerComplete($user);
 
 
     /**

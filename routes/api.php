@@ -27,15 +27,6 @@ Route::group($attributes, function ($router) {
 
     Route::group([ 'middleware' => [ 'owner_api', 'requestCheck' ] ], function () {
 
-        Route::group([
-            'middleware' => [ 'authSign2' ],
-            'namespace'  => "Third",
-            'prefix'     => 'tp',
-        ], function () {
-
-
-        });
-
         /**
          * 需要经过验证:可以通过签名或者referrer验证
          */
@@ -68,7 +59,7 @@ Route::group($attributes, function ($router) {
         /**
          * 需要经过签名校验
          */
-        Route::group([ 'middleware' => [ 'authSign' ] ], function () {
+        Route::group([ 'middleware' => [ 'authSign_referrer' ] ], function () {
 
         });
 
