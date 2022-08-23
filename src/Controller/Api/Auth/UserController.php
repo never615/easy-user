@@ -43,6 +43,7 @@ class UserController extends Controller
      * @param UserUsecase $userUsecase
      *
      * @return User
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function update(Request $request, UserUsecase $userUsecase)
     {
@@ -58,7 +59,7 @@ class UserController extends Controller
 
         $this->validate($request, $rules);
 
-        $userUsecase->updateUser($user, $request->only([ "birthday", "gender", "name", 'avatar' ]));
+        $userUsecase->updateUser($user, $request->all());
 
         return $userUsecase->getReturnUserInfo($user, false);
     }
