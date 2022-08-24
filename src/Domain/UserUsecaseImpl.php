@@ -488,14 +488,17 @@ class UserUsecaseImpl implements UserUsecase
         $user->avatar = $info['avatar'] ?? null;
 
         if ( ! $user->userProfile) {
-            UserProfile::create([
-                "user_id" => $user->id,
-                "gender"  => 0,
-            ]);
+            $userProfile = UserProfile::query()
+                ->create([
+                    "user_id" => $user->id,
+                    "gender"  => 0,
+                ]);
+        } else {
+            $userProfile = $user->userProfile;
         }
 
-        $user->userProfile->birthday = $info['birthday'] ?? null;
-        $user->userProfile->gender = $info['gender'] ?? null;
+        $userProfile->birthday = $info['birthday'] ?? null;
+        $userProfile->gender = $info['gender'] ?? null;
 
         $user->save();
         $user->userProfile->save();
