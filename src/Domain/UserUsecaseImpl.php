@@ -483,6 +483,7 @@ class UserUsecaseImpl implements UserUsecase
         $user,
         $info
     ) {
+        $info = array_except($info, [ 'register', '_method' ]);
 
         $user->nickname = $info['name'] ?? null;
         $user->avatar = $info['avatar'] ?? null;
