@@ -504,23 +504,22 @@ class UserUsecaseImpl implements UserUsecase
         $user->save();
         $userProfile->save();
 
-        $otherInfo = array_except($info, [ "birthday", "gender", "name", 'avatar' ]);
+        //$otherInfo = array_except($info, [ "birthday", "gender", "name", 'avatar' ]);
+        //if ( ! empty($otherInfo)) {
+        //    try {
+        //        UserProfile::query()
+        //            ->where('user_id', $user->id)
+        //            ->update($otherInfo);
+        //    } catch (\PDOException $PDOException) {
+        //        $code = $PDOException->getCode();
+        //        if ($code == 42703) {
+        //            throw new ResourceException('非法字段');
+        //        } else {
+        //            throw $PDOException;
+        //        }
+        //    }
+        //}
 
-        if ( ! empty($otherInfo)) {
-            try {
-
-                UserProfile::query()
-                    ->where('user_id', $user->id)
-                    ->update($otherInfo);
-            } catch (\PDOException $PDOException) {
-                $code = $PDOException->getCode();
-                if ($code == 42703) {
-                    throw new ResourceException('非法字段');
-                } else {
-                    throw $PDOException;
-                }
-            }
-        }
         return $user;
     }
 
