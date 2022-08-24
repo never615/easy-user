@@ -501,7 +501,7 @@ class UserUsecaseImpl implements UserUsecase
         $userProfile->gender = $info['gender'] ?? null;
 
         $user->save();
-        $user->userProfile->save();
+        $userProfile->save();
 
         $otherInfo = array_except($info, [ "birthday", "gender", "name", 'avatar' ]);
 

@@ -71,14 +71,20 @@ Route::group($attributes, function ($router) {
             Route::group([ "middleware" => [ "scopes:mobile-token" ] ], function () {
             });
 
-            Route::group([ "middleware" => [ "scopes:account-token" ] ], function () {
-                //更新(重新绑定)手机/邮箱
+            Route::group([ "middleware" => [ "scopes:wechat-token,mobile-token,account-token" ] ],
+                function () {
+                    //更新用户信息
+                    Route::patch('user', 'Auth\UserController@update');
+                });
+
+            Route::group([ "middleware" => [ "scopes:account-token" ] ],
+                function () {
+                    //更新(重新绑定)手机/邮箱
 //                Route::post("user/identifier", 'Auth\UserController@updateIdentifier');
-            });
+                });
 
             Route::group([ "middleware" => [ "scope:mobile-token,account-token" ] ], function () {
-                //更新用户信息
-                Route::patch('user', 'Auth\UserController@update');
+
                 //更新用户密码
                 Route::patch('user/password', 'Auth\UserController@updatePassword');
                 //登出
