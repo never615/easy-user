@@ -303,12 +303,15 @@ class UserUsecaseImpl implements UserUsecase
                 $mobile = $credentials['identifier'];
                 break;
             case "wechat":
+
                 //不实时获取设置微信信息
                 //$wechatUserInfo = $this->getWechatUserInfo($credentials['identifier'], $subject);
                 //$userData = [
                 //    'nickname'   => $wechatUserInfo['nickname'] ?? null,
                 //    "avatar"     => $wechatUserInfo['avatar'] ?? null,
                 //];
+                break;
+            case "wechat_mini_program":
                 break;
             case 'ali':
                 break;
