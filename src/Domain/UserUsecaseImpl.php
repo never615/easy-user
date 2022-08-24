@@ -426,15 +426,17 @@ class UserUsecaseImpl implements UserUsecase
 
         switch ($identityType) {
             case "wechat":
-                $this->userAuthRepository->create(array_merge($credentials, [
-                    'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
-                ]), $user);
-                break;
+            case "wechat_mini_program":
             case "ali":
                 $this->userAuthRepository->create(array_merge($credentials, [
                     'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
                 ]), $user);
                 break;
+            //case "ali":
+            //    $this->userAuthRepository->create(array_merge($credentials, [
+            //        'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
+            //    ]), $user);
+            //    break;
             case "mobile":
                 //如果是手机绑定,均添加sms的验证方式
                 $this->createUserAuth([
