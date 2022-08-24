@@ -594,7 +594,6 @@ class UserUsecaseImpl implements UserUsecase
         $wechatUserInfo = null
     ) {
         if ($credentials['identityType'] === 'wechat') {
-            $this->updateUserWechatInfo($user, $credentials, $subject);
             if ($wechatUserInfo) {
                 UserProfile::updateOrCreate([ 'user_id' => $user->id ],
                     [

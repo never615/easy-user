@@ -146,7 +146,6 @@ class LoginController extends Controller
 
         //如果是微信请求则拉取最新的用户微信信息
         $this->userUsecase->updateUserWechatInfo($user, $credentials, $subject);
-
         $user = $this->userUsecase->getReturnUserInfo($user, true, true);
 
         return $user;
