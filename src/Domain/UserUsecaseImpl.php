@@ -13,7 +13,6 @@ use Mallto\Mall\Data\Member\MemberInviteNew;
 use Mallto\Mall\Data\Member\MemberInviteRecord;
 use Mallto\Mall\Data\MemberLevel;
 use Mallto\Tool\Exception\NotFoundException;
-use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\User\Data\Repository\UserAuthRepository;
@@ -174,7 +173,8 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         if ($user->status === 'blacklist') {
-            throw new PermissionDeniedException();
+            throw new ResourceException('黑名单用户');
+            //throw new PermissionDeniedException();
         }
 
         if ( ! empty($user->mobile)) {
@@ -520,9 +520,7 @@ class UserUsecaseImpl implements UserUsecase
                     throw $PDOException;
                 }
             }
-
         }
-
         return $user;
     }
 
@@ -565,12 +563,15 @@ class UserUsecaseImpl implements UserUsecase
             ->findOrFail($user->id);
 
         if ($user->status === 'blacklist') {
-            throw new PermissionDeniedException();
+            throw new ResourceException('黑名单用户');
+            //throw new PermissionDeniedException();
         }
 
         if ($addToken) {
             $user = $this->addToken($user);
         }
+
+        $user->encrypt_user_id = encrypt($user->id);
 
         return $user;
     }
