@@ -593,15 +593,18 @@ class UserUsecaseImpl implements UserUsecase
         $subject,
         $wechatUserInfo = null
     ) {
-        if ($wechatUserInfo) {
-            UserProfile::updateOrCreate([ 'user_id' => $user->id ],
-                [
-                    "wechat_user" => $wechatUserInfo ?? null,
-                ]
-            );
-        } else {
-            dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
-                $user->id, $subject))->delay(Carbon::now()->addMinutes(1));
+        if ($credentials['identityType'] === 'wechat') {
+            $this->updateUserWechatInfo($user, $credentials, $subject);
+            if ($wechatUserInfo) {
+                UserProfile::updateOrCreate([ 'user_id' => $user->id ],
+                    [
+                        "wechat_user" => $wechatUserInfo ?? null,
+                    ]
+                );
+            } else {
+                dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
+                    $user->id, $subject))->delay(Carbon::now()->addMinutes(1));
+            }
         }
     }
 
