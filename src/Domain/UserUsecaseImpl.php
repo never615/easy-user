@@ -562,6 +562,13 @@ class UserUsecaseImpl implements UserUsecase
     ) {
         $user = User::with("userProfile")
             ->findOrFail($user->id);
+        $birthday = $user->userProfile->birthday ?? null;
+        //计算年龄
+        if($birthday){
+            $age = Carbon::now()->diffInYears(Carbon::createFromFormat('Y-m-d',
+                $birthday));
+            $user->userProfile->age = $age;
+        }
 
         if ($user->status === 'blacklist') {
             throw new ResourceException('黑名单用户');
