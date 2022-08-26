@@ -562,13 +562,6 @@ class UserUsecaseImpl implements UserUsecase
     ) {
         $user = User::with("userProfile")
             ->findOrFail($user->id);
-        $birthday = $user->userProfile->birthday ?? null;
-        //计算年龄
-        if($birthday){
-            $age = Carbon::now()->diffInYears(Carbon::createFromFormat('Y-m-d',
-                $birthday));
-            $user->userProfile->age = $age;
-        }
 
         $this->getReturnInfoBasic($user, $addToken);
 
@@ -588,6 +581,14 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         $user->encrypt_user_id = encrypt($user->id);
+
+        $birthday = $user->userProfile->birthday ?? null;
+        //计算年龄
+        if ($birthday) {
+            $age = \Carbon\Carbon::now()->diffInYears(Carbon::createFromFormat('Y-m-d',
+                $birthday));
+            $user->userProfile->age = $age;
+        }
 
         return $user;
     }
