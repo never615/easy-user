@@ -563,8 +563,16 @@ class UserUsecaseImpl implements UserUsecase
         $user = User::with("userProfile")
             ->findOrFail($user->id);
 
+        $this->getReturnInfoBasic($user, $addToken);
+
+        return $user;
+    }
+
+
+    public function getReturnInfoBasic($user, $addToken = true)
+    {
         if ($user->status === 'blacklist') {
-            throw new ResourceException('黑名单用户');
+            throw new ResourceException("用户进入黑名单,无法使用所有功能");
             //throw new PermissionDeniedException();
         }
 
