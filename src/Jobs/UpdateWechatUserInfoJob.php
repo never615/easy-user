@@ -30,7 +30,6 @@ class UpdateWechatUserInfoJob implements ShouldQueue
      */
     public $tries = 2;
 
-
     ///**
     // * The number of seconds to wait before retrying the job.
     // *
@@ -79,6 +78,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
     public function handle(WechatUsecase $wechatUsecase)
     {
         if (config('queue.default') === 'redis') {
+            //同一时刻只允许一个任务
             Redis::funnel('update_wechat_info_' . $this->userId)
                 ->limit(1)
                 ->then(function () use ($wechatUsecase) {
