@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
-use Mallto\Mall\SubjectConfigConstants;
+use Mallto\Tool\Domain\DynamicInject;
+use Mallto\Tool\SubjectConfigConstants;
 use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Domain\Sms\SmsCodeUsecase;
 use Mallto\Tool\Exception\ResourceException;
@@ -35,21 +36,14 @@ class SmsUsecase
     private $smsCodeUsecase;
 
     /**
-     * @var Sms
-     */
-    private $sms;
-
-
-    /**
      * SmsUsecase constructor.
      *
      * @param SmsCodeUsecase $smsCodeUsecase
      * @param Sms            $sms
      */
-    public function __construct(SmsCodeUsecase $smsCodeUsecase, Sms $sms)
+    public function __construct(SmsCodeUsecase $smsCodeUsecase)
     {
         $this->smsCodeUsecase = $smsCodeUsecase;
-        $this->sms = $sms;
     }
 
 
@@ -124,11 +118,12 @@ class SmsUsecase
             throw new ResourceException("一分钟以内只能发送一次");
         }
 
-        $result = $this->sms->sendSms($mobile, $sign,
+        $sms = DynamicInject::makeSmsOperator($subjectId);
+        $result = $sms->sendSms($mobile,
             SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_TEMPLATE_CODE, $subject,
                 "SMS_141255069"), [
                 "code" => $code,
-            ]);
+            ],$sign);
 
         if ($result) {
             $smsUsecase = app(SmsUsecase::class);
