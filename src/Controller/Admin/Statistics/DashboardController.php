@@ -26,7 +26,7 @@ class DashboardController extends Controller
 
             $user = Admin::user();
             if ( ! $user->can("dashboard")) {
-                $content->description("敬请期待");
+                $content->description("没有权限查看dashboard");
 
                 return;
             }
