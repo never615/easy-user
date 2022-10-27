@@ -4,6 +4,7 @@
  */
 
 /**
+ *
  * Created by PhpStorm.
  * User: never615 <never615.com>
  * Date: 02/11/2017
@@ -28,6 +29,7 @@ trait AuthValidateTrait
             throw new PreconditionFailedHttpException(trans("errors.precondition_failed"));
         }
     }
+
 
     /**
      * 检查是不是支付宝请求
