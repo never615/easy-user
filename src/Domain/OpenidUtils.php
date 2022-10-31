@@ -121,30 +121,15 @@ class OpenidUtils
      */
     public static function getOpenidFromOriginalOpenids($orginalOpenid)
     {
-        $openid = self::decryptOpenid($orginalOpenid);
-
-        //数组有两个元素,第一个就是原始openid;第二个就是时间戳
-        return explode('|||', $openid);
-    }
-
-
-    /**
-     * @param $openid
-     *
-     * @return mixed|string
-     * @throws AuthenticationException
-     */
-    public static function decryptOpenid($openid)
-    {
-        if (empty($openid)) {
+        if (empty($orginalOpenid)) {
             throw new AuthenticationException('openid为空,请检查微信授权或刷新重试');
         }
 
         try {
-            $openid = decrypt($openid);
+            $openid = decrypt($orginalOpenid);
         } catch (DecryptException $decryptException) {
             //解析失败尝试url解码在进行解析
-            $openid = urldecode($openid);
+            $openid = urldecode($orginalOpenid);
             try {
                 $openid = decrypt($openid);
             } catch (DecryptException $decryptException) {
@@ -154,7 +139,40 @@ class OpenidUtils
             }
         }
 
-        $openids = explode("|||", $openid);
+        return explode("|||", $openid);
+    }
+
+
+    /**
+     * @param string $openid 包含时间戳
+     *
+     * @return mixed|string
+     * @throws AuthenticationException
+     */
+    public static function decryptOpenid($openid)
+    {
+        //if (empty($openid)) {
+        //    throw new AuthenticationException('openid为空,请检查微信授权或刷新重试');
+        //}
+        //
+        //try {
+        //    $openid = decrypt($openid);
+        //} catch (DecryptException $decryptException) {
+        //    //解析失败尝试url解码在进行解析
+        //    $openid = urldecode($openid);
+        //    try {
+        //        $openid = decrypt($openid);
+        //    } catch (DecryptException $decryptException) {
+        //        \Log::error("解析openid失败3");
+        //        \Log::warning($openid);
+        //        throw new AuthenticationException("授权失败,openid解析失败");
+        //    }
+        //}
+        //
+        //$openids = explode("|||", $openid);
+
+        $openids = self::getOpenidFromOriginalOpenids($openid);
+
         if (count($openids) > 1) {
             $openid = $openids[0];
         }
@@ -166,7 +184,7 @@ class OpenidUtils
     /**
      * 解析加密的 openid,带解析的 openid 不含时间戳
      *
-     * @param $openid
+     * @param string $openid 不包含时间戳
      *
      * @return string
      * @throws AuthenticationException
