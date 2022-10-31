@@ -13,8 +13,8 @@ use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Exception\AuthorizeFailedException;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\User\Data\User;
+use Mallto\User\Domain\OpenidUtils;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
-use Mallto\User\Domain\Traits\OpenidCheckTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
@@ -27,7 +27,7 @@ use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 class LoginController extends Controller
 {
 
-    use AuthValidateTrait, OpenidCheckTrait;
+    use AuthValidateTrait;
 
     /**
      * @var UserUsecase
@@ -60,7 +60,7 @@ class LoginController extends Controller
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $request = $this->checkOpenid($request, 'identifier');
+                $request = OpenidUtils::checkAndParseOpenid($request, 'identifier');
                 if ( ! empty($request->get("bind_type"))) {
                     return $this->loginByWechatWithBinding($request);
                 } else {
@@ -68,7 +68,7 @@ class LoginController extends Controller
                 }
                 break;
             case "ALI":
-                $request = $this->checkUserid($request, 'identifier');
+                $request = OpenidUtils::checkAndParseOpenid($request, 'identifier');
                 if ( ! empty($request->get("bind_type"))) {
                     return $this->loginByAliWithBinding($request);
                 } else {

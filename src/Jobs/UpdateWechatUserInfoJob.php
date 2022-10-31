@@ -12,10 +12,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redis;
-use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserProfile;
+use Mallto\User\Domain\OpenidUtils;
 use Mallto\User\Domain\WechatUsecase;
 
 class UpdateWechatUserInfoJob implements ShouldQueue
@@ -107,7 +107,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
             if ( ! $exist) {
                 $wechatUserInfo = $wechatUsecase->getUserInfo(
                     $this->subject->wechat_uuid ?? $this->subject->uuid,
-                    AppUtils::decryptOpenid($this->openid));
+                    OpenidUtils::decryptOpenidWithOutTimestamp($this->openid));
 
                 try {
                     UserProfile::updateOrCreate([

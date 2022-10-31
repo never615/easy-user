@@ -13,10 +13,9 @@ use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
-use Mallto\User\Data\UserSalt;
+use Mallto\User\Domain\OpenidUtils;
 use Mallto\User\Domain\SmsUsecase;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
-use Mallto\User\Domain\Traits\OpenidCheckTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 
@@ -29,7 +28,7 @@ use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
 class RegisterController extends Controller
 {
 
-    use  AuthValidateTrait, OpenidCheckTrait;
+    use  AuthValidateTrait;
 
     /**
      * @var SmsUsecase
@@ -58,7 +57,7 @@ class RegisterController extends Controller
     /**
      * @param Request $request
      *
-     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User|null
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|\Illuminate\Http\JsonResponse|User|null
      * @throws \Illuminate\Auth\AuthenticationException
      */
     public function register(Request $request)
@@ -66,12 +65,12 @@ class RegisterController extends Controller
         switch ($request->header("REQUEST-TYPE")) {
             case "WECHAT":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $request = $this->checkOpenid($request, 'identifier', false);
+                $request = OpenidUtils::checkAndParseOpenid($request, 'identifier', false);
 
                 return $this->registerByWechat($request);
             case "ALI":
                 //校验identifier(实际就是加密过得openid),确保只使用了一次
-                $request = $this->checkOpenid($request, 'identifier', false);
+                $request = OpenidUtils::checkAndParseOpenid($request, 'identifier', false);
 
                 $request->input('identity_type', 'ali');
 
@@ -79,29 +78,8 @@ class RegisterController extends Controller
             case "IOS":
             case "ANDROID":
                 return $this->registerByApp($request);
-                break;
         }
         throw new PreconditionRequiredHttpException();
-    }
-
-
-    /**
-     * 获取用户密码要使用的salt
-     *
-     * @return $this|\Illuminate\Database\Eloquent\Model
-     */
-    public function userSalt()
-    {
-        $salt = \Mallto\Tool\Utils\AppUtils::getRandomString(8);
-        $encryptSalt = encrypt($salt);
-        $userSalt = UserSalt::create([
-            "salt" => $encryptSalt,
-        ]);
-
-        return response()->json([
-            'id'   => $userSalt->id,
-            'salt' => $salt,
-        ]);
     }
 
 
@@ -388,5 +366,28 @@ class RegisterController extends Controller
             return $user;
         }
     }
+
+
+
+    //
+    //
+    ///**
+    // * 获取用户密码要使用的salt
+    // *
+    // * @return $this|\Illuminate\Database\Eloquent\Model
+    // */
+    //public function userSalt()
+    //{
+    //    $salt = \Mallto\Tool\Utils\AppUtils::getRandomString(8);
+    //    $encryptSalt = encrypt($salt);
+    //    $userSalt = UserSalt::create([
+    //        "salt" => $encryptSalt,
+    //    ]);
+    //
+    //    return response()->json([
+    //        'id'   => $userSalt->id,
+    //        'salt' => $salt,
+    //    ]);
+    //}
 
 }

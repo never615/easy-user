@@ -14,7 +14,6 @@ use Mallto\Mall\Data\Member\MemberInviteRecord;
 use Mallto\Mall\Data\MemberLevel;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\Tool\Utils\AppUtils;
 use Mallto\User\Data\Repository\UserAuthRepository;
 use Mallto\User\Data\Repository\UserAuthRepositoryInterface;
 use Mallto\User\Data\User;
@@ -93,7 +92,6 @@ class UserUsecaseImpl implements UserUsecase
             'identifier'   => $request->get("identifier"),
             'requestType'  => $request->header("REQUEST-TYPE"),
             'credential'   => $request->get('credential'),
-
         ];
 
         return $credentials;
@@ -110,6 +108,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param $subject
      *
      * @return User|null
+     * @throws AuthenticationException
      */
     public function retrieveByCredentials($credentials, $subject)
     {
@@ -122,11 +121,9 @@ class UserUsecaseImpl implements UserUsecase
         $identifier = $credentials['identifier'];
 
         switch ($requestType) {
-            case "WECHAT":
-                $identifier = $this->decryptOpenid($identifier);
-                break;
             case "ALI":
-                $identifier = $this->decryptOpenid($identifier);
+            case "WECHAT":
+                $identifier = OpenidUtils::decryptOpenidWithOutTimestamp($identifier);
                 break;
         }
 
@@ -429,14 +426,9 @@ class UserUsecaseImpl implements UserUsecase
             case "wechat_mini_program":
             case "ali":
                 $this->userAuthRepository->create(array_merge($credentials, [
-                    'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
+                    'identifier' => ($openidEncrypted ? OpenidUtils::decryptOpenidWithOutTimestamp($identifier) : $identifier),
                 ]), $user);
                 break;
-            //case "ali":
-            //    $this->userAuthRepository->create(array_merge($credentials, [
-            //        'identifier' => ($openidEncrypted ? AppUtils::decryptOpenid($identifier) : $identifier),
-            //    ]), $user);
-            //    break;
             case "mobile":
                 //如果是手机绑定,均添加sms的验证方式
                 $this->createUserAuth([
@@ -523,23 +515,6 @@ class UserUsecaseImpl implements UserUsecase
         //}
 
         return $user;
-    }
-
-
-    /**
-     * 解密openid
-     *
-     * @param $openid
-     *
-     * @return string
-     * @deprecated
-     *
-     */
-    public
-    function decryptOpenid(
-        $openid
-    ) {
-        return AppUtils::decryptOpenid($openid);
     }
 
 
@@ -709,30 +684,6 @@ class UserUsecaseImpl implements UserUsecase
 
     }
 
-
-    ///**
-    // * 获取微信用户
-    // *
-    // * @param $openid
-    // * @param $subject
-    // *
-    // * @return
-    // * @throws AuthenticationException
-    // */
-    //protected
-    //function getWechatUserInfo(
-    //    $openid,
-    //    $subject
-    //) {
-    //    //$uuid = $subject->uuid;
-    //    $wechatUsecase = app(\Mallto\User\Domain\WechatUsecase::class);
-    //
-    //    $wechatUserInfo = $wechatUsecase->getUserInfo(
-    //        $subject->wechat_uuid ?? $subject->uuid,
-    //        AppUtils::decryptOpenid($openid));
-    //
-    //    return $wechatUserInfo;
-    //}
 
     public
     function bindSalt(

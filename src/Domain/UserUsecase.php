@@ -99,16 +99,6 @@ interface UserUsecase
     public function isBinded($bindType, $bindDate, $subjectId);
 
 
-    /**
-     * 解密openid
-     *
-     * @param $openid
-     *
-     * @return string
-     */
-    public function decryptOpenid($openid);
-
-
 //    /**
 //     * 微信:创建用户
 //     *
