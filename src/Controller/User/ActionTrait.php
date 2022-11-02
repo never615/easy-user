@@ -14,7 +14,7 @@ use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\User\Data\User;
 use Mallto\User\Data\UserProfile;
-use Mallto\User\Domain\SmsUsecase;
+use Mallto\User\Domain\SmsVerifyCodeUsecase;
 
 /**
  * User: never615 <never615.com>
@@ -93,10 +93,10 @@ trait ActionTrait
 //            $oldMobile = $form->model()->mobile;
 
             if (AppUtils::isProduction()) {
-                $smsUsecase = app(SmsUsecase::class);
+                $smsVerifyCodeUsecase = app(SmsVerifyCodeUsecase::class);
 
                 //校验验证码
-                $smsUsecase->checkVerifyCode($newMobile, $mobileCode, 'reset',
+                $smsVerifyCodeUsecase->checkVerifyCode($newMobile, $mobileCode, 'reset',
                     $user->subject->id);
             }
 

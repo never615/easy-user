@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
-use Mallto\User\Domain\SmsUsecase;
+use Mallto\User\Domain\SmsVerifyCodeUsecase;
 use Mallto\User\Domain\UserUsecase;
 
 /**
@@ -35,7 +35,7 @@ class ResetPasswordController extends Controller
      *
      * @param SmsUsecase $smsUsecase
      */
-    public function __construct(SmsUsecase $smsUsecase)
+    public function __construct(SmsVerifyCodeUsecase $smsUsecase)
     {
         $this->smsUsecase = $smsUsecase;
     }
@@ -57,7 +57,7 @@ class ResetPasswordController extends Controller
 
         //校验短信验证码
         if ( ! $this->smsUsecase->checkVerifyCode($request->identifier, $request->code,
-            SmsUsecase::USE_RESET)) {
+            SmsVerifyCodeUsecase::USE_RESET)) {
             throw new ResourceException("验证码错误");
         }
 

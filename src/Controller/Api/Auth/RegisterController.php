@@ -14,7 +14,7 @@ use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\User;
 use Mallto\User\Domain\OpenidUtils;
-use Mallto\User\Domain\SmsUsecase;
+use Mallto\User\Domain\SmsVerifyCodeUsecase;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
@@ -31,9 +31,9 @@ class RegisterController extends Controller
     use  AuthValidateTrait;
 
     /**
-     * @var SmsUsecase
+     * @var SmsVerifyCodeUsecase
      */
-    private $smsUsecase;
+    private $smsVerifyCodeUsecase;
 
     /**
      * @var UserUsecase
@@ -44,12 +44,12 @@ class RegisterController extends Controller
     /**
      * RegisterController constructor.
      *
-     * @param SmsUsecase  $smsUsecase
+     * @param SmsVerifyCodeUsecase  $smsUsecase
      * @param UserUsecase $userUsecase
      */
-    public function __construct(SmsUsecase $smsUsecase, UserUsecase $userUsecase)
+    public function __construct(SmsVerifyCodeUsecase $smsUsecase, UserUsecase $userUsecase)
     {
-        $this->smsUsecase = $smsUsecase;
+        $this->smsVerifyCodeUsecase = $smsUsecase;
         $this->userUsecase = $userUsecase;
     }
 
@@ -118,7 +118,7 @@ class RegisterController extends Controller
 
         $this->isWechatRequest($request);
 
-        $this->smsUsecase->checkVerifyCode($request->bind_data, $request->code);
+        $this->smsVerifyCodeUsecase->checkVerifyCode($request->bind_data, $request->code);
 
         $subject = SubjectUtils::getSubject();
 
@@ -211,7 +211,7 @@ class RegisterController extends Controller
         ]);
         $this->validate($request, $rules);
 
-        $this->smsUsecase->checkVerifyCode($request->bind_data, $request->code);
+        $this->smsVerifyCodeUsecase->checkVerifyCode($request->bind_data, $request->code);
 
         $subject = SubjectUtils::getSubject();
 
@@ -331,7 +331,7 @@ class RegisterController extends Controller
         ];
 
         $this->validate($request, $rules);
-        $this->smsUsecase->checkVerifyCode($request->identifier, $request->code);
+        $this->smsVerifyCodeUsecase->checkVerifyCode($request->identifier, $request->code);
         $subject = SubjectUtils::getSubject();
 
         //检查用户是否存在

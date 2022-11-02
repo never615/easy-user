@@ -10,13 +10,14 @@ use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Domain\DynamicInject;
-use Mallto\Tool\SubjectConfigConstants;
 use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Domain\Sms\SmsCodeUsecase;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
+use Mallto\Tool\SubjectConfigConstants;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
+use Psr\SimpleCache\InvalidArgumentException;
 
 /**
  * Created by PhpStorm.
@@ -24,7 +25,7 @@ use Mallto\Tool\Utils\TimeUtils;
  * Date: 13/07/2017
  * Time: 6:57 PM
  */
-class SmsUsecase
+class SmsVerifyCodeUsecase
 {
 
     const USE_RESET = "reset";
@@ -35,11 +36,11 @@ class SmsUsecase
      */
     private $smsCodeUsecase;
 
+
     /**
      * SmsUsecase constructor.
      *
      * @param SmsCodeUsecase $smsCodeUsecase
-     * @param Sms            $sms
      */
     public function __construct(SmsCodeUsecase $smsCodeUsecase)
     {
@@ -91,8 +92,9 @@ class SmsUsecase
      * @param string $use
      *
      * @return mixed
+     * @throws InvalidArgumentException
      */
-    public function sendSms($mobile, $subjectId, $use = 'register')
+    public function sendSmsVerifyCode($mobile, $subjectId, $use = 'register')
     {
         //本地环境不发验证码
         if (config('app.env') === 'local') {
@@ -110,7 +112,8 @@ class SmsUsecase
 
         $subject = Subject::findOrFail($subjectId);
 
-        $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject, "墨兔");
+        $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject,
+            "墨兔");
         $code = mt_rand(1000, 9999);
 
         //检查一分钟内只能发送一个
@@ -118,18 +121,18 @@ class SmsUsecase
             throw new ResourceException("一分钟以内只能发送一次");
         }
 
-        $sms = DynamicInject::makeSmsOperator($subjectId);
-        $result = $sms->sendSms($mobile,
+        $sms = DynamicInject::makeSmsOperator();
+        $result = $sms->sendSms(
+            $mobile,
             SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_TEMPLATE_CODE, $subject,
-                "SMS_141255069"), [
-                "code" => $code,
-            ],$sign);
+                "SMS_141255069"),
+            [ "code" => $code, ],
+            $sign
+        );
 
         if ($result) {
-            $smsUsecase = app(SmsUsecase::class);
-
-            $key = $smsUsecase->getSmsCacheKey($use, $subject->id, $mobile);
-            $sendAtCacheKey = $smsUsecase->getSmsSendAtCacheKey($use, $subject->id, $mobile);
+            $key = $this->getSmsCacheKey($use, $subject->id, $mobile);
+            $sendAtCacheKey = $this->getSmsSendAtCacheKey($use, $subject->id, $mobile);
 
             //记录验证码,用来处理验证码五分钟内有效
             Cache::put($key, $code, 5 * 60);

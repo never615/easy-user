@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Mallto\User\Domain\SmsUsecase;
+use Mallto\User\Domain\SmsVerifyCodeUsecase;
 
 class SmsNotifyJob implements ShouldQueue
 {
@@ -54,10 +54,10 @@ class SmsNotifyJob implements ShouldQueue
      */
     public function handle()
     {
-        $smsUseCase = app(SmsUsecase::class);
+        $smsUseCase = app(SmsVerifyCodeUsecase::class);
 
         try {
-            $smsUseCase->sendSms($this->mobile, $this->subjectId, $this->use);
+            $smsUseCase->sendSmsVerifyCode($this->mobile, $this->subjectId, $this->use);
         } catch (\Exception $exception) {
             \Log::warning("短信验证码发送失败");
             \Log::warning($exception->getMessage());

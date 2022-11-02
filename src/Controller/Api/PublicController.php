@@ -8,7 +8,7 @@ namespace Mallto\User\Controller\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
 use Mallto\Admin\SubjectUtils;
-use Mallto\User\Domain\SmsUsecase;
+use Mallto\User\Domain\SmsVerifyCodeUsecase;
 
 /**
  * Created by PhpStorm.
@@ -20,7 +20,7 @@ class PublicController extends Controller
 {
 
     /**
-     * @var SmsUsecase
+     * @var SmsVerifyCodeUsecase
      */
     private $smsUsecase;
 
@@ -28,9 +28,9 @@ class PublicController extends Controller
     /**
      * PublicController constructor.
      *
-     * @param SmsUsecase $smsUsecase
+     * @param SmsVerifyCodeUsecase $smsUsecase
      */
-    public function __construct(SmsUsecase $smsUsecase)
+    public function __construct(SmsVerifyCodeUsecase $smsUsecase)
     {
         $this->smsUsecase = $smsUsecase;
     }
@@ -49,7 +49,7 @@ class PublicController extends Controller
 
         $subjectId = SubjectUtils::getSubjectId();
 
-        $this->smsUsecase->sendSms($mobile, $subjectId, $use);
+        $this->smsUsecase->sendSmsVerifyCode($mobile, $subjectId, $use);
 
         return response()->nocontent();
     }
