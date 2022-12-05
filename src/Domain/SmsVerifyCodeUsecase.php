@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Domain\DynamicInject;
-use Mallto\Tool\Domain\Sms\Sms;
 use Mallto\Tool\Domain\Sms\SmsCodeUsecase;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
