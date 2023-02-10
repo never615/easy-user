@@ -21,12 +21,12 @@ class DashboardController extends Controller
     public function dashboard(Request $request)
     {
         return Admin::content(function (Content $content) use ($request) {
-            $content->header('Dashboard');
+            $content->header('数据看板');
             $content->description(" ");
 
             $user = Admin::user();
             if ( ! $user->can("dashboard")) {
-                $content->description("没有权限查看dashboard");
+                $content->description("没有权限查看数据看板");
 
                 return;
             }
