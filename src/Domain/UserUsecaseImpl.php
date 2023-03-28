@@ -278,8 +278,7 @@ class UserUsecaseImpl implements UserUsecase
         $from = "wechat",
         $fromAppId = null,
         $userAbleType = null,
-        $userAbleId = null,
-        $inviter_id = null
+        $userAbleId = null
     ) {
         if (empty($credentials)) {
             throw new ResourceException("异常请求:credentials为空");
@@ -325,39 +324,50 @@ class UserUsecaseImpl implements UserUsecase
         $userData['userable_type'] = $userAbleType;
         $userData['userable_id'] = $userAbleId;
         $userData["is_register_gift"] = false;
-        $userData["inviter_id"] = $inviter_id;
 
         try {
-            $user = User::create($userData);
-            if ($inviter_id) {
-                $userMember = User::query()
-                    ->where('id', $inviter_id)
-                    ->where('subject_id', $subject->id)
-                    ->first();
+            if (isset($info['inviter_id'], $info['invitation_id'])) {
+                $userData["inviter_id"] = $info['inviter_id'];
+            }
 
-                $member = $userMember->member;
-                $lowMemberLevel = MemberLevel::query()
+            $user = User::create($userData);
+
+            if ($user->inviter_id) {
+                $userMember = User::query()
+                    ->where('id', $user->inviter_id)
                     ->where('subject_id', $subject->id)
-                    ->orderBy('level', 'asc')
                     ->first();
-                $memberInvite = MemberInviteNew::query()->where('subject_id',
-                    $subject->id)->where('switch',
-                    true)->first([ 'id' ]);
-                if ($memberInvite) {
-                    //更新邀新记录
-                    MemberInviteRecord::query()->create(
-                        [
-                            'subject_id'       => $subject->id,
-                            'user_id'          => $inviter_id,
-                            'invite_new_id'    => $memberInvite->id,
-                            'invite_user_id'   => $user->id,
-                            'username'         => $member->real_name,
-                            'mobile'           => $member->mobile,
-                            'birthday'         => $member->birthday,
-                            'sex'              => $member->sex,
-                            'member_level_ids' => [ "$lowMemberLevel->id" ],
-                        ]
-                    );
+                if ($userMember) {
+                    $member = $userMember->member;
+
+                    $lowMemberLevel = MemberLevel::query()
+                        ->where('subject_id', $subject->id)
+                        ->orderBy('level')
+                        ->first();
+
+                    $memberInvite = MemberInviteNew::query()
+                        ->where('subject_id', $subject->id)
+                        ->where('id', $info['invitation_id'])
+                        ->where('switch', true)
+                        ->where('ended_at','>=',Carbon::now()->toDateTimeString())
+                        ->first([ 'id' ]);
+
+                    if ($memberInvite) {
+                        //更新邀新记录
+                        MemberInviteRecord::query()->create(
+                            [
+                                'subject_id'       => $subject->id,
+                                'user_id'          => $user->inviter_id,
+                                'invite_new_id'    => $memberInvite->id,
+                                'invite_user_id'   => $user->id,
+                                'username'         => $member->real_name,
+                                'mobile'           => $member->mobile,
+                                'birthday'         => $member->birthday,
+                                'sex'              => $member->sex,
+                                'member_level_ids' => $lowMemberLevel ? [ (string) $lowMemberLevel->id ] : null,
+                            ]
+                        );
+                    }
                 }
             }
         } catch (\PDOException $e) {
