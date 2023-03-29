@@ -326,7 +326,7 @@ class UserUsecaseImpl implements UserUsecase
         $userData["is_register_gift"] = false;
 
         try {
-            if (isset($info['inviter_id'], $info['invitation_id'])) {
+            if (isset($info['inviter_id'])) {
                 $userData["inviter_id"] = $info['inviter_id'];
             }
 
@@ -347,10 +347,14 @@ class UserUsecaseImpl implements UserUsecase
 
                     $memberInvite = MemberInviteNew::query()
                         ->where('subject_id', $subject->id)
-                        ->where('id', $info['invitation_id'])
                         ->where('switch', true)
-                        ->where('ended_at','>=',Carbon::now()->toDateTimeString())
-                        ->first([ 'id' ]);
+                        ->where('ended_at', '>=', Carbon::now()->toDateTimeString());
+
+                    if (isset($info['invitation_id'])) {
+                        $memberInvite = $memberInvite->where('id', $info['invitation_id']);
+                    }
+
+                    $memberInvite = $memberInvite->first([ 'id' ]);
 
                     if ($memberInvite) {
                         //更新邀新记录
