@@ -246,4 +246,7 @@ interface UserUsecase
      */
     public function checkUserStatus($user);
 
+
+    public function inviterUser($subject, $user, $info);
+
 }

@@ -9,9 +9,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Mallto\Mall\Data\Member\MemberInviteNew;
-use Mallto\Mall\Data\Member\MemberInviteRecord;
-use Mallto\Mall\Data\MemberLevel;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\Repository\UserAuthRepository;
@@ -213,9 +210,7 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function isBinded($bindType, $bindDate, $subjectId)
     {
-        return User::where($bindType, $bindDate)
-            ->where("subject_id", $subjectId)
-            ->first();
+        return User::where($bindType, $bindDate)->where("subject_id", $subjectId)->first();
     }
 
 
@@ -228,9 +223,7 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function hasUserAuth($user, $identityType)
     {
-        $userAuth = $user->userAuths()
-            ->where("identity_type", $identityType)
-            ->first();
+        $userAuth = $user->userAuths()->where("identity_type", $identityType)->first();
 
         return $userAuth;
     }
@@ -249,7 +242,7 @@ class UserUsecaseImpl implements UserUsecase
     public function bind($user, $bindType, $bindData)
     {
         if ( ! in_array($bindType, User::SUPPORT_BIND_TYPE)) {
-            throw new ResourceException("无效的绑定凭证:" . $bindData);
+            throw new ResourceException("无效的绑定凭证:".$bindData);
         }
         $user->$bindType = $bindData;
         $user->save();
@@ -312,7 +305,7 @@ class UserUsecaseImpl implements UserUsecase
             case 'ali':
                 break;
             default:
-                throw new ResourceException("无效的user auth类型:" . $credentials["identityType"]);
+                throw new ResourceException("无效的user auth类型:".$credentials["identityType"]);
                 break;
         }
 
@@ -333,42 +326,7 @@ class UserUsecaseImpl implements UserUsecase
             $user = User::create($userData);
 
             if ($user->inviter_id) {
-                $userMember = User::query()
-                    ->where('id', $user->inviter_id)
-                    ->where('subject_id', $subject->id)
-                    ->first();
-                if ($userMember) {
-                    $member = $userMember->member;
-
-                    $lowMemberLevel = MemberLevel::query()
-                        ->where('subject_id', $subject->id)
-                        ->orderBy('level')
-                        ->first();
-
-                    $memberInvite = MemberInviteNew::query()
-                        ->where('subject_id', $subject->id)
-                        ->where('id', $info['invitation_id'])
-                        ->where('switch', true)
-                        ->where('ended_at','>=',Carbon::now()->toDateTimeString())
-                        ->first([ 'id' ]);
-
-                    if ($memberInvite) {
-                        //更新邀新记录
-                        MemberInviteRecord::query()->create(
-                            [
-                                'subject_id'       => $subject->id,
-                                'user_id'          => $user->inviter_id,
-                                'invite_new_id'    => $memberInvite->id,
-                                'invite_user_id'   => $user->id,
-                                'username'         => $member->real_name,
-                                'mobile'           => $member->mobile,
-                                'birthday'         => $member->birthday,
-                                'sex'              => $member->sex,
-                                'member_level_ids' => $lowMemberLevel ? [ (string) $lowMemberLevel->id ] : null,
-                            ]
-                        );
-                    }
-                }
+                $this->inviterUser($subject, $user, $info);
             }
         } catch (\PDOException $e) {
 
@@ -421,8 +379,7 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @return
      */
-    public
-    function createUserAuth(
+    public function createUserAuth(
         $credentials,
         $user,
         $openidEncrypted = true
@@ -465,8 +422,7 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param $user
      */
-    public
-    function registerComplete(
+    public function registerComplete(
         $user
     ) {
 
@@ -481,8 +437,7 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @return mixed
      */
-    public
-    function updateUser(
+    public function updateUser(
         $user,
         $info
     ) {
@@ -492,11 +447,10 @@ class UserUsecaseImpl implements UserUsecase
         $user->avatar = $info['avatar'] ?? null;
 
         if ( ! $user->userProfile) {
-            $userProfile = UserProfile::query()
-                ->create([
-                    "user_id" => $user->id,
-                    "gender"  => 0,
-                ]);
+            $userProfile = UserProfile::query()->create([
+                "user_id" => $user->id,
+                "gender"  => 0,
+            ]);
         } else {
             $userProfile = $user->userProfile;
         }
@@ -538,14 +492,12 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|User
      */
-    public
-    function getReturnUserInfo(
+    public function getReturnUserInfo(
         $user,
         $addToken = true,
         $wechatLogin = false
     ) {
-        $user = User::with("userProfile")
-            ->findOrFail($user->id);
+        $user = User::with("userProfile")->findOrFail($user->id);
 
         $this->getReturnInfoBasic($user, $addToken);
 
@@ -569,8 +521,7 @@ class UserUsecaseImpl implements UserUsecase
         $birthday = $user->userProfile->birthday ?? null;
         //计算年龄
         if ($birthday) {
-            $age = \Carbon\Carbon::now()->diffInYears(Carbon::createFromFormat('Y-m-d',
-                $birthday));
+            $age = \Carbon\Carbon::now()->diffInYears(Carbon::createFromFormat('Y-m-d', $birthday));
             $user->userProfile->age = $age;
         }
 
@@ -586,8 +537,7 @@ class UserUsecaseImpl implements UserUsecase
      * @param       $subject
      * @param array $wechatUserInfo
      */
-    public
-    function updateUserWechatInfo(
+    public function updateUserWechatInfo(
         $user,
         $credentials,
         $subject,
@@ -595,14 +545,12 @@ class UserUsecaseImpl implements UserUsecase
     ) {
         if ($credentials['identityType'] === 'wechat') {
             if ($wechatUserInfo) {
-                UserProfile::updateOrCreate([ 'user_id' => $user->id ],
-                    [
-                        "wechat_user" => $wechatUserInfo ?? null,
-                    ]
-                );
+                UserProfile::updateOrCreate([ 'user_id' => $user->id ], [
+                    "wechat_user" => $wechatUserInfo ?? null,
+                ]);
             } else {
-                dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
-                    $user->id, $subject))->delay(Carbon::now()->addMinutes(1));
+                dispatch(new UpdateWechatUserInfoJob($credentials['identifier'], $user->id,
+                    $subject))->delay(Carbon::now()->addMinutes(1));
             }
         }
     }
@@ -611,14 +559,12 @@ class UserUsecaseImpl implements UserUsecase
     public function updateUserAliInfo($user, $credentials, $subject, $aliUserInfo = null)
     {
         if ($aliUserInfo) {
-            UserProfile::updateOrCreate([ 'user_id' => $user->id ],
-                [
-                    "ali_user" => $aliUserInfo ?? null,
-                ]
-            );
+            UserProfile::updateOrCreate([ 'user_id' => $user->id ], [
+                "ali_user" => $aliUserInfo ?? null,
+            ]);
         } else {
-            dispatch(new UpdateWechatUserInfoJob($credentials['identifier'],
-                $user->id, $subject))->delay(Carbon::now()->addMinutes(1));
+            dispatch(new UpdateWechatUserInfoJob($credentials['identifier'], $user->id, $subject))->delay(Carbon::now()
+                ->addMinutes(1));
         }
     }
 
@@ -637,8 +583,7 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @return mixed|null
      */
-    public
-    function mergeAccount(
+    public function mergeAccount(
         $appUser,
         $wechatUser
     ) {
@@ -647,9 +592,7 @@ class UserUsecaseImpl implements UserUsecase
         \Log::warning($wechatUser);
 
         DB::begintransaction();
-        $wechatUserAuth = $wechatUser->userAuths()
-            ->where("identity_type", 'wechat')
-            ->first();
+        $wechatUserAuth = $wechatUser->userAuths()->where("identity_type", 'wechat')->first();
 
         $wechatUserIdentityType = $wechatUserAuth->identity_type;
         $wechatUserIdentifier = $wechatUserAuth->identifier;
@@ -685,8 +628,7 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @return mixed
      */
-    public
-    function bindOrCreateByOtherInfo(
+    public function bindOrCreateByOtherInfo(
         $user,
         $info
     ) {
@@ -694,8 +636,7 @@ class UserUsecaseImpl implements UserUsecase
     }
 
 
-    public
-    function bindSalt(
+    public function bindSalt(
         $user,
         $saltId
     ) {
@@ -710,38 +651,15 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @return mixed
      */
-    public
-    function checkUserStatus(
+    public function checkUserStatus(
         $user
     ) {
         // TODO: Implement checkUserStatus() method.
     }
 
 
-    /**
-     * 通过手机号创建用户
-     *
-     * @param string  $from 注册来源
-     * @param         $mobile
-     * @param         $subject
-     * @param array   $userInfo
-     * @param         $memberCardId
-     * @param         $memberLevelId
-     * @param null    $appId
-     *
-     * @return \Mallto\User\Data\User
-     */
-    public
-    function createByMobile(
-        $from,
-        $mobile,
-        $subject,
-        $userInfo = [],
-        $memberCardId = null,
-        $memberLevelId = null,
-        $appId = null
-    ) {
-        // TODO: Implement createByMobile() method.
-    }
+    public function inviterUser($subject, $user, $info)
+    {
 
+    }
 }
