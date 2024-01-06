@@ -125,9 +125,10 @@ class UserServiceProvider extends ServiceProvider
 
     private function authBoot()
     {
-        Passport::routes(null, [
-            'prefix' => 'api/oauth',
-        ]);
+        //passport 11.x开始,已经弃用routes方法,可以在config配置文件夹的passport.php 添加 'path' => 'api/oauth' 来完成此操作
+        //        Passport::routes(null, [
+        //            'prefix' => 'api/oauth',
+        //        ]);
         //私人令牌下列设置无效
         Passport::tokensExpireIn(Carbon::now()->addDays(7));
         Passport::refreshTokensExpireIn(Carbon::now()->addDays(60));
