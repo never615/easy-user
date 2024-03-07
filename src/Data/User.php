@@ -16,7 +16,7 @@ use Mallto\Tool\Domain\Traits\TagTrait;
 class User extends Authenticatable
 {
 
-    use HasApiTokens, Notifiable, DynamicData, SelectSource, \Mallto\User\Domain\Traits\UserAuthTrait, TagTrait;
+    use HasApiTokens, Notifiable, DynamicData, SelectSource, TagTrait;
 
     //用户标识(状态),如:注册中(用户信息待完善),注册中(用户标签待完善),黑名单等
     const STATUS = [
