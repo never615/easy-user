@@ -7,7 +7,7 @@ namespace Mallto\User\Data;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Passport\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\Data\Traits\DynamicData;
 use Mallto\Admin\Data\Traits\SelectSource;
@@ -16,30 +16,30 @@ use Mallto\Tool\Domain\Traits\TagTrait;
 class User extends Authenticatable
 {
 
-    use Notifiable, DynamicData, HasApiTokens, SelectSource, \Mallto\User\Domain\Traits\UserAuthTrait, TagTrait;
+    use HasApiTokens, Notifiable, DynamicData, SelectSource, \Mallto\User\Domain\Traits\UserAuthTrait, TagTrait;
 
     //用户标识(状态),如:注册中(用户信息待完善),注册中(用户标签待完善),黑名单等
     const STATUS = [
-        "normal"    => "正常用户",
+        "normal" => "正常用户",
         "blacklist" => "黑名单用户",
     ];
 
     /**
      * 支持绑定的字段
      */
-    const SUPPORT_BIND_TYPE = [ 'mobile' ];
+    const SUPPORT_BIND_TYPE = ['mobile'];
 
     /**
      * 注册来源
      */
     const REGISTER_FROM = [
-        "wechat"       => "微信注册",
-        "app"          => "app注册",
-        "admin"        => "管理端创建",
+        "wechat" => "微信注册",
+        "app" => "app注册",
+        "admin" => "管理端创建",
         "admin_import" => "管理端批量导入创建",
-        "third_part"   => "第三方系统注册",
-        'qrcode'       => "二维码注册",
-        'ali'          => "支付宝注册",
+        "third_part" => "第三方系统注册",
+        'qrcode' => "二维码注册",
+        'ali' => "支付宝注册",
     ];
 
     /**
@@ -143,7 +143,7 @@ class User extends Authenticatable
                 if (starts_with($value, "http")) {
                     return $value;
                 } else {
-                    return config("app.file_url_prefix").$value;
+                    return config("app.file_url_prefix") . $value;
                 }
             } else {
                 return $value;

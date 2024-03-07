@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Passport\Passport;
 use Mallto\Tool\Jobs\LogJob;
 use Mallto\User\Data\Repository\UserAuthRepository;
 use Mallto\User\Data\Repository\UserAuthRepositoryInterface;
@@ -25,13 +24,7 @@ class UserServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'Laravel\Passport\Events\AccessTokenCreated' => [
-            'Mallto\User\Listeners\RevokeOldTokens',
-        ],
 
-        'Laravel\Passport\Events\RefreshTokenCreated' => [
-            'Mallto\User\Listeners\PruneOldTokens',
-        ],
     ];
 
     /**
@@ -125,21 +118,13 @@ class UserServiceProvider extends ServiceProvider
 
     private function authBoot()
     {
-        //passport 11.x开始,已经弃用routes方法,可以在config配置文件夹的passport.php 添加 'path' => 'api/oauth' 来完成此操作
-        //        Passport::routes(null, [
-        //            'prefix' => 'api/oauth',
-        //        ]);
-        //私人令牌下列设置无效
-        Passport::tokensExpireIn(Carbon::now()->addDays(7));
-        Passport::refreshTokensExpireIn(Carbon::now()->addDays(60));
-
-        Passport::tokensCan([
-            'mobile-token'            => 'mobile token可以访问所有需要用户绑定了手机号才能访问的接口',
-            'wechat-token'            => '微信token是通过openId换取的,只能访问部分接口',
-            'parking-token'           => '停车需要使用到的token',
-            'account-token'           => "账户操作权限:如重新绑定手机",
-            'register-complete-token' => "注册信息完善token",
-        ]);
+//        Passport::tokensCan([
+//            'mobile-token'            => 'mobile token可以访问所有需要用户绑定了手机号才能访问的接口',
+//            'wechat-token'            => '微信token是通过openId换取的,只能访问部分接口',
+//            'parking-token'           => '停车需要使用到的token',
+//            'account-token'           => "账户操作权限:如重新绑定手机",
+//            'register-complete-token' => "注册信息完善token",
+//        ]);
     }
 
 

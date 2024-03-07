@@ -35,7 +35,7 @@ class UpdateWechatUserInfoJob implements ShouldQueue
     // *
     // * @var int
     // */
-    //public $retryAfter = 60;
+    //public $backoff = 60;
 
     private $openid;
 

@@ -172,9 +172,9 @@ class UserUsecaseImpl implements UserUsecase
         }
 
         if ( ! empty($user->mobile)) {
-            $token = $user->createToken(config("app.unique"), [ "mobile-token" ])->accessToken;
+            $token = $user->createToken('api', [ "mobile-token" ])->plainTextToken;
         } else {
-            $token = $user->createToken(config("app.unique"), [ "wechat-token" ])->accessToken;
+            $token = $user->createToken('api', [ "wechat-token" ])->plainTextToken;
         }
 
         $user->token = $token;

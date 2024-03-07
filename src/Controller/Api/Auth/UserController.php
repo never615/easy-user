@@ -112,7 +112,7 @@ class UserController extends Controller
         $user = Auth::guard('api')->user();
 
         if ($user->$type == $identifier) {
-            $token = $user->createToken("easy", [ "account-token" ])->accessToken;
+            $token = $user->createToken("api", [ "account-token" ])->plainTextToken;
 
             //手机号一致
             return response()->json([
