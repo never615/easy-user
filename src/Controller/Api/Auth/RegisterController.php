@@ -18,6 +18,7 @@ use Mallto\User\Domain\SmsVerifyCodeUsecase;
 use Mallto\User\Domain\Traits\AuthValidateTrait;
 use Mallto\User\Domain\UserUsecase;
 use Symfony\Component\HttpKernel\Exception\PreconditionRequiredHttpException;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Created by PhpStorm.
@@ -232,8 +233,8 @@ class RegisterController extends Controller
 
             if ($aliUser->$bindType) {
                 //todo 优化,返回用户
-                \Log::warning("注册成功重复,请求:" . $aliUser->id);
-                \Log::warning(new \Exception());
+                Log::warning("注册成功重复,请求:" . $aliUser->id);
+                Log::warning(new \Exception());
 
                 throw new ResourceException("已经注册成功,若页面无跳转请刷新重试或重新打开页面");
             }

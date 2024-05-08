@@ -9,6 +9,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * User: never615 <never615.com>
@@ -133,8 +134,8 @@ class OpenidUtils
             try {
                 $openid = decrypt($openid);
             } catch (DecryptException $decryptException) {
-                \Log::error("解析openid失败3");
-                \Log::warning($openid);
+                Log::error("解析openid失败3");
+                Log::warning($openid);
                 throw new AuthenticationException("授权失败,openid解析失败");
             }
         }
@@ -163,8 +164,8 @@ class OpenidUtils
         //    try {
         //        $openid = decrypt($openid);
         //    } catch (DecryptException $decryptException) {
-        //        \Log::error("解析openid失败3");
-        //        \Log::warning($openid);
+        //        Log::error("解析openid失败3");
+        //        Log::warning($openid);
         //        throw new AuthenticationException("授权失败,openid解析失败");
         //    }
         //}
@@ -203,8 +204,8 @@ class OpenidUtils
             try {
                 $openid = decrypt($openid);
             } catch (DecryptException $decryptException) {
-                \Log::error("解析openid失败 decryptOpenidWithOutTimestamp");
-                \Log::warning($openid);
+                Log::error("解析openid失败 decryptOpenidWithOutTimestamp");
+                Log::warning($openid);
                 throw new AuthenticationException("授权失败,openid解析失败");
             }
         }

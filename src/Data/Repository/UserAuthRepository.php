@@ -5,9 +5,9 @@
 
 namespace Mallto\User\Data\Repository;
 
-use Illuminate\Support\Facades\DB;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Exceptions\UserAuthExistException;
+use Illuminate\Support\Facades\Log;
 
 /**
  * User: never615 <never615.com>
@@ -54,10 +54,10 @@ class UserAuthRepository implements UserAuthRepositoryInterface
             // Handle integrity violation SQLSTATE 23000 (or a subclass like 23505 in Postgres) for duplicate keys
             if (0 === strpos($e->getCode(), '23505')) {
                 //检查如果已存在
-                //\Log::warning("用户授权方式已存在1:" . $user->id);
-                //\Log::warning($e);
-                //\Log::warning(new \Exception());
-                //\Log::warning($credentials);
+                //Log::warning("用户授权方式已存在1:" . $user->id);
+                //Log::warning($e);
+                //Log::warning(new \Exception());
+                //Log::warning($credentials);
                 //throw new UserAuthExistException($user->id);
 
                 //事务中发生了该异常,则必须先结束事务,才能进行其他数据库操作
@@ -72,7 +72,7 @@ class UserAuthRepository implements UserAuthRepositoryInterface
                 //    'credential'    => $credential ? $hashCreential : null,
                 //])->first();
                 //if ($userAuth) {
-                //    \Log::debug($userAuth);
+                //    Log::debug($userAuth);
                 //
                 //    return $userAuth;
                 //}
@@ -82,9 +82,9 @@ class UserAuthRepository implements UserAuthRepositoryInterface
             }
         }
 //        } else {
-////            \Log::warning("用户授权方式已存在2:".$user->id);
-////            \Log::warning($credentials);
-////            \Log::warning((new \Exception()));
+////            Log::warning("用户授权方式已存在2:".$user->id);
+////            Log::warning($credentials);
+////            Log::warning((new \Exception()));
 //        }
     }
 }

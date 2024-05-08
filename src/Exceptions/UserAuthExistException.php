@@ -36,8 +36,6 @@ class UserAuthExistException extends HttpException
         $message = '用户已经注册成功,请刷新重试',
         $statusCode = 422
     ) {
-        //\Log::warning('用户授权方式已存在:' . $userId);
-
         parent::__construct($statusCode, $message, 4104);
         $this->userAuth = $userAuth;
     }

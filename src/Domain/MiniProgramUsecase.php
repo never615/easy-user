@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\ClientException;
 use Mallto\Tool\Domain\Net\AbstractAPI;
 use Mallto\Tool\Exception\HttpException;
 use Mallto\Tool\Utils\SignUtils;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class MiniProgramUsecase
@@ -70,15 +71,15 @@ class  MiniProgramUsecase extends AbstractAPI
         } catch (ClientException $clientException) {
             //这种方法能拿到异常的内容
             //$clientException->getResponse()->getBody()->getContents();
-            \Log::warning("请求微信授权失败");
+            Log::warning("请求微信授权失败");
             $response = $clientException->getResponse()->getBody()->getContents();
             $content = json_decode($response, true);
-            \Log::warning($content);
-            \Log::warning($clientException);
+            Log::warning($content);
+            Log::warning($clientException);
             throw new HttpException('422', '小程序授权登录失败，请稍后再试');
         } catch (\Exception $exception) {
-            \Log::warning("请求微信授权失败");
-            \Log::warning($exception);
+            Log::warning("请求微信授权失败");
+            Log::warning($exception);
             throw new HttpException('422', '小程序授权登录失败，请稍后再试');
         }
     }

@@ -19,6 +19,7 @@ use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
 use Mallto\User\Exceptions\UserAuthExistException;
 use Mallto\User\Jobs\UpdateWechatUserInfoJob;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 默认版的用户处理
@@ -143,7 +144,7 @@ class UserUsecaseImpl implements UserUsecase
 
         if ( ! $user) {
             //userAuth存在,user不存在,系统异常
-            \Log::error("异常:userAuth存在,user不存在,");
+            Log::error("异常:userAuth存在,user不存在,");
 
             return null;
         }
@@ -344,8 +345,8 @@ class UserUsecaseImpl implements UserUsecase
 
                 throw $e;
             } else {
-                \Log::error($e);
-                \Log::warning($userData);
+                Log::error($e);
+                Log::warning($userData);
                 throw $e;
             }
         }
@@ -587,9 +588,9 @@ class UserUsecaseImpl implements UserUsecase
         $appUser,
         $wechatUser
     ) {
-        \Log::warning('mergeAccount');
-        \Log::warning($appUser);
-        \Log::warning($wechatUser);
+        Log::warning('mergeAccount');
+        Log::warning($appUser);
+        Log::warning($wechatUser);
 
         DB::begintransaction();
         $wechatUserAuth = $wechatUser->userAuths()->where("identity_type", 'wechat')->first();
@@ -601,8 +602,8 @@ class UserUsecaseImpl implements UserUsecase
         try {
             $this->mergeUserUsecase->mergeUserData($appUser, $wechatUser);
         } catch (\Exception $exception) {
-            \Log::error($exception);
-            \Log::warning('微信用户和手机号用户数据合并失败');
+            Log::error($exception);
+            Log::warning('微信用户和手机号用户数据合并失败');
         }
 
         //2. 删除wechatUser

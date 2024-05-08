@@ -7,6 +7,7 @@ namespace Mallto\User\Domain;
 
 use GuzzleHttp\Exception\ClientException;
 use Mallto\Tool\Utils\SignUtils;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Created by PhpStorm.
@@ -53,12 +54,12 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
 
             return $content;
         } catch (ClientException $clientException) {
-            \Log::warning("请求微信用户信息失败");
-            \Log::warning($clientException);
+            Log::warning("请求微信用户信息失败");
+            Log::warning($clientException);
 
             $response = $clientException->getResponse()->getBody()->getContents();
             $content = json_decode($response, true);
-            \Log::warning($content);
+            Log::warning($content);
 
             throw new \Mallto\Tool\Exception\HttpException(422, "获取微信信息失败,请在微信内重新打开");
         }
@@ -107,9 +108,9 @@ class  WechatUsecase extends \Mallto\Tool\Domain\Net\AbstractAPI
                 return false;
             } else {
 
-                \Log::warning("请求微信统计数据失败");
-                \Log::warning($clientException->getMessage());
-                \Log::warning($clientException->getResponse()->getBody()->getContents());
+                Log::warning("请求微信统计数据失败");
+                Log::warning($clientException->getMessage());
+                Log::warning($clientException->getResponse()->getBody()->getContents());
 
                 throw $clientException;
             }

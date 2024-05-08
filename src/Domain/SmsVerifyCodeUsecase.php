@@ -17,6 +17,7 @@ use Mallto\Tool\SubjectConfigConstants;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
 use Psr\SimpleCache\InvalidArgumentException;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Created by PhpStorm.
@@ -142,8 +143,8 @@ class SmsVerifyCodeUsecase
             try {
                 $this->smsCodeUsecase->create($mobile, $code, $subjectId);
             } catch (\Exception $e) {
-                \Log::error("添加短信发送记录异常");
-                \Log::warning($e);
+                Log::error("添加短信发送记录异常");
+                Log::warning($e);
             }
 
             //增加主体消费的短信数量

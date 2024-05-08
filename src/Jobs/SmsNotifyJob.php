@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Mallto\User\Domain\SmsVerifyCodeUsecase;
+use Illuminate\Support\Facades\Log;
 
 class SmsNotifyJob implements ShouldQueue
 {
@@ -59,8 +60,8 @@ class SmsNotifyJob implements ShouldQueue
         try {
             $smsUseCase->sendSmsVerifyCode($this->mobile, $this->subjectId, $this->use);
         } catch (\Exception $exception) {
-            \Log::warning("短信验证码发送失败");
-            \Log::warning($exception->getMessage());
+            Log::warning("短信验证码发送失败");
+            Log::warning($exception->getMessage());
         }
     }
 
