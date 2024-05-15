@@ -5,10 +5,11 @@
 
 namespace Mallto\User\Providers;
 
-use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Mallto\Mall\Data\User;
 use Mallto\Tool\Jobs\LogJob;
 use Mallto\User\Data\Repository\UserAuthRepository;
 use Mallto\User\Data\Repository\UserAuthRepositoryInterface;
@@ -91,6 +92,10 @@ class UserServiceProvider extends ServiceProvider
 
         $this->schedule();
 
+        Relation::morphMap([
+            'user' => User::class,
+        ]);
+
 
     }
 
@@ -152,10 +157,10 @@ class UserServiceProvider extends ServiceProvider
                 ->name("用户统计")
                 ->withoutOverlapping()
                 ->before(function () {
-                    dispatch(new LogJob("logSchedule", [ "slug" => "user_statistic", "status" => "start" ]));
+                    dispatch(new LogJob("logSchedule", ["slug" => "user_statistic", "status" => "start"]));
                 })
                 ->after(function () {
-                    dispatch(new LogJob("logSchedule", [ "slug" => "user_statistic", "status" => "finish" ]));
+                    dispatch(new LogJob("logSchedule", ["slug" => "user_statistic", "status" => "finish"]));
                 });
 
             //拉取微信统计数据
@@ -167,11 +172,11 @@ class UserServiceProvider extends ServiceProvider
                 ->withoutOverlapping()
                 ->before(function () {
                     dispatch(new LogJob("logSchedule",
-                        [ "slug" => "wechat_user_statistics", "status" => "start" ]));
+                        ["slug" => "wechat_user_statistics", "status" => "start"]));
                 })
                 ->after(function () {
                     dispatch(new LogJob("logSchedule",
-                        [ "slug" => "wechat_user_statistics", "status" => "finish" ]));
+                        ["slug" => "wechat_user_statistics", "status" => "finish"]));
                 });
         });
 

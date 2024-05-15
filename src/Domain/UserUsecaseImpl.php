@@ -9,17 +9,16 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Mallto\Tool\Exception\NotFoundException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\User\Data\Repository\UserAuthRepository;
 use Mallto\User\Data\Repository\UserAuthRepositoryInterface;
-use Mallto\User\Data\User;
 use Mallto\User\Data\UserAuth;
 use Mallto\User\Data\UserProfile;
 use Mallto\User\Data\UserSalt;
 use Mallto\User\Exceptions\UserAuthExistException;
 use Mallto\User\Jobs\UpdateWechatUserInfoJob;
-use Illuminate\Support\Facades\Log;
 
 /**
  * 默认版的用户处理
@@ -44,19 +43,25 @@ class UserUsecaseImpl implements UserUsecase
      */
     private $mergeUserUsecase;
 
+    protected $userClass;
+
 
     /**
      * UserUsecaseImpl constructor.
      *
      * @param UserAuthRepositoryInterface $userAuthRepository
-     * @param MergeUserUsecase            $mergeUserUsecase
+     * @param MergeUserUsecase $mergeUserUsecase
      */
     public function __construct(
         UserAuthRepositoryInterface $userAuthRepository,
-        MergeUserUsecase $mergeUserUsecase
-    ) {
+        MergeUserUsecase            $mergeUserUsecase
+    )
+    {
         $this->userAuthRepository = $userAuthRepository;
         $this->mergeUserUsecase = $mergeUserUsecase;
+
+        $this->userClass = config('auth.providers.users.model');
+
     }
 
 
@@ -87,9 +92,9 @@ class UserUsecaseImpl implements UserUsecase
     {
         $credentials = [
             'identityType' => $request->get("identity_type") ?? "wechat",
-            'identifier'   => $request->get("identifier"),
-            'requestType'  => $request->header("REQUEST-TYPE"),
-            'credential'   => $request->get('credential'),
+            'identifier' => $request->get("identifier"),
+            'requestType' => $request->header("REQUEST-TYPE"),
+            'credential' => $request->get('credential'),
         ];
 
         return $credentials;
@@ -130,19 +135,19 @@ class UserUsecaseImpl implements UserUsecase
             ->where("subject_id", $subject->id);
 
         $userAuth = $query->first();
-        if ( ! $userAuth) {
+        if (!$userAuth) {
             return null;
         }
 
         if (isset($credentials["credential"]) && $credentials["credential"]) {
-            if ( ! \Hash::check($credentials["credential"], $userAuth->credential)) {
+            if (!\Hash::check($credentials["credential"], $userAuth->credential)) {
                 return null;
             }
         }
 
-        $user = User::where("id", $userAuth->user_id)->first();
+        $user = $this->userClass::where("id", $userAuth->user_id)->first();
 
-        if ( ! $user) {
+        if (!$user) {
             //userAuth存在,user不存在,系统异常
             Log::error("异常:userAuth存在,user不存在,");
 
@@ -163,7 +168,7 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function addToken($user)
     {
-        if ( ! $user) {
+        if (!$user) {
             throw new NotFoundException("用户不存在");
         }
 
@@ -172,10 +177,10 @@ class UserUsecaseImpl implements UserUsecase
             //throw new PermissionDeniedException();
         }
 
-        if ( ! empty($user->mobile)) {
-            $token = $user->createToken('api', [ "mobile-token" ])->plainTextToken;
+        if (!empty($user->mobile)) {
+            $token = $user->createToken('api', ["mobile-token"])->plainTextToken;
         } else {
-            $token = $user->createToken('api', [ "wechat-token" ])->plainTextToken;
+            $token = $user->createToken('api', ["wechat-token"])->plainTextToken;
         }
 
         $user->token = $token;
@@ -211,7 +216,7 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function isBinded($bindType, $bindDate, $subjectId)
     {
-        return User::where($bindType, $bindDate)->where("subject_id", $subjectId)->first();
+        return $this->userClass::where($bindType, $bindDate)->where("subject_id", $subjectId)->first();
     }
 
 
@@ -242,8 +247,8 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function bind($user, $bindType, $bindData)
     {
-        if ( ! in_array($bindType, User::SUPPORT_BIND_TYPE)) {
-            throw new ResourceException("无效的绑定凭证:".$bindData);
+        if (!in_array($bindType, User::SUPPORT_BIND_TYPE)) {
+            throw new ResourceException("无效的绑定凭证:" . $bindData);
         }
         $user->$bindType = $bindData;
         $user->save();
@@ -257,10 +262,10 @@ class UserUsecaseImpl implements UserUsecase
      *
      * @param        $credentials
      * @param        $subject
-     * @param array  $info
+     * @param array $info
      * @param string $from
      * @param string $fromAppId 第三方注册时的appid
-     * @param string $fromId    推广码注册的对应from来源id
+     * @param string $fromId 推广码注册的对应from来源id
      *
      * @return User
      * @throws AuthenticationException
@@ -273,7 +278,8 @@ class UserUsecaseImpl implements UserUsecase
         $fromAppId = null,
         $userAbleType = null,
         $userAbleId = null
-    ) {
+    )
+    {
         if (empty($credentials)) {
             throw new ResourceException("异常请求:credentials为空");
         }
@@ -286,7 +292,7 @@ class UserUsecaseImpl implements UserUsecase
             case "mobile":
             case "sms":
                 $userData = [
-                    'mobile'     => $credentials['identifier'],
+                    'mobile' => $credentials['identifier'],
                     'subject_id' => $subject->id,
                 ];
 
@@ -306,7 +312,7 @@ class UserUsecaseImpl implements UserUsecase
             case 'ali':
                 break;
             default:
-                throw new ResourceException("无效的user auth类型:".$credentials["identityType"]);
+                throw new ResourceException("无效的user auth类型:" . $credentials["identityType"]);
                 break;
         }
 
@@ -324,7 +330,7 @@ class UserUsecaseImpl implements UserUsecase
                 $userData["inviter_id"] = $info['inviter_id'];
             }
 
-            $user = User::create($userData);
+            $user = $this->userClass::create($userData);
 
             if ($user->inviter_id) {
                 $this->inviterUser($subject, $user, $info);
@@ -335,9 +341,9 @@ class UserUsecaseImpl implements UserUsecase
             if (0 === strpos($e->getCode(), '23505') && $mobile) {
                 //检查如果已存在
                 DB::rollBack();
-                $user = User::where([
+                $user = $this->userClass::where([
                     'subject_id' => $subject->id,
-                    'mobile'     => $mobile,
+                    'mobile' => $mobile,
                 ])->first();
                 if ($user) {
                     return $user;
@@ -358,7 +364,7 @@ class UserUsecaseImpl implements UserUsecase
         } catch (UserAuthExistException $userAuthExistException) {
             DB::rollBack();
             $user = $this->retrieveByCredentials($credentials, $subject);
-            if ( ! $user) {
+            if (!$user) {
                 throw $userAuthExistException;
             }
         }
@@ -384,7 +390,8 @@ class UserUsecaseImpl implements UserUsecase
         $credentials,
         $user,
         $openidEncrypted = true
-    ) {
+    )
+    {
         $identityType = $credentials["identityType"];
         $identifier = $credentials['identifier'];
 
@@ -399,7 +406,7 @@ class UserUsecaseImpl implements UserUsecase
             case "mobile":
                 //如果是手机绑定,均添加sms的验证方式
                 $this->createUserAuth([
-                    "identifier"    => $identifier,
+                    "identifier" => $identifier,
                     "identity_type" => "sms",
                 ], $user);
 
@@ -425,7 +432,8 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function registerComplete(
         $user
-    ) {
+    )
+    {
 
     }
 
@@ -441,16 +449,17 @@ class UserUsecaseImpl implements UserUsecase
     public function updateUser(
         $user,
         $info
-    ) {
-        $info = array_except($info, [ 'register', '_method' ]);
+    )
+    {
+        $info = array_except($info, ['register', '_method']);
 
         $user->nickname = $info['name'] ?? null;
         $user->avatar = $info['avatar'] ?? null;
 
-        if ( ! $user->userProfile) {
+        if (!$user->userProfile) {
             $userProfile = UserProfile::query()->create([
                 "user_id" => $user->id,
-                "gender"  => 0,
+                "gender" => 0,
             ]);
         } else {
             $userProfile = $user->userProfile;
@@ -497,8 +506,9 @@ class UserUsecaseImpl implements UserUsecase
         $user,
         $addToken = true,
         $wechatLogin = false
-    ) {
-        $user = User::with("userProfile")->findOrFail($user->id);
+    )
+    {
+        $user = $this->userClass::with("userProfile")->findOrFail($user->id);
 
         $this->getReturnInfoBasic($user, $addToken);
 
@@ -543,10 +553,11 @@ class UserUsecaseImpl implements UserUsecase
         $credentials,
         $subject,
         $wechatUserInfo = null
-    ) {
+    )
+    {
         if ($credentials['identityType'] === 'wechat') {
             if ($wechatUserInfo) {
-                UserProfile::updateOrCreate([ 'user_id' => $user->id ], [
+                UserProfile::updateOrCreate(['user_id' => $user->id], [
                     "wechat_user" => $wechatUserInfo ?? null,
                 ]);
             } else {
@@ -560,7 +571,7 @@ class UserUsecaseImpl implements UserUsecase
     public function updateUserAliInfo($user, $credentials, $subject, $aliUserInfo = null)
     {
         if ($aliUserInfo) {
-            UserProfile::updateOrCreate([ 'user_id' => $user->id ], [
+            UserProfile::updateOrCreate(['user_id' => $user->id], [
                 "ali_user" => $aliUserInfo ?? null,
             ]);
         } else {
@@ -587,7 +598,8 @@ class UserUsecaseImpl implements UserUsecase
     public function mergeAccount(
         $appUser,
         $wechatUser
-    ) {
+    )
+    {
         Log::warning('mergeAccount');
         Log::warning($appUser);
         Log::warning($wechatUser);
@@ -612,7 +624,7 @@ class UserUsecaseImpl implements UserUsecase
         //3. 合并wechatUser的授权方式到appUser
         $appUser = $this->createUserAuth([
             'identityType' => $wechatUserIdentityType,
-            'identifier'   => $wechatUserIdentifier,
+            'identifier' => $wechatUserIdentifier,
         ], $appUser, false);
 
         DB::commit();
@@ -632,7 +644,8 @@ class UserUsecaseImpl implements UserUsecase
     public function bindOrCreateByOtherInfo(
         $user,
         $info
-    ) {
+    )
+    {
 
     }
 
@@ -640,8 +653,9 @@ class UserUsecaseImpl implements UserUsecase
     public function bindSalt(
         $user,
         $saltId
-    ) {
-        UserSalt::where('id', $saltId)->update([ 'user_id', $user->id ]);
+    )
+    {
+        UserSalt::where('id', $saltId)->update(['user_id', $user->id]);
     }
 
 
@@ -654,7 +668,8 @@ class UserUsecaseImpl implements UserUsecase
      */
     public function checkUserStatus(
         $user
-    ) {
+    )
+    {
         // TODO: Implement checkUserStatus() method.
     }
 
