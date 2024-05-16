@@ -5,8 +5,10 @@
 
 namespace Mallto\User\Data;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\Data\Traits\DynamicData;
@@ -121,34 +123,35 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserSalt::class);
     }
-
-
-    public function getAvatarAttribute($value)
+    public function avatar(): Attribute
     {
-        if (request()->header("mode") === "api") {
-            if (empty($value)) {
-                $user = User::find($this->id);
-                if ($user && $user->userProfile && $user->userProfile->wechat_user) {
-                    return $user->userProfile->wechat_user['avatar'];
-                }
+        return new Attribute(
+            get: function ($value) {
+                if (request()->header("mode") === "api") {
+                    if (empty($value)) {
+                        $user = User::find($this->id);
+                        if ($user && $user->userProfile && $user->userProfile->wechat_user) {
+                            return $user->userProfile->wechat_user['avatar'];
+                        }
 
-                return null;
-            }
+                        return null;
+                    }
 
-            if (starts_with($value, "http")) {
-                return $value;
-            }
-        } else {
-            if ($value) {
-                if (starts_with($value, "http")) {
-                    return $value;
+                    if (Str::startsWith($value, "http")) {
+                        return $value;
+                    }
                 } else {
-                    return config("app.file_url_prefix") . $value;
+                    if ($value) {
+                        if (Str::startsWith($value, "http")) {
+                            return $value;
+                        } else {
+                            return config("app.file_url_prefix") . $value;
+                        }
+                    } else {
+                        return $value;
+                    }
                 }
-            } else {
-                return $value;
             }
-        }
+        );
     }
-
 }
