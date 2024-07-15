@@ -104,7 +104,7 @@ class SmsVerifyCodeUsecase
         $subject = Subject::findOrFail($subjectId);
 
         //$sendSmsCode = ConfigUtils::get('send_sms_code', 0);
-        $sendSmsCode = SubjectUtils::getDynamicKeyConfigByOwner('send_sms_code', $subject, 0);
+        $sendSmsCode = SubjectUtils::getDynamicKeyConfigByOwner('send_sms_code', $subject, 1);
         if ( ! $sendSmsCode) {
             throw new PermissionDeniedException('SMS verification code is not allowed to be sent');
         }
