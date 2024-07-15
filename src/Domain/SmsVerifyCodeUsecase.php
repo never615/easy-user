@@ -6,18 +6,19 @@
 namespace Mallto\User\Domain;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Mallto\Admin\Data\Subject;
 use Mallto\Admin\SubjectUtils;
 use Mallto\Tool\Domain\DynamicInject;
 use Mallto\Tool\Domain\Sms\SmsCodeUsecase;
+use Mallto\Tool\Exception\PermissionDeniedException;
 use Mallto\Tool\Exception\ResourceException;
 use Mallto\Tool\Exception\ValidationHttpException;
 use Mallto\Tool\SubjectConfigConstants;
 use Mallto\Tool\Utils\AppUtils;
 use Mallto\Tool\Utils\TimeUtils;
 use Psr\SimpleCache\InvalidArgumentException;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Created by PhpStorm.
@@ -100,35 +101,33 @@ class SmsVerifyCodeUsecase
         if (config('app.env') === 'local') {
             return;
         }
+        $subject = Subject::findOrFail($subjectId);
+
+        //$sendSmsCode = ConfigUtils::get('send_sms_code', 0);
+        $sendSmsCode = SubjectUtils::getDynamicKeyConfigByOwner('send_sms_code', $subject, 0);
+        if ( ! $sendSmsCode) {
+            throw new PermissionDeniedException('SMS verification code is not allowed to be sent');
+        }
 
         $data['mobile'] = $mobile;
-        $validator = Validator::make($data,
-            [ 'mobile' => [ 'required', 'mobile' ], ]
-        );
+        $validator = Validator::make($data, [ 'mobile' => [ 'required', 'mobile' ], ]);
 
         if ($validator->fails()) {
             throw new ValidationHttpException($validator->errors()->first());
         }
 
-        $subject = Subject::findOrFail($subjectId);
-
-        $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject,
-            "墨兔");
+        $sign = SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_SIGN, $subject, "墨兔");
         $code = mt_rand(1000, 9999);
 
         //检查一分钟内只能发送一个
         if (Cache::has($this->getSmsSendAtCacheKey($use, $subjectId, $mobile))) {
-            throw new ResourceException("一分钟以内只能发送一次");
+            throw new ResourceException("Can only be sent once a minute");
         }
 
         $sms = DynamicInject::makeSmsOperator();
-        $result = $sms->sendSms(
-            $mobile,
+        $result = $sms->sendSms($mobile,
             SubjectUtils::getConfigByOwner(SubjectConfigConstants::OWNER_CONFIG_SMS_TEMPLATE_CODE, $subject,
-                "SMS_141255069"),
-            [ "code" => $code, ],
-            $sign
-        );
+                "SMS_141255069"), [ "code" => $code, ], $sign);
 
         if ($result) {
             $key = $this->getSmsCacheKey($use, $subject->id, $mobile);
@@ -164,7 +163,7 @@ class SmsVerifyCodeUsecase
      */
     public function getSmsCacheKey($use, $subjectId, $mobile)
     {
-        return 'code' . $use . $subjectId . $mobile;
+        return 'code'.$use.$subjectId.$mobile;
     }
 
 
@@ -179,7 +178,7 @@ class SmsVerifyCodeUsecase
      */
     public function getSmsSendAtCacheKey($use, $subjectId, $mobile)
     {
-        return 'code_send_at' . $use . $subjectId . $mobile;
+        return 'code_send_at'.$use.$subjectId.$mobile;
     }
 
 }
