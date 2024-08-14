@@ -52,16 +52,14 @@ class UserServiceProvider extends ServiceProvider
      *
      * @var array
      */
-    protected $routeMiddleware = [
-    ];
+    protected $routeMiddleware = [];
 
     /**
      * The application's route middleware groups.
      *
      * @var array
      */
-    protected $middlewareGroups = [
-    ];
+    protected $middlewareGroups = [];
 
 
     /**
@@ -81,12 +79,12 @@ class UserServiceProvider extends ServiceProvider
             Event::subscribe($subscriber);
         }
 
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'user');
+        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'user');
 
-        $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../migrations');
 
-        $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
-        $this->loadRoutesFrom(__DIR__ . '/../../routes/api.php');
+        $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
+        $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
 
         $this->authBoot();
 
@@ -109,15 +107,9 @@ class UserServiceProvider extends ServiceProvider
     {
         $this->commands($this->commands);
 
-        $this->app->bind(
-            UserUsecase::class,
-            UserUsecaseImpl::class
-        );
+        $this->app->bind(UserUsecase::class, UserUsecaseImpl::class);
 
-        $this->app->bind(
-            UserAuthRepositoryInterface::class,
-            UserAuthRepository::class
-        );
+        $this->app->bind(UserAuthRepositoryInterface::class, UserAuthRepository::class);
     }
 
 
@@ -149,35 +141,27 @@ class UserServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             $schedule = $this->app->make(Schedule::class);
 
-            //用户数据统计
-            $schedule->command('user:user_statistic')
-                ->onOneServer()
-                ->dailyAt("02:00")
-                ->runInBackground()
-                ->name("用户统计")
-                ->withoutOverlapping()
-                ->before(function () {
-                    dispatch(new LogJob("logSchedule", ["slug" => "user_statistic", "status" => "start"]));
-                })
-                ->after(function () {
-                    dispatch(new LogJob("logSchedule", ["slug" => "user_statistic", "status" => "finish"]));
-                });
+            $user_statistic = config('other.user_statistic', true);
+            if ($user_statistic) {
+                //用户数据统计
+                $schedule->command('user:user_statistic')->onOneServer()->dailyAt("02:00")->runInBackground()
+                    ->name("用户统计")->withoutOverlapping()->before(function () {
+                        dispatch(new LogJob("logSchedule", [ "slug" => "user_statistic", "status" => "start" ]));
+                    })->after(function () {
+                        dispatch(new LogJob("logSchedule", [ "slug" => "user_statistic", "status" => "finish" ]));
+                    });
 
-            //拉取微信统计数据
-            $schedule->command('user:wechat_user_statistics')
-                ->onOneServer()
-                ->runInBackground()
-                ->dailyAt("08:30")
-                ->name("微信统计")
-                ->withoutOverlapping()
-                ->before(function () {
-                    dispatch(new LogJob("logSchedule",
-                        ["slug" => "wechat_user_statistics", "status" => "start"]));
-                })
-                ->after(function () {
-                    dispatch(new LogJob("logSchedule",
-                        ["slug" => "wechat_user_statistics", "status" => "finish"]));
-                });
+                //拉取微信统计数据
+                $schedule->command('user:wechat_user_statistics')->onOneServer()->runInBackground()->dailyAt("08:30")
+                    ->name("微信统计")->withoutOverlapping()->before(function () {
+                        dispatch(new LogJob("logSchedule",
+                            [ "slug" => "wechat_user_statistics", "status" => "start" ]));
+                    })->after(function () {
+                        dispatch(new LogJob("logSchedule",
+                            [ "slug" => "wechat_user_statistics", "status" => "finish" ]));
+                    });
+            }
+
         });
 
     }
