@@ -4,7 +4,7 @@
 
 
 {{--<script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.min.js"></script>--}}
-{{--<script src="https://file.easy.mall-to.com/js/walden.js"></script>--}}
+{{--<script src="https://file.mall-to.com/js/walden.js"></script>--}}
 
 <div class="small">
     {{--<div class="glyphicon glyphicon-info-sign"></div>--}}

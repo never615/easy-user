@@ -24,8 +24,12 @@ class DashboardController extends Controller
             $content->header('数据看板');
             $content->description(" ");
 
+            if (config('other.dashboard_enable') == false) {
+                return;
+            }
+
             $user = Admin::user();
-            if ( ! $user->can("dashboard")) {
+            if (!$user->can("dashboard")) {
                 $content->description("没有权限查看数据看板");
 
                 return;
@@ -105,7 +109,7 @@ class DashboardController extends Controller
         $baseBox = new Box('提示',
             view("user::dashboard.chart_base")->with([
                 "subjects" => $subjectSelectData,
-                "helps"    => $helps,
+                "helps" => $helps,
             ]));
 
         $baseBox->collapsable();
