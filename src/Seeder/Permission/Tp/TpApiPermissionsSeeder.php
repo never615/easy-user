@@ -3,10 +3,9 @@
  * Copyright (c) 2017. Mallto.Co.Ltd.<mall-to.com> All rights reserved.
  */
 
-namespace Mallto\User\Seeder\Permission;
+namespace Mallto\User\Seeder\Permission\Tp;
 
-use Illuminate\Database\Seeder;
-use Mallto\Tool\Seeder\AppSecretSeederMaker;
+use Mallto\Tool\Seeder\Permission\Tp\TpApiPermissionBaseSeeder;
 
 /**
  * 开放平台接口权限生成
@@ -15,10 +14,8 @@ use Mallto\Tool\Seeder\AppSecretSeederMaker;
  *
  * @package Mallto\Tool\Seeder\Permission
  */
-class AppSecretPermissionsSeeder extends Seeder
+class TpApiPermissionsSeeder extends TpApiPermissionBaseSeeder
 {
-
-    use AppSecretSeederMaker;
 
     /**
      * Run the database seeds.
@@ -28,6 +25,6 @@ class AppSecretPermissionsSeeder extends Seeder
      */
     public function run()
     {
-        $this->createPermissions('获取短信验证码', 'tp_sms_code.index');
+        $this->createPermissions('获取短信验证码', 'sms_code.index');
     }
 }

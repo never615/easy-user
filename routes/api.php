@@ -17,24 +17,25 @@
 use Illuminate\Support\Facades\Route;
 
 $attributes = [
-    'namespace'  => 'Mallto\User\Controller\Api',
-    'prefix'     => 'api',
-    'middleware' => [ 'api' ],
+    'namespace' => 'Mallto\User\Controller\Api',
+    'prefix' => 'api',
+    'middleware' => ['api'],
 ];
 
 Route::group($attributes, function ($router) {
 
 
-    Route::group([ 'middleware' => [ 'owner_api', 'requestCheck' ] ], function () {
+    Route::group(['middleware' => ['owner_api', 'requestCheck']], function () {
 
         /**
          * 需要经过验证:可以通过签名或者referrer验证
          */
-        Route::group([ 'middleware' => [ 'authSign_referrer' ] ], function () {
+        Route::group(['middleware' => ['authSign_referrer']], function () {
 
             //公共接口
             //短信验证码
-            Route::get('code', 'PublicController@getMessageCode')->name('tp_sms_code.index');
+            Route::get('code', 'PublicController@getMessageCode')
+                ->name('sms_code.index');
         });
 
         //邮箱验证码
@@ -59,31 +60,31 @@ Route::group($attributes, function ($router) {
         /**
          * 需要经过签名校验
          */
-        Route::group([ 'middleware' => [ 'authSign_referrer' ] ], function () {
+        Route::group(['middleware' => ['authSign_referrer']], function () {
 
         });
 
         /**
          * 需要经过授权
          */
-        Route::group([ 'middleware' => [ 'auth:api' ] ], function () {
+        Route::group(['middleware' => ['auth:api']], function () {
 
-            Route::group([ "middleware" => [ "abilities:mobile-token" ] ], function () {
+            Route::group(["middleware" => ["abilities:mobile-token"]], function () {
             });
 
-            Route::group([ "middleware" => [ "abilities:wechat-token,mobile-token,account-token" ] ],
+            Route::group(["middleware" => ["abilities:wechat-token,mobile-token,account-token"]],
                 function () {
                     //更新用户信息
                     Route::patch('user', 'Auth\UserController@update');
                 });
 
-            Route::group([ "middleware" => [ "abilities:account-token" ] ],
+            Route::group(["middleware" => ["abilities:account-token"]],
                 function () {
                     //更新(重新绑定)手机/邮箱
 //                Route::post("user/identifier", 'Auth\UserController@updateIdentifier');
                 });
 
-            Route::group([ "middleware" => [ "ability:mobile-token,account-token" ] ], function () {
+            Route::group(["middleware" => ["ability:mobile-token,account-token"]], function () {
 
                 //更新用户密码
                 Route::patch('user/password', 'Auth\UserController@updatePassword');
@@ -94,7 +95,7 @@ Route::group($attributes, function ($router) {
 //                Route::post("user/verify_old_identifier", 'Auth\UserController@verifyOldIdentifier');
             });
 
-            Route::group([ "middleware" => [ "ability:mobile-token,wechat-token,account-token" ] ],
+            Route::group(["middleware" => ["ability:mobile-token,wechat-token,account-token"]],
                 function () {
                     //获取用户信息
                     Route::get('user', 'Auth\UserController@show');
