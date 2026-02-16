@@ -25,6 +25,6 @@ class TpApiPermissionsSeeder extends TpApiPermissionBaseSeeder
      */
     public function run()
     {
-        $this->createPermissions('获取短信验证码', 'sms_code.index');
+        $this->createPermissions('获取短信验证码', 'sms_code.index', false);
     }
 }
