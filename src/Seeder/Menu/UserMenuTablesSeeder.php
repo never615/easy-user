@@ -6,6 +6,7 @@
 namespace Mallto\User\Seeder\Menu;
 
 use Illuminate\Database\Seeder;
+use Mallto\Admin\Data\Menu;
 use Mallto\Admin\Seeder\MenuSeederMaker;
 
 class UserMenuTablesSeeder extends Seeder
@@ -21,7 +22,8 @@ class UserMenuTablesSeeder extends Seeder
      */
     public function run()
     {
-        $order = 3;
+        $systemManagerMenu = Menu::where("uri", "system_manager")->first();
+        $order = $systemManagerMenu ? $systemManagerMenu->order + 4 : 7;
 
         $userManagerMenu = $this->updateOrCreate(
             "user_manager", 0, $order++, "用户管理", "fa-user");
