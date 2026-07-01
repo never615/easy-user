@@ -52,7 +52,7 @@ Route::group($attributes, function ($router) {
         //注册:通用注册,包含微信和app
         Route::post('register', 'Auth\RegisterController@register');
         //salt
-        Route::get('salt', 'Auth\RegisterController@userSalt');
+//        Route::get('salt', 'Auth\RegisterController@userSalt');
 
         //重置密码
         Route::post('password/reset', 'Auth\ResetPasswordController@reset');
