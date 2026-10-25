@@ -1,1 +1,3 @@
-围绕用户功能,提供基本登录注册授权验证/验证码/用户数据统计功能. 需要laravel-admin-enhance扩展.
+# easy-user 项目说明
+
+围绕用户功能，提供基本登录、注册、授权验证、验证码和用户数据统计能力；依赖 `laravel-admin-enhance` 扩展。
